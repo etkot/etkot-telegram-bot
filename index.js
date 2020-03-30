@@ -20,7 +20,9 @@ telegram.on('message', (update) => {
         let args = update.text.substr(1).split(' ');
         let cmd = args.shift().replace(`@${telegram.user.username}`, '');
 
-        commands[cmd].func(args, update);
+        if (commands[cmd]) {
+            commands[cmd].func(args, update);
+        }
     }
 });
 

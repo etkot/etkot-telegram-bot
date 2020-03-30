@@ -21,7 +21,7 @@ exports.help = {
             }
         }
 
-        telegram.SendMessage(update.chat, msg);
+        telegram.SendMessage(update.chat, msg, { disable_notification: true });
     }
 }
 
@@ -36,10 +36,9 @@ exports.usage = {
             msg = `Käyttö: /usage <command>`;
         }
         else {
-            console.log(commands);
             msg = `Käyttö: ${commands[args[0]].usage}`;
         }
 
-        telegram.SendMessage(update.chat, msg);
+        telegram.SendMessage(update.chat, msg, { disable_notification: true });
     }
 }
