@@ -8,7 +8,7 @@ exports.telegram = telegram;
 const commands = require('./commands');
 
 telegram.on('update', (update) => {
-    console.log(update);
+    //console.log(update);
 });
 
 telegram.on('message', (update) => {
