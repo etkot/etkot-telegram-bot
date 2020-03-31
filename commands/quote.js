@@ -14,6 +14,7 @@ let GetCollection = () => {
 exports.quote = {
     help: 'Lähettää satunnaisen quoten',
     usage: '/quote [name]',
+    aliases: [ 'q' ],
     func: (args, update) => {
         let query = {};
         if (args.length > 0) {
@@ -35,6 +36,7 @@ exports.quote = {
 exports.addq = {
     help: 'Lisää uuden quoten käyttäjälle',
     usage: '/addq <name> <quote>',
+    aliases: [ 'aq' ],
     func: (args, update) => {
         if (args.length < 2) {
             helpCommands.usage.func([ "addq" ], update);

@@ -1,8 +1,8 @@
 const { telegram } = require('../index');
 
 exports.help = {
-    help: 'Listaa kaikki komennot',
     usage: '/help [command]',
+    aliases: [ 'h' ],
     func: (args, update) => {
         const commands = require('./index');
         let msg = '';
@@ -17,7 +17,9 @@ exports.help = {
         }
         else {
             for (let cmd in commands) {
-                msg += `/${cmd} - ${commands[cmd].help}\n`;
+                if (commands[cmd].help) {
+                    msg += `/${cmd} - ${commands[cmd].help}\n`;
+                }
             }
         }
 
@@ -28,6 +30,7 @@ exports.help = {
 exports.usage = {
     help: 'Kertoo miten komentoa käytetään',
     usage: '/usage <command>',
+    aliases: [ 'u' ],
     func: (args, update) => {
         const commands = require('./index');
         let msg;

@@ -21,6 +21,7 @@ let ToVarInt = (value) => {
 exports.minecraft = {
     help: 'Kertoo kuinka monta pelaajaa serverillä on',
     usage: '/minecraft',
+    aliases: [ 'mc' ],
     func: (args, update) => {
         let host = process.env.MC_ADDR;
         let port = Number(process.env.MC_PORT);
@@ -58,8 +59,8 @@ exports.minecraft = {
 
             let text = `<b>${data.description.text}</b> (${data.players.online}/${data.players.max})`;
 
-            for (let player of data.players.sample) {
-                text += `\n    ${player.name}`
+            for (let p in data.players.sample) {
+                text += `\n    ${data.players.sample[p].name}`
             }
 
             telegram.SendMessage(update.chat, text, { disable_notification: true, parse_mode: 'HTML' });
