@@ -1,20 +1,19 @@
-const { help, usage } = require('./help');
-const { quote, addq } = require('./quote');
-const { craps } = require('./craps');
-const { minecraft } = require('./minecraft');
+const fs = require('fs');
 
-let commands = {
-    // Help
-    help, usage,
+let commands = {};
 
-    // Quote
-    quote, addq,
-    
-    // Craps
-    craps,
+// Load commands
+let files = fs.readdirSync('./commands');
+for (let file of files) {
+    if (file !== 'index.js') {
+        let moduleCommands = require(`./${file}`);
 
-    // Minecraft
-    minecraft,
+        for (let c in moduleCommands) {
+            if (moduleCommands[c].func) {
+                commands[c] = moduleCommands[c];
+            }
+        }
+    }
 }
 
 let aliases = {};
