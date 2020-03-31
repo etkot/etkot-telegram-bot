@@ -18,7 +18,7 @@ Before starting you will need to create a file called `.env` with the following 
 TG_TOKEN=[Your telegram bot token]
 TG_CHAT=[Your telegram chat id]
 
-# Telegram
+# MongoDB
 DB_NAME=[Name of your MongoDB database]
 ```
 
