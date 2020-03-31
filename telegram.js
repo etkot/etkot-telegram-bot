@@ -53,7 +53,7 @@ class Telegram extends EventEmitter {
                     if (data.ok) {
                         resolve(data.result);
                     } else {
-                        console.error(`Telegram error (${data.error_code}): ${data.description}`);
+                        reject(`Telegram error (${data.error_code}): ${data.description}`);
                     }
                 });
             }).on('error', (e) => {
@@ -156,6 +156,12 @@ class Telegram extends EventEmitter {
                 }
             }
             this.StartPolling();
+        }).catch(err => {
+            console.error(err);
+            
+            setTimeout(() => {
+                this.StartPolling();
+            }, 5000);
         });
     }
 }
