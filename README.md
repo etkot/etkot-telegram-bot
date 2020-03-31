@@ -20,6 +20,10 @@ TG_CHAT=[Your telegram chat id]
 
 # MongoDB
 DB_NAME=[Name of your MongoDB database]
+
+# Minecraft Server
+MC_ADDR=[Minecraft server address]
+MC_PORT=[Minecraft server port]
 ```
 
 Now you can start the bot
