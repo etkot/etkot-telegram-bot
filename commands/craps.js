@@ -12,7 +12,7 @@ exports.craps = {
                 diceValue += response.dice.value;
                 
                 setTimeout(() => {
-                    telegram.SendMessage(update.chat, `Sait numeron ${diceValue}`, { disable_notification: true, reply_to_message_id: update.message_id });
+                    telegram.SendMessage(update.chat, diceValue === 2 ? '🐍 SNAKE 🐍 EYES 🐍' : `Sait numeron ${diceValue}`, { disable_notification: true, reply_to_message_id: update.message_id });
                 }, 4000);
             });
         });
