@@ -14,7 +14,7 @@ let GetCollection = () => {
 exports.quote = {
     help: 'Lähettää satunnaisen quoten',
     usage: '/quote [name]',
-    aliases: [ 'q' ],
+    aliases: [ 'q', 'quoite', 'quoye' ],
     func: (args, update) => {
         let query = {};
         if (args.length > 0) {
