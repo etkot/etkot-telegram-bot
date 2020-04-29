@@ -45,9 +45,17 @@ exports.addq = {
 
         let name = args.shift();
         let quote = args.join(' ');
+        
 
-        GetCollection().insertOne({ name, quote });
-        telegram.SendMessage(update.chat, `Quote lisätty`, { disable_notification: true });
+        GetCollection().findOne({name, quote}, (err, result) => {
+            console.log(result);
+            if (result === null) {
+                GetCollection().insertOne({ name, quote });
+                telegram.SendMessage(update.chat, `Quote lisätty`, { disable_notification: true });
+            } else {
+                telegram.SendMessage(update.chat, `Quote on jo olemassa`, { disable_notification: true });
+            }
+        });
     }
 }
 
