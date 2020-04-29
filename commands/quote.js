@@ -50,3 +50,21 @@ exports.addq = {
         telegram.SendMessage(update.chat, `Quote lisätty`, { disable_notification: true });
     }
 }
+
+exports.quotestats = {
+    help: 'Näyttää kuinka monta quotea käyttäjillä on',
+    usage: '/quotestats',
+    aliases: [ 'qs', 'qstats' ],
+    func: (args, update) => {
+        GetCollection().aggregate([ { $group : { _id : '$name', count : { $sum : 1 } } } ]).toArray((err, result) => {
+            result.sort(function(a, b) { return b.count - a.count } );
+
+            let str = '<b>Quote stats</b>\n';
+            for (const user of result) {
+                str += `${user._id}: ${user.count}\n`;
+            }
+
+            telegram.SendMessage(update.chat, str, { disable_notification: true, parse_mode: 'HTML' });
+        });
+    }
+}
