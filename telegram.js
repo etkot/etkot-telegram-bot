@@ -124,33 +124,34 @@ class Telegram extends EventEmitter {
                 this._lastMessageId = response[response.length - 1].update_id + 1;
 
                 for (let update of response) {
-                    let message = update.message;
-
                     // All updates
-                    this.emit('update', message);
-
-                    // Message
-                    if (message.text) {
-                        this.emit('message', message);
-                    }
-
-                    // New Chat Members
-                    if (message.new_chat_members) {
-                        for (let member of message.new_chat_members) {
-                            if (member.id === this.user.id) {
-                                this.emit('newChatJoined', message);
-                            } else {
-                                this.emit('newChatMember', message);
+                    this.emit('update', update);
+                    
+                    let message = update.message;
+                    if (message) {
+                        // Message
+                        if (message.text) {
+                            this.emit('message', message);
+                        }
+    
+                        // New Chat Members
+                        if (message.new_chat_members) {
+                            for (let member of message.new_chat_members) {
+                                if (member.id === this.user.id) {
+                                    this.emit('newChatJoined', message);
+                                } else {
+                                    this.emit('newChatMember', message);
+                                }
                             }
                         }
-                    }
-
-                    // Left Chat Member
-                    if (message.left_chat_member) {
-                        if (message.left_chat_member.id === this.user.id) {
-                            this.emit('leftChat', message);
-                        } else {
-                            this.emit('leftChatMember', message);
+    
+                        // Left Chat Member
+                        if (message.left_chat_member) {
+                            if (message.left_chat_member.id === this.user.id) {
+                                this.emit('leftChat', message);
+                            } else {
+                                this.emit('leftChatMember', message);
+                            }
                         }
                     }
                 }
