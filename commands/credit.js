@@ -1,0 +1,97 @@
+const mongodb = require('mongodb');
+const mongoUtil = require('../mongoUtil');
+const { telegram } = require('../index');
+const helpCommands = require('./help');
+
+let collection = undefined;
+
+/**
+ * @returns {mongodb.Collection}
+ */
+const GetCollection = () => {
+    if (!collection) {
+        collection = mongoUtil.getDb().collection('credit');
+    }
+    
+    return collection;
+}
+
+exports.socialcredit = {
+    help: 'Listaa kaikkien pisteet',
+    usage: '/socialcredit',
+    aliases: [ 'credit', 'sc' ],
+    func: (args, update) => {
+        GetCollection().find({}).toArray((err, docs) => {
+            let users = {};
+            for (let doc of docs) {
+                if (users[doc.username] === undefined)
+                    users[doc.username] = 0;
+
+                for (let credit in doc.plus_credits)
+                    users[doc.username]++;
+                for (let credit in doc.minus_credits)
+                    users[doc.username]--;
+            }
+
+            var sortable = [];
+            for (var user in users) {
+                sortable.push({ user, credit: users[user] });
+            }
+
+            sortable.sort(function(a, b) {
+                return b.credit - a.credit;
+            });
+
+            let msg = '<b>Social credit:</b>\n';
+            for (let obj of sortable) {
+                msg += `  ${obj.user}: ${obj.credit * 20}\n`;
+            }
+
+            telegram.SendMessage(update.chat, msg, { disable_notification: true, parse_mode: 'html' });
+        });
+    },
+    triggers: [
+        {
+            type: 'sticker',
+            on: 'AgADAgADf3BGHA',
+            func: (update) => {
+                const fromUser = update.from.username;
+                const toUser = update.reply_to_message.from.username;
+                
+                const credit = {
+                    from: fromUser,
+                    msg: update.reply_to_message.message_id,
+                    date: update.date,
+                }
+            
+                GetCollection().updateOne({ username: toUser }, { $push: { plus_credits: credit } })
+                    .then((result) => {
+                        if (result.modifiedCount == 0) {
+                            GetCollection().insertOne({ username: toUser, plus_credits: [ credit ] });
+                        }
+                    });
+            }
+        },
+        {
+            type: 'sticker',
+            on: 'AgADAwADf3BGHA',
+            func: (update) => {
+                const fromUser = update.from.username;
+                const toUser = update.reply_to_message.from.username;
+                
+                const credit = {
+                    from: fromUser,
+                    msg: update.reply_to_message.message_id,
+                    date: update.date,
+                }
+            
+                GetCollection().updateOne({ username: toUser }, { $push: { minus_credits: credit } })
+                    .then((result) => {
+                        if (result.modifiedCount == 0) {
+                            GetCollection().insertOne({ username: toUser, minus_credits: [ credit ] });
+                        }
+                    });
+            }
+        }
+    ]
+}

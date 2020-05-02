@@ -133,6 +133,11 @@ class Telegram extends EventEmitter {
                         if (message.text) {
                             this.emit('message', message);
                         }
+
+                        // Sticker
+                        if (message.sticker) {
+                            this.emit('sticker', message);
+                        }
     
                         // New Chat Members
                         if (message.new_chat_members) {

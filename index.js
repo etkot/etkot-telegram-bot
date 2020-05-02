@@ -20,9 +20,20 @@ telegram.on('message', (update) => {
         let args = update.text.substr(1).split(' ');
         let cmd = args.shift().replace(`@${telegram.user.username}`, '');
 
-        if (commands[cmd]) {
-            commands[cmd].func(args, update);
+        if (commands.commands[cmd]) {
+            commands.commands[cmd].func(args, update);
         }
+    }
+});
+
+telegram.on('sticker', (update) => {
+    if (update.chat.id != Number(process.env.TG_CHAT)) {
+        return;
+    }
+
+    const func = commands.FindTrigger('sticker', update.sticker.file_unique_id);
+    if (func) {
+        func(update);
     }
 });
 

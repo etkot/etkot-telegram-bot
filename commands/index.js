@@ -1,6 +1,7 @@
 const fs = require('fs');
 
 let commands = {};
+let triggers = [];
 
 // Load commands
 let files = fs.readdirSync('./commands');
@@ -11,6 +12,10 @@ for (let file of files) {
         for (let c in moduleCommands) {
             if (moduleCommands[c].func) {
                 commands[c] = moduleCommands[c];
+            }
+            
+            for (let t in moduleCommands[c].triggers) {
+                triggers.push(moduleCommands[c].triggers[t]);
             }
         }
     }
@@ -23,7 +28,7 @@ for (let cmd in commands) {
     if (commands[cmd].aliases) {
         for (let alias of commands[cmd].aliases) {
             if (aliases[alias]) {
-                console.error(`Cannot create alias: Alias "${alias}" already exists`);
+                console.error(`Cannot create alias for "${cmd}": Alias "${alias}" already exists`);
             }
             else {
                 aliases[alias] = Object.assign({}, commands[cmd]);
@@ -43,4 +48,15 @@ for (let alias in aliases) {
     }
 }
 
-module.exports = commands;
+module.exports = {
+    commands: commands,
+    triggers: triggers,
+
+    FindTrigger: (type, event) => {
+        for (let trigger of triggers) {
+            if (trigger.type === type && trigger.on === event) {
+                return trigger.func;
+            }
+        }
+    }
+}
