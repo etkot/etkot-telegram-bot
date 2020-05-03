@@ -55,6 +55,9 @@ exports.socialcredit = {
             type: 'sticker',
             on: 'AgADAgADf3BGHA',
             func: (update) => {
+                if (update.reply_to_message === undefined)
+                    return;
+
                 const fromUser = update.from.username;
                 const toUser = update.reply_to_message.from.username;
                 
@@ -76,6 +79,9 @@ exports.socialcredit = {
             type: 'sticker',
             on: 'AgADAwADf3BGHA',
             func: (update) => {
+                if (update.reply_to_message === undefined)
+                    return;
+                
                 const fromUser = update.from.username;
                 const toUser = update.reply_to_message.from.username;
                 
