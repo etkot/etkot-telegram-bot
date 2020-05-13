@@ -47,18 +47,22 @@ class Telegram extends EventEmitter {
      */ 
     SendMethod(method) {
         return new Promise((resolve, reject) => {
-            https.get(this.botUrl + method, (res) => {        
-                res.on('data', (d) => {
-                    let data = JSON.parse(d);
-                    if (data.ok) {
-                        resolve(data.result);
-                    } else {
-                        reject(`Telegram error (${data.error_code}): ${data.description}`);
-                    }
+            try {
+                https.get(this.botUrl + method, (res) => {        
+                    res.on('data', (d) => {
+                        let data = JSON.parse(d);
+                        if (data.ok) {
+                            resolve(data.result);
+                        } else {
+                            reject(`Telegram error (${data.error_code}): ${data.description}`);
+                        }
+                    });
+                }).on('error', (e) => {
+                    reject(e);
                 });
-            }).on('error', (e) => {
-                reject(e);
-            });
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 
@@ -166,6 +170,7 @@ class Telegram extends EventEmitter {
             console.error(err);
             
             setTimeout(() => {
+                console.log('Restaring polling...');
                 this.StartPolling();
             }, 5000);
         });
