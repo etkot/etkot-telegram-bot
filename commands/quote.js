@@ -46,7 +46,6 @@ exports.addq = {
         let name = args.shift();
         let quote = args.join(' ');
         
-
         GetCollection().findOne({name, quote}, (err, result) => {
             console.log(result);
             if (result === null) {
