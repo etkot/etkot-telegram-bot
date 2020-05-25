@@ -18,7 +18,7 @@ exports.quote = {
     func: (args, update) => {
         let query = {};
         if (args.length > 0) {
-            query.name = args[0];
+            query.name = new RegExp(`^${args[0]}$`,'i');
         }
 
         GetCollection().find(query).toArray((err, docs) => {
