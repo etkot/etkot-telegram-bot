@@ -47,7 +47,6 @@ exports.addq = {
         let quote = args.join(' ');
         
         GetCollection().findOne({name, quote}, (err, result) => {
-            console.log(result);
             if (result === null) {
                 GetCollection().insertOne({ name, quote });
                 telegram.SendMessage(update.chat, `Quote lisätty`, { disable_notification: true });
@@ -64,7 +63,14 @@ exports.quotestats = {
     aliases: [ 'qs', 'qstats' ],
     func: (args, update) => {
         GetCollection().aggregate([ { $group : { _id : '$name', count : { $sum : 1 } } } ]).toArray((err, result) => {
-            result.sort(function(a, b) { return b.count - a.count } );
+            result.sort((a, b) => { 
+                if (b.count - a.count !== 0) {
+                    return b.count - a.count;
+                }
+                if (a._id > b._id) return 1;
+                if (a._id < b._id) return -1;
+                return 0;
+            });
 
             let str = '<b>Quote stats</b>\n';
             for (const user of result) {
