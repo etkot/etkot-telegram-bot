@@ -94,6 +94,24 @@ class Telegram extends EventEmitter {
     }
 
     /**
+     * Send a photo to a chat
+     * @param {(number|string|Object)} chat_id - ID of the chat
+     * @param {string} photo - URL of the photo
+     * @param {string} caption - Text to be sent
+     * @param {Object} [options] - Optional parameters
+     * @param {string} [options.parse_mode] - Send Markdown or HTML
+     * @param {boolean} [options.disable_web_page_preview] - Disables link previews for links in this message
+     * @param {boolean} [options.disable_notification] - Sends the message silently
+     * @param {number} [options.reply_to_message_id] - If the message is a reply, ID of the original message
+     * @param {Object} [options.reply_markup] - Additional interface options
+     * @returns {Promise} Telegram response
+     */ 
+    SendPhoto(chat_id, photo, caption, options) {
+        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id;
+        return this.SendMethod(`sendPhoto?${createUrl({ chat_id, photo, caption, options })}`);
+    }
+
+    /**
      * Send a dice to a chat
      * @param {(number|string|Object)} chat_id - ID of the chat
      * @param {Object} [options] - Optional parameters
