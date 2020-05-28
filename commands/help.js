@@ -4,7 +4,7 @@ exports.help = {
     usage: '/help [command]',
     aliases: [ 'h' ],
     func: (args, update) => {
-        const commands = require('./index');
+        const commands = require('./index').commands;
         let msg = '';
 
         if (args.length > 0) {
