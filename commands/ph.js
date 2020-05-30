@@ -3,7 +3,7 @@ const cheerio = require("cheerio")
 
 const { telegram } = require("../index")
 
-exports.meme = {
+exports.ph = {
     help: "Suomen top daily video",
     usage: "/ph",
     aliases: ["xxx", "fap"],
