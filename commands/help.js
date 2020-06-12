@@ -39,7 +39,7 @@ exports.usage = {
             msg = `Käyttö: /usage <command>`;
         }
         else {
-            msg = `Käyttö: ${commands[args[0]].usage}`;
+            msg = `Käyttö: ${commands.commands[args[0]].usage}`;
         }
 
         telegram.SendMessage(update.chat, msg, { disable_notification: true });
