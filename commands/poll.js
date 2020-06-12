@@ -2,21 +2,20 @@ const { telegram } = require('../index');
 const helpCommands = require('./help');
 
 const Send = (cmd, args, update, anonymous) => {
-    let question = '';
+    question = args.join(' ');
     let reply = undefined;
 
-    if (args.length < 1) {
-        if (update.reply_to_message) {
-            question = ' ';
-            reply = update.reply_to_message.message_id;
-        }
-        else {
-            helpCommands.usage.func([ cmd ], update);
-            return;
-        }
+    if (update.reply_to_message) {
+        reply = update.reply_to_message.message_id;
     }
-    else {
-        question = args.join(' ');
+
+    if (question === '') {
+        question = ' ';
+    }
+    
+    if (question === ' ' && !reply) {
+        helpCommands.usage.func([ cmd ], update);
+        return;
     }
 
     telegram.SendPoll(update.chat, question, [ 'tää', 'epätää' ], { is_anonymous: anonymous, disable_notification: true, reply_to_message_id: reply });
