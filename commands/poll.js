@@ -1,6 +1,78 @@
 const { telegram } = require('../index');
 const helpCommands = require('./help');
 
+const animals = [
+    'Supikoira',
+    'Ilves',
+    'Pesukarhu',
+    'Juovahyeena',
+    'Harjasusi',
+    'Seepramangusti',
+    'Vesikko',
+    'Nelisormimangusti',
+    'Kalastajakissa',
+    'Halli',
+    'harmaahylje',
+    'Siperiantiikeri',
+    'Lumileopardi',
+    'Hietakissa',
+    'Aasianleijona',
+    'Aavikkoilves',
+    'Jääkarhu',
+    'Amurinleopardi',
+    'Maakotka',
+    'Kuningasmerikotka',
+    'Hiirihaukka',
+    'Partakorppikotka',
+    'Gauri viidakkohärkä',
+    'Aksishirvi',
+    'Myskihärkä',
+    'Kaksikyttyräinen kameli',
+    'Siperian alppikauris',
+    'Kaspianuriaali',
+    'Nuubian vuorikauris',
+    'Turkmenian kierteissarvikauris',
+    'Kubaninturi',
+    'Sichuanin sinilammas',
+    'Kaukasianvuorikauris',
+    'Bukharanuriaali',
+    'Koira',
+    'Kissa',
+    'Bengalin Tiikeri',
+    'Boolilommi',
+    'Salamanteri',
+    'Elefantti',
+    'Leijona',
+    'Karhu',
+    'Hirvi',
+    'Peura',
+    'Valas',
+    'Delfiini',
+    'Jänis',
+    'Rusakko',
+    'Lepakko',
+    'Turri',
+    'Orava',
+    'Tero',
+    'Sorsa',
+    'Hyttynen',
+    'Kärpänen',
+    'Hämähakki',
+    'Tunturisopuli',
+    'Metsäsopuli',
+    'Punamyyrä',
+    'Harmaakuvemyyrä',
+    'Metsämyyrä',
+    'Vesimyyrä',
+    'Piisami',
+    'Idänkenttämyyrä',
+    'Kenttämyyrä',
+    'Peltomyyrä',
+    'Lapinmyyrä',
+];
+
+const RandomAnimal = () => animals[Math.floor(Math.random() * Math.floor(animals.length))];
+
 const Send = (cmd, args, update, anonymous) => {
     question = args.join(' ');
     let reply = undefined;
@@ -18,7 +90,7 @@ const Send = (cmd, args, update, anonymous) => {
         return;
     }
 
-    telegram.SendPoll(update.chat, question, [ 'tää', 'epätää' ], { is_anonymous: anonymous, disable_notification: true, reply_to_message_id: reply });
+    telegram.SendPoll(update.chat, question, [ 'tää', 'epätää', RandomAnimal() ], { is_anonymous: anonymous, disable_notification: true, reply_to_message_id: reply });
 }
 
 exports.poll = {
