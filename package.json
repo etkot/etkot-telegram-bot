@@ -12,7 +12,11 @@
   "dependencies": {
     "axios": "^0.19.2",
     "cheerio": "^1.0.0-rc.3",
+    "dayjs": "^1.8.34",
     "dotenv": "^8.2.0",
     "mongodb": "^3.5.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
   }
 }
