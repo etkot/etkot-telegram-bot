@@ -84,3 +84,29 @@ exports.menuReaktori = {
     telegram.SendMessage(update.chat, `*Reaktori:* \n ${menuString}`, { parse_mode: 'Markdown', disable_notification: true})
   }
 }
+
+exports.menu = {
+  help: 'Kertoo päivän menut',
+  usage: '/menus',
+  aliases: ['menus', 'food', 'm', 'ruoka'],
+  func: async (args, update) => {
+    const fullmenu = await fetchMenus()
+    const reaktoriMenu = fullmenu.data.restaurants_tty.res_reaktori.meals
+    const hertsiMenu = fullmenu.data.restaurants_tty.res_hertsi.meals
+    const newtonMenu = fullmenu.data.restaurants_tty.res_newton.meals
+
+    var i;
+    for (i = reaktoriMenu.length - 1; i >= 0; i -= 1) {
+      if (reaktoriMenu[i].kok === 'Jälkiruoka' || reaktoriMenu[i].kok === 'Salaattiaterian proteiiniosa') {
+        reaktoriMenu.splice(i, 1)
+      }
+    }
+
+    const menuRektoriString = createMenuString(reaktoriMenu)
+    const menuHertsiString = createMenuString(hertsiMenu)
+    const menuNewtonString = createMenuString(newtonMenu)
+
+    telegram.SendMessage(update.chat, `*Reaktori:*\n ${menuRektoriString}\n*Newton:*\n ${menuNewtonString}\n*Hertsi:*\n ${menuHertsiString}`,
+     { parse_mode: 'Markdown', disable_notification: true})
+  }
+}
