@@ -1,15 +1,26 @@
 const { telegram } = require('../index')
-const axios = require('axios')
-const dayjs = require('dayjs')
+const axios = require('axios')const dayjs = require('dayjs')
 const WeekOfYear = require('dayjs/plugin/weekOfYear')
 
 const weekDays = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la']
-
 dayjs.extend(WeekOfYear)
+
+const fetchVersion = async () => {
+    const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().week()}/v.json`
+    try {
+        const result = await axios.get(url)
+        return result.data.v
+    } catch {
+        console.log('Version not recieved')
+    }
+    return {}
+  }
 
 const fetchMenus = async () => {
     let date = new Date()
-    const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().week()}/8/${weekDays[date.getDay()]}.json`
+    let version = await fetchVersion()
+    //console.log(dayjs().year(), dayjs().week(), version, weekDays[date.getDay()])
+    const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().week()}/${version}/${weekDays[date.getDay()]}.json`
     try {
         const result = await axios.get(url)
         console.log('Got the goods')
@@ -128,8 +139,9 @@ exports.fondue = {
     usage: 'fondue',
     aliases: ['foodPoll', 'fp'],
     func: (args, update) => {
-        telegram.SendPoll(update.chat, 'Fondue?', ['Reaktori', 'Newton', 'Hertsi', 'Såås'], 
-            { disable_notification: true, is_anonymous: false,}
-        )
+        telegram.SendPoll(update.chat, 'Fondue?', ['Reaktori', 'Newton', 'Hertsi', 'Såås'], {
+            disable_notification: true,
+            is_anonymous: false,
+        })
     },
 }
