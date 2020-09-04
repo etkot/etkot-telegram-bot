@@ -1,5 +1,6 @@
 const { telegram } = require('../index')
-const axios = require('axios')const dayjs = require('dayjs')
+const axios = require('axios')
+const dayjs = require('dayjs')
 const WeekOfYear = require('dayjs/plugin/weekOfYear')
 
 const weekDays = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la']
