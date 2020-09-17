@@ -112,7 +112,7 @@ exports.addevent = {
         let dateTime = parseDateTime(date, time);
         
         GetCollection().insertOne({ dateTime: new Date(dateTime), description });
-        telegram.SendMessage(update.chat, `Tapahtuma lisätty lisätty`, { disable_notification: true });
+        telegram.SendMessage(update.chat, `Tapahtuma lisätty`, { disable_notification: true });
     }
 }
 
