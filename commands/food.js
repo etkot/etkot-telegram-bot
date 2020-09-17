@@ -59,7 +59,7 @@ exports.menuNewton = {
 
         const menuString = createMenuString(newtonMenu)
 
-        telegram.SendMessage(update.chat, `*Newton:* \n ${menuString}`, {
+        telegram.SendMessage(update.chat, `<b>Newton:</b> \n ${menuString}`, {
             parse_mode: 'HTML',
             disable_notification: true,
         })
@@ -76,7 +76,7 @@ exports.menuHertsi = {
 
         const menuString = createMenuString(hertsiMenu)
 
-        telegram.SendMessage(update.chat, `*Hertsi:* \n ${menuString}`, {
+        telegram.SendMessage(update.chat, `<b>Hertsi:</b> \n ${menuString}`, {
             parse_mode: 'HTML',
             disable_notification: true,
         })
@@ -99,7 +99,7 @@ exports.menuReaktori = {
 
         const menuString = createMenuString(reaktoriMenu)
 
-        telegram.SendMessage(update.chat, `*Reaktori:* \n ${menuString}`, {
+        telegram.SendMessage(update.chat, `<b>Reaktori:</b> \n ${menuString}`, {
             parse_mode: 'HTML',
             disable_notification: true,
         })
@@ -129,7 +129,7 @@ exports.menu = {
 
         telegram.SendMessage(
             update.chat,
-            `*Reaktori:*\n ${menuRektoriString}\n*Newton:*\n ${menuNewtonString}\n*Hertsi:*\n ${menuHertsiString}`,
+            `<b>Reaktori:</b>\n ${menuRektoriString}\n<b>Newton:</b>\n ${menuNewtonString}\n<b>Hertsi:</b>\n ${menuHertsiString}`,
             { parse_mode: 'HTML', disable_notification: true }
         )
     },
