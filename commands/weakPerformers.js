@@ -14,7 +14,7 @@ let GetCollection = () => {
 exports.weakPerformers = {
     help: 'Listaa heikot suorittajat ',
     usage: '/heikot',
-    aliases: ['heikot', 'h', 'weakPeople', 'weak'],
+    aliases: ['heikot', 'weakPeople', 'weak'],
     func: (args, update) => {
         GetCollection().find({}).toArray((err, docs) => {
             let msg = '<b>Heikkojen suorittajien lista:</b>\n'
@@ -29,7 +29,7 @@ exports.weakPerformers = {
 exports.addPerformer = {
     help: 'Lisää uuden heikon suorittaja',
     usage: '/lisääHeikko',
-    aliases: ['lisääHeikko', 'addPerformer', 'addH', 'aH'],
+    aliases: ['lisääHeikko', 'addH', 'aH'],
     func: (args, update) => {
         if (args.length < 1) {
             helpCommands.usage.func([ 'addPerformer' ], update);
