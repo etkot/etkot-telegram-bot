@@ -1,5 +1,5 @@
 const { telegram } = require('../index')
-const mongoUtil = require('../mongoUtil');
+const mongoUtil = require('../mongoUtil')
 const axios = require('axios')
 const CronJob = require('cron').CronJob
 const dayjs = require('dayjs')
@@ -14,7 +14,7 @@ let GetCollection = () => {
         collection = mongoUtil.getDb().collection('foods')
     }
 
-    return collection;
+    return collection
 }
 
 const fetchVersion = async () => {
@@ -26,7 +26,7 @@ const fetchVersion = async () => {
         console.log('Version not recieved')
     }
     return {}
-  }
+}
 
 const fetchMenus = async () => {
     let date = new Date()
@@ -60,7 +60,7 @@ const createMenuString = (menu) => {
     return menuString
 }
 
-const foodAlert = new CronJob('0 10 * * * *', function() {
+const foodAlert = new CronJob('0 10 * * * *', function () {
     GetCollection().find({}).toArray(async (err, docs) => {
         let foods = []
         for (let doc of docs) {
@@ -68,23 +68,21 @@ const foodAlert = new CronJob('0 10 * * * *', function() {
         }
 
         const fullmenu = await fetchMenus()
-        
+
         let newtonFilteredFoods = []
-        fullmenu.data.restaurants_tty.res_newton.meals.forEach(meal => {
+        fullmenu.data.restaurants_tty.res_newton.meals.forEach((meal) => {
             if (foods.includes(meal)) {
                 newtonFilteredFoods.push(meal)
             }
         })
-
         let reaktoriFilteredFoods = []
-        fullmenu.data.restaurants_tty.res_reaktori.meals.forEach(meal => {
+        fullmenu.data.restaurants_tty.res_reaktori.meals.forEach((meal) => {
             if (foods.includes(meal)) {
                 reaktoriFilteredFoods.push(meal)
             }
         })
-        
         let hertsiFilteredFoods = []
-        fullmenu.data.restaurants_tty.res_hertsi.meals.forEach(meal => {
+        fullmenu.data.restaurants_tty.res_hertsi.meals.forEach((meal) => {
             if (foods.includes(meal)) {
                 hertsiFilteredFoods.push(meal)
             }
@@ -92,27 +90,28 @@ const foodAlert = new CronJob('0 10 * * * *', function() {
 
         let msg = '<b>Tarjolla olevat lempiruuat:</b>\n'
 
-        if (newtonFilteredFoods !== null) {
+        if (newtonFilteredFoods.length !== 0) {
             msg += `<b>Newton:</b>\n`
             for (let food of newtonFilteredFoods) {
                 msg += `  ${food},\n`
             }
         }
-        if (reaktoriFilteredFoods !== null) {
+        if (reaktoriFilteredFoods.length !== 0) {
             msg += `<b>Newton:</b>\n`
             for (let food of reaktoriFilteredFoods) {
                 msg += `  ${food},\n`
             }
         }
-        if (hertsiFilteredFoods !== null) {
+        if (hertsiFilteredFoods.length !== 0) {
             msg += `<b>Newton:</b>\n`
             for (let food of hertsiFilteredFoods) {
                 msg += `  ${food},\n`
             }
         }
 
-        telegram.SendMessage(update.chat, msg, { disable_notification: true, parse_mode: 'html' })
-        
+        if (hertsiFilteredFoods.length !== 0 || reaktoriFilteredFoods.length !== 0 || hertsiFilteredFoods.length !== 0) {
+            telegram.SendMessage(update.chat, msg, { disable_notification: true, parse_mode: 'html' })
+        }
     })
 })
 
@@ -123,7 +122,7 @@ exports.enableFoodAlerts = {
     func: (args, update) => {
         foodAlert.start()
         telegram.SendMessage(update.chat, 'FoodAlerts enabled', { disable_notification: true, parse_mode: 'html' })
-    }
+    },
 }
 
 exports.disableFoodAlerts = {
@@ -133,7 +132,7 @@ exports.disableFoodAlerts = {
     func: (args, update) => {
         foodAlert.stop()
         telegram.SendMessage(update.chat, 'FoodAlerts disabled', { disable_notification: true, parse_mode: 'html' })
-    }
+    },
 }
 
 exports.menuNewton = {
@@ -240,25 +239,21 @@ exports.addFood = {
     aliases: ['lisääRuoka', 'addF', 'aF'],
     func: (args, update) => {
         if (args.length < 1) {
-            helpCommands.usage.func([ 'addFood' ], update);
-            return;
+            helpCommands.usage.func(['addFood'], update)
+            return
         }
 
         let food = args.join(' ')
 
-        GetCollection().findOne({food}, (err, result) => {
-            if (result === null ) {
+        GetCollection().findOne({ food }, (err, result) => {
+            if (result === null) {
                 GetCollection().insertOne({ food })
-                telegram.SendMessage(update.chat, 
-                    `Lempiruoka lisätty`, 
-                    { disable_notification: true })
+                telegram.SendMessage(update.chat, `Lempiruoka lisätty`, { disable_notification: true })
             } else {
-                telegram.SendMessage(update.chat, 
-                    `Lempiruoka on jo listassa`,
-                    { disable_notification: true })
+                telegram.SendMessage(update.chat, `Lempiruoka on jo listassa`, { disable_notification: true })
             }
         })
-    }
+    },
 }
 
 exports.foods = {
