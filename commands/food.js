@@ -60,7 +60,8 @@ const createMenuString = (menu) => {
     return menuString
 }
 
-const foodAlert = new CronJob('* * * * * *', function () {
+// WARNING! You are entering a manual code zone
+const foodAlert = new CronJob('0 10 * * * *', function () {
     GetCollection().find({}).toArray(async (err, docs) => {
         let foods = []
         for (let doc of docs) {
