@@ -61,7 +61,7 @@ const createMenuString = (menu) => {
 }
 
 // WARNING! You are entering a manual code zone
-const foodAlert = new CronJob('0 10 * * * *', function () {
+const foodAlert = new CronJob('* * * * * *', function () {
     GetCollection().find({}).toArray(async (err, docs) => {
         let foods = []
         for (let doc of docs) {
@@ -103,6 +103,7 @@ const foodAlert = new CronJob('0 10 * * * *', function () {
 
         let msg = '<b>Tarjolla olevat lempiruuat:</b>\n'
 
+        //console.log(newtonFilteredFoods, newtonFilteredFoods.length)
         if (newtonFilteredFoods.length !== 0) {
             msg += `<b>Newton:</b>\n`
             for (let food of newtonFilteredFoods) {
@@ -123,7 +124,7 @@ const foodAlert = new CronJob('0 10 * * * *', function () {
         }
 
         if (hertsiFilteredFoods.length !== 0 || reaktoriFilteredFoods.length !== 0 || hertsiFilteredFoods.length !== 0) {
-            telegram.SendMessage(update.chat, msg, { disable_notification: true, parse_mode: 'html' })
+            telegram.SendMessage(process.env.TG_CHAT, msg, { disable_notification: true, parse_mode: 'html' })
         }
     })
 })
