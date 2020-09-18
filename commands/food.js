@@ -101,9 +101,8 @@ const foodAlert = new CronJob('* * * * * *', function () {
             }
         })
 
-        let msg = '<b>Tarjolla olevat lempiruuat:</b>\n'
+        let msg = 'Tarjolla olevat lempiruuat:\n'
 
-        //console.log(newtonFilteredFoods, newtonFilteredFoods.length)
         if (newtonFilteredFoods.length !== 0) {
             msg += `<b>Newton:</b>\n`
             for (let food of newtonFilteredFoods) {
@@ -123,7 +122,7 @@ const foodAlert = new CronJob('* * * * * *', function () {
             }
         }
 
-        if (hertsiFilteredFoods.length !== 0 || reaktoriFilteredFoods.length !== 0 || hertsiFilteredFoods.length !== 0) {
+        if (newtonFilteredFoods.length !== 0 || reaktoriFilteredFoods.length !== 0 || hertsiFilteredFoods.length !== 0) {
             telegram.SendMessage(process.env.TG_CHAT, msg, { disable_notification: true, parse_mode: 'html' })
         }
     })
