@@ -82,14 +82,22 @@ const foodAlert = new CronJob('0 10 * * * *', function () {
         })
         let reaktoriFilteredFoods = []
         fullmenu.data.restaurants_tty.res_reaktori.meals.forEach((meal) => {
-            if (foods.includes(meal)) {
-                reaktoriFilteredFoods.push(meal)
+            for (food of foods) {
+                meal.mo.forEach((item) => {
+                    if (item.mpn == food) {
+                        reaktoriFilteredFoods.push(food)
+                    }
+                })
             }
         })
         let hertsiFilteredFoods = []
         fullmenu.data.restaurants_tty.res_hertsi.meals.forEach((meal) => {
-            if (foods.includes(meal)) {
-                hertsiFilteredFoods.push(meal)
+            for (food of foods) {
+                meal.mo.forEach((item) => {
+                    if (item.mpn == food) {
+                        hertsiFilteredFoods.push(food)
+                    }
+                })
             }
         })
 
