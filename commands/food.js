@@ -60,7 +60,7 @@ const createMenuString = (menu) => {
     return menuString
 }
 
-const foodAlert = new CronJob('0 10 * * * *', function () {
+const foodAlert = new CronJob('* * * * * *', function () {
     GetCollection().find({}).toArray(async (err, docs) => {
         let foods = []
         for (let doc of docs) {
@@ -71,8 +71,12 @@ const foodAlert = new CronJob('0 10 * * * *', function () {
 
         let newtonFilteredFoods = []
         fullmenu.data.restaurants_tty.res_newton.meals.forEach((meal) => {
-            if (foods.includes(meal)) {
-                newtonFilteredFoods.push(meal)
+            for (food of foods) {
+                meal.mo.forEach((item) => {
+                    if (item.mpn == food) {
+                        newtonFilteredFoods.push(food)
+                    }
+                })
             }
         })
         let reaktoriFilteredFoods = []
@@ -121,6 +125,7 @@ exports.enableFoodAlerts = {
     aliases: ['EFA'],
     func: (args, update) => {
         foodAlert.start()
+        console.log('FoodAlerts enabled')
         telegram.SendMessage(update.chat, 'FoodAlerts enabled', { disable_notification: true, parse_mode: 'html' })
     },
 }
@@ -131,6 +136,7 @@ exports.disableFoodAlerts = {
     aliases: ['DFA'],
     func: (args, update) => {
         foodAlert.stop()
+        console.log('FoodAlerts disabled')
         telegram.SendMessage(update.chat, 'FoodAlerts disabled', { disable_notification: true, parse_mode: 'html' })
     },
 }
