@@ -1,10 +1,21 @@
 const { telegram } = require('../index')
+const mongoUtil = require('../mongoUtil')
 const axios = require('axios')
+const CronJob = require('cron').CronJob
 const dayjs = require('dayjs')
 const WeekOfYear = require('dayjs/plugin/weekOfYear')
 
 const weekDays = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la']
 dayjs.extend(WeekOfYear)
+
+let collection = undefined
+let GetCollection = () => {
+    if (!collection) {
+        collection = mongoUtil.getDb().collection('foods')
+    }
+
+    return collection
+}
 
 const fetchVersion = async () => {
     const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().week()}/v.json`
@@ -15,7 +26,7 @@ const fetchVersion = async () => {
         console.log('Version not recieved')
     }
     return {}
-  }
+}
 
 const fetchMenus = async () => {
     let date = new Date()
@@ -47,6 +58,96 @@ const createMenuString = (menu) => {
     menuString = menuString.slice(0, -2)
 
     return menuString
+}
+
+// WARNING! You are entering a manual code zone
+const foodAlert = new CronJob('0 10 * * * *', function () {
+    GetCollection().find({}).toArray(async (err, docs) => {
+        let foods = []
+        for (let doc of docs) {
+            foods.push(doc.food)
+        }
+
+        const fullmenu = await fetchMenus()
+
+        let newtonFilteredFoods = []
+        fullmenu.data.restaurants_tty.res_newton.meals.forEach((meal) => {
+            for (food of foods) {
+                meal.mo.forEach((item) => {
+                    if (item.mpn == food) {
+                        newtonFilteredFoods.push(food)
+                    }
+                })
+            }
+        })
+        let reaktoriFilteredFoods = []
+        fullmenu.data.restaurants_tty.res_reaktori.meals.forEach((meal) => {
+            for (food of foods) {
+                meal.mo.forEach((item) => {
+                    if (item.mpn == food) {
+                        reaktoriFilteredFoods.push(food)
+                    }
+                })
+            }
+        })
+        let hertsiFilteredFoods = []
+        fullmenu.data.restaurants_tty.res_hertsi.meals.forEach((meal) => {
+            for (food of foods) {
+                meal.mo.forEach((item) => {
+                    if (item.mpn == food) {
+                        hertsiFilteredFoods.push(food)
+                    }
+                })
+            }
+        })
+
+        let msg = 'Tarjolla olevat lempiruuat:\n'
+
+        if (newtonFilteredFoods.length !== 0) {
+            msg += `<b>Newton:</b>\n`
+            for (let food of newtonFilteredFoods) {
+                msg += `  ${food},\n`
+            }
+        }
+        if (reaktoriFilteredFoods.length !== 0) {
+            msg += `<b>Newton:</b>\n`
+            for (let food of reaktoriFilteredFoods) {
+                msg += `  ${food},\n`
+            }
+        }
+        if (hertsiFilteredFoods.length !== 0) {
+            msg += `<b>Newton:</b>\n`
+            for (let food of hertsiFilteredFoods) {
+                msg += `  ${food},\n`
+            }
+        }
+
+        if (newtonFilteredFoods.length !== 0 || reaktoriFilteredFoods.length !== 0 || hertsiFilteredFoods.length !== 0) {
+            telegram.SendMessage(process.env.TG_CHAT, msg, { disable_notification: true, parse_mode: 'html' })
+        }
+    })
+})
+
+exports.enableFoodAlerts = {
+    help: 'Tarkistaa päivittäin onko lempiruokia saatavilla',
+    usage: '/enableFoodAlerts',
+    aliases: ['EFA'],
+    func: (args, update) => {
+        foodAlert.start()
+        console.log('FoodAlerts enabled')
+        telegram.SendMessage(update.chat, 'FoodAlerts enabled', { disable_notification: true, parse_mode: 'html' })
+    },
+}
+
+exports.disableFoodAlerts = {
+    help: 'Lopettaa lempiruokien tarkistamisen',
+    usage: '/disableFoodAlerts',
+    aliases: ['DFA'],
+    func: (args, update) => {
+        foodAlert.stop()
+        console.log('FoodAlerts disabled')
+        telegram.SendMessage(update.chat, 'FoodAlerts disabled', { disable_notification: true, parse_mode: 'html' })
+    },
 }
 
 exports.menuNewton = {
@@ -143,6 +244,44 @@ exports.fondue = {
         telegram.SendPoll(update.chat, 'Fondue?', ['Reaktori', 'Newton', 'Hertsi', 'Såås'], {
             disable_notification: true,
             is_anonymous: false,
+        })
+    },
+}
+
+exports.addFood = {
+    help: 'Lisää uuden lempiruuan',
+    usage: '/addFood',
+    aliases: ['lisääRuoka', 'addF', 'aF'],
+    func: (args, update) => {
+        if (args.length < 1) {
+            helpCommands.usage.func(['addFood'], update)
+            return
+        }
+
+        let food = args.join(' ')
+
+        GetCollection().findOne({ food }, (err, result) => {
+            if (result === null) {
+                GetCollection().insertOne({ food })
+                telegram.SendMessage(update.chat, `Lempiruoka lisätty`, { disable_notification: true })
+            } else {
+                telegram.SendMessage(update.chat, `Lempiruoka on jo listassa`, { disable_notification: true })
+            }
+        })
+    },
+}
+
+exports.foods = {
+    help: 'Listaa tallessa olevat lempiruuat',
+    usage: '/foods',
+    aliases: ['lempiruuat'],
+    func: (args, update) => {
+        GetCollection().find({}).toArray((err, docs) => {
+            let msg = '<b>Lempiruuat:</b>\n'
+            for (let doc of docs) {
+                msg += `  ${doc.food}\n`
+            }
+            telegram.SendMessage(update.chat, msg, { disable_notification: true, parse_mode: 'html' })
         })
     },
 }
