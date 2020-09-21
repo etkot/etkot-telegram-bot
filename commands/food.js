@@ -128,6 +128,8 @@ const foodAlert = new CronJob('0 10 * * * *', function () {
     })
 })
 
+foodAlert.start()
+
 exports.enableFoodAlerts = {
     help: 'Tarkistaa päivittäin onko lempiruokia saatavilla',
     usage: '/enableFoodAlerts',
