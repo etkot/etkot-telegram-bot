@@ -60,8 +60,23 @@ const createMenuString = (menu) => {
     return menuString
 }
 
+const createPizzaString = (menu) => {
+    var pizzaString = '1 '
+    var mealNumber = 1
+
+    menu[0].mo.forEach((element) => {
+        pizzaString += element.mpn
+        pizzaString += ', '
+        mealNumber += 1
+        pizzaString += `\n ${mealNumber} `
+    })
+    pizzaString = pizzaString.slice(0, -2)
+
+    return pizzaString
+}
+
 // WARNING! You are entering a manual code zone
-const foodAlert = new CronJob('0 10 * * * *', function () {
+const foodAlert = new CronJob('0 10 * * *', function () {
     GetCollection().find({}).toArray(async (err, docs) => {
         let foods = []
         for (let doc of docs) {
@@ -169,6 +184,23 @@ exports.menuNewton = {
     },
 }
 
+exports.pizza = {
+    help: 'Kertoo Newtonin pizza-menun',
+    usage: '/pizza',
+    aliases: ['pitsa'],
+    func: async (args, update) => {
+        const fullmenu = await fetchMenus()
+        const newtonPizza = fullmenu.data.restaurants_tty.res_newton_street.meals
+
+        const menuString = createPizzaString(newtonPizza)
+
+        telegram.SendMessage(update.chat, `<b>Newton Pizza:</b> \n ${menuString}`, {
+            parse_mode: 'HTML',
+            disable_notification: true,
+        })
+    },
+}
+
 exports.menuHertsi = {
     help: 'Kertoo Hertsin menun',
     usage: '/menuHertsi',
@@ -218,6 +250,7 @@ exports.menu = {
         const reaktoriMenu = fullmenu.data.restaurants_tty.res_reaktori.meals
         const hertsiMenu = fullmenu.data.restaurants_tty.res_hertsi.meals
         const newtonMenu = fullmenu.data.restaurants_tty.res_newton.meals
+        const newtonPizza = fullmenu.data.restaurants_tty.res_newton_street.meals
 
         var i
         for (i = reaktoriMenu.length - 1; i >= 0; i -= 1) {
@@ -229,10 +262,11 @@ exports.menu = {
         const menuRektoriString = createMenuString(reaktoriMenu)
         const menuHertsiString = createMenuString(hertsiMenu)
         const menuNewtonString = createMenuString(newtonMenu)
+        const menuNewtonPizzaString = createPizzaString(newtonPizza)
 
         telegram.SendMessage(
             update.chat,
-            `<b>Reaktori:</b>\n ${menuRektoriString}\n<b>Newton:</b>\n ${menuNewtonString}\n<b>Hertsi:</b>\n ${menuHertsiString}`,
+            `<b>Reaktori:</b>\n ${menuRektoriString}\n<b>Newton:</b>\n ${menuNewtonString}\n<b>Newton Pizza:</b>\n ${menuNewtonPizzaString}\n<b>Hertsi:</b>\n ${menuHertsiString}`,
             { parse_mode: 'HTML', disable_notification: true }
         )
     },
