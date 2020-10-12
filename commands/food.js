@@ -187,12 +187,12 @@ exports.menuNewton = {
 exports.pizza = {
     help: 'Kertoo Newtonin pizza-menun',
     usage: '/pizza',
-    aliases: ['pitsa'],
+    aliases: ['pitsa', 'pistsa'],
     func: async (args, update) => {
         const fullmenu = await fetchMenus()
         const newtonPizza = fullmenu.data.restaurants_tty.res_newton_street.meals
 
-        const menuString = createPizzaString(newtonPizza)
+        const menuString = newtonPizza.length >= 1 ? createMenuString(newtonPizza) : 'Ei ole :('
 
         telegram.SendMessage(update.chat, `<b>Newton Pizza:</b> \n ${menuString}`, {
             parse_mode: 'HTML',
@@ -262,11 +262,11 @@ exports.menu = {
         const menuRektoriString = createMenuString(reaktoriMenu)
         const menuHertsiString = createMenuString(hertsiMenu)
         const menuNewtonString = createMenuString(newtonMenu)
-        const menuNewtonPizzaString = createPizzaString(newtonPizza)
+        const menuPizzaString = newtonPizza.length >= 1 ? createMenuString(newtonPizza) : 'Ei ole :( \n'
 
         telegram.SendMessage(
             update.chat,
-            `<b>Reaktori:</b>\n ${menuRektoriString}\n<b>Newton:</b>\n ${menuNewtonString}\n<b>Newton Pizza:</b>\n ${menuNewtonPizzaString}\n<b>Hertsi:</b>\n ${menuHertsiString}`,
+            `<b>Reaktori:</b>\n ${menuRektoriString}\n<b>Newton:</b>\n ${menuNewtonString}\n<b>Newton Pizza:</b>\n ${menuPizzaString}\n<b>Hertsi:</b>\n ${menuHertsiString}`,
             { parse_mode: 'HTML', disable_notification: true }
         )
     },
