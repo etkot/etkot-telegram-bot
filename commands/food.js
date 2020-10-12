@@ -192,7 +192,7 @@ exports.pizza = {
         const fullmenu = await fetchMenus()
         const newtonPizza = fullmenu.data.restaurants_tty.res_newton_street.meals
 
-        const menuString = newtonPizza.length >= 1 ? createMenuString(newtonPizza) : 'Ei ole :('
+        const menuString = newtonPizza.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :('
 
         telegram.SendMessage(update.chat, `<b>Newton Pizza:</b> \n ${menuString}`, {
             parse_mode: 'HTML',
@@ -262,7 +262,7 @@ exports.menu = {
         const menuRektoriString = createMenuString(reaktoriMenu)
         const menuHertsiString = createMenuString(hertsiMenu)
         const menuNewtonString = createMenuString(newtonMenu)
-        const menuPizzaString = newtonPizza.length >= 1 ? createMenuString(newtonPizza) : 'Ei ole :( \n'
+        const menuPizzaString = newtonPizza.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :( \n'
 
         telegram.SendMessage(
             update.chat,
