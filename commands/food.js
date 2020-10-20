@@ -280,6 +280,7 @@ exports.fondue = {
         telegram.SendPoll(update.chat, 'Fondue?', ['Reaktori', 'Newton', 'Hertsi', 'Såås'], {
             disable_notification: true,
             is_anonymous: false,
+            allows_multiple_answers: true,
         })
     },
 }
