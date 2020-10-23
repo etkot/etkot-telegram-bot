@@ -77,7 +77,7 @@ const parseDateTime = (date, time) => {
 exports.calendar = {
     help: 'Lähettää kaikki tulevat tapahtumat',
     usage: '/calendar',
-    aliases: [ 'cal', 'kalenteri' ],
+    aliases: [ 'cal', 'kalenteri', 'events' ],
     func: (args, update) => {
         GetCollection().find({ dateTime: { $gte: new Date() } }).sort({dateTime: 1}).toArray((err, docs) => {
             if (docs.length > 0) {
