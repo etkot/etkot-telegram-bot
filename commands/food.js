@@ -125,13 +125,13 @@ const foodAlert = new CronJob('0 10 * * *', function () {
             }
         }
         if (reaktoriFilteredFoods.length !== 0) {
-            msg += `<b>Newton:</b>\n`
+            msg += `<b>Reaktori:</b>\n`
             for (let food of reaktoriFilteredFoods) {
                 msg += `  ${food},\n`
             }
         }
         if (hertsiFilteredFoods.length !== 0) {
-            msg += `<b>Newton:</b>\n`
+            msg += `<b>Hertsi:</b>\n`
             for (let food of hertsiFilteredFoods) {
                 msg += `  ${food},\n`
             }
