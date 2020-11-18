@@ -43,11 +43,13 @@ exports.christmas = {
             telegram.SendMessage(update.chat, 'Ei nyt ole joulukuu!')
         } else if (today.format() === christmasDay.format()) {
             telegram.SendMessage(update.chat, 'Hyvää joulua!', { disable_notification: true, parse_mode: 'html' })
+        } else if (today.format() > christmasDay.format()) {
+            telegram.SendMessage(update.chat, 'Joulu meni jo :D', { disable_notification: true, parse_mode: 'html' })
         } else {
             let message_id = null
             telegram.SendMessage(update.chat, 'Avataan luukkua!!').then((res) => (message_id = res.message_id))
             telegram
-                .SendLocalPhoto(update.chat, images[today.get('date') - 1], `${today.get('date')}`, {
+                .SendLocalPhoto(update.chat, images[today.get('date') - 1], `Luukku ${today.get('date')}`, {
                     disable_notification: true,
                     parse_mode: 'html',
                 })
