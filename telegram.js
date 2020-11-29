@@ -1,24 +1,27 @@
-const https = require('https');
-const EventEmitter = require('events');
+const https = require('https')
+const EventEmitter = require('events')
+const Axios = require('axios')
+const FormData = require('form-data')
+const fs = require('fs')
 
 const createUrl = function (args, options) {
-    let str = '';
+    let str = ''
 
     for (let i in args) {
-        if (args[i] === undefined) continue;
+        if (args[i] === undefined) continue
 
-        str += encodeURIComponent(i);
-        str += '=';
-        str += encodeURIComponent(args[i]);
-        str += '&';
+        str += encodeURIComponent(i)
+        str += '='
+        str += encodeURIComponent(args[i])
+        str += '&'
     }
 
     if (options) {
-        str += createUrl(options);
-        str += '&';
+        str += createUrl(options)
+        str += '&'
     }
 
-    return str.substring(0, str.length - 1);
+    return str.substring(0, str.length - 1)
 }
 
 class Telegram extends EventEmitter {
@@ -28,16 +31,15 @@ class Telegram extends EventEmitter {
      * @param {string} token - Telegram bot token
      */
     constructor(token) {
-        super();
+        super()
 
-        this.botUrl = `https://api.telegram.org/bot${token}/`;
-        this._lastMessageId = -1;
+        this.botUrl = `https://api.telegram.org/bot${token}/`
+        this._lastMessageId = -1
 
         this.SendMethod('getMe').then((response) => {
-            this.user = response;
-        });
+            this.user = response
+        })
     }
-
 
     /**
      * Method for sending any Telegram method.
@@ -48,32 +50,32 @@ class Telegram extends EventEmitter {
     SendMethod(method) {
         return new Promise((resolve, reject) => {
             try {
-                https.get(this.botUrl + method, (res) => {
-                    res.on('data', (d) => {
-                        let data = JSON.parse(d);
-                        if (data.ok) {
-                            resolve(data.result);
-                        } else {
-                            reject(`Telegram error (${data.error_code}): ${data.description} (method: ${method})`);
-                        }
-                    });
-                }).on('error', (e) => {
-                    reject(e);
-                });
+                https
+                    .get(this.botUrl + method, (res) => {
+                        res.on('data', (d) => {
+                            let data = JSON.parse(d)
+                            if (data.ok) {
+                                resolve(data.result)
+                            } else {
+                                reject(`Telegram error (${data.error_code}): ${data.description} (method: ${method})`)
+                            }
+                        })
+                    })
+                    .on('error', (e) => {
+                        reject(e)
+                    })
             } catch (error) {
-                reject(error);
+                reject(error)
             }
-        });
+        })
     }
-
-
 
     /**
      * Gets bot information
      * @returns {Promise} Telegram response
      */
     GetMe() {
-        return this.SendMethod('getMe');
+        return this.SendMethod('getMe')
     }
 
     /**
@@ -89,8 +91,8 @@ class Telegram extends EventEmitter {
      * @returns {Promise} Telegram response
      */
     SendMessage(chat_id, text, options) {
-        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id;
-        return this.SendMethod(`sendMessage?${createUrl({ chat_id, text }, options)}`);
+        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id
+        return this.SendMethod(`sendMessage?${createUrl({ chat_id, text }, options)}`)
     }
 
     /**
@@ -107,8 +109,53 @@ class Telegram extends EventEmitter {
      * @returns {Promise} Telegram response
      */
     SendPhoto(chat_id, photo, caption, options) {
-        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id;
-        return this.SendMethod(`sendPhoto?${createUrl({ chat_id, photo, caption }, options)}`);
+        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id
+        return this.SendMethod(`sendPhoto?${createUrl({ chat_id, photo, caption }, options)}`)
+    }
+
+    /**
+     * Send a photo to a chat
+     * @param {(number|string|Object)} chat_id - ID of the chat
+     * @param {string} photo - Location of the photo
+     * @param {string} caption - Text to be sent
+     * @param {Object} [options] - Optional parameters
+     * @param {string} [options.parse_mode] - Send Markdown or HTML
+     * @param {boolean} [options.disable_web_page_preview] - Disables link previews for links in this message
+     * @param {boolean} [options.disable_notification] - Sends the message silently
+     * @param {number} [options.reply_to_message_id] - If the message is a reply, ID of the original message
+     * @param {Object} [options.reply_markup] - Additional interface options
+     * @returns {Promise} Telegram response
+     */
+    SendLocalPhoto(chat_id, photo, caption, options) {
+        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id
+        return new Promise(async (resolve, reject) => {
+            try {
+                const form = new FormData()
+                form.append('chat_id', chat_id)
+                form.append('caption', caption)
+                form.append('photo', fs.createReadStream(`${__dirname}/${photo}`), {
+                    filename: photo,
+                })
+
+                if (options) {
+                    for (const key in options) {
+                        if (options.hasOwnProperty(key)) {
+                            form.append(key, options[key].toString())
+                        }
+                    }
+                }
+
+                const res = await Axios.post(`${this.botUrl}sendPhoto`, form, {
+                    headers: form.getHeaders(),
+                })
+                resolve(res.response)
+            } catch (error) {
+                if (error.response) {
+                    reject(`Telegram error (${error.response.data.error_code}): ${error.response.data.description}`)
+                }
+                reject(error)
+            }
+        })
     }
 
     /**
@@ -121,8 +168,8 @@ class Telegram extends EventEmitter {
      * @returns {Promise} Telegram response
      */
     SendDice(chat_id, options) {
-        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id;
-        return this.SendMethod(`sendDice?${createUrl({ chat_id }, options)}`);
+        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id
+        return this.SendMethod(`sendDice?${createUrl({ chat_id }, options)}`)
     }
 
     /**
@@ -146,8 +193,10 @@ class Telegram extends EventEmitter {
      * @returns {Promise} Telegram response
      */
     SendPoll(chat_id, question, anwsers, options) {
-        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id;
-        return this.SendMethod(`sendPoll?${createUrl({ chat_id, question, options: JSON.stringify(anwsers) }, options)}`);
+        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id
+        return this.SendMethod(
+            `sendPoll?${createUrl({ chat_id, question, options: JSON.stringify(anwsers) }, options)}`
+        )
     }
 
     /**
@@ -156,68 +205,79 @@ class Telegram extends EventEmitter {
      * @returns {Promise} Telegram response
      */
     LeaveChat(chat_id) {
-        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id;
-        return this.SendMethod(`leaveChat?${createUrl({ chat_id })}`);
+        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id
+        return this.SendMethod(`leaveChat?${createUrl({ chat_id })}`)
     }
 
-
+    /**
+     * Leaves a chat
+     * @param {(number|string|Object)} chat_id - ID of the chat
+     * @param {string} message_id - Identifier of the message to delete
+     * @returns {Promise} Telegram response
+     */
+    DeleteMessage(chat_id, message_id) {
+        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id
+        return this.SendMethod(`deleteMessage?${createUrl({ chat_id, message_id })}`)
+    }
 
     /**
      * Starts the polling process
      */
     StartPolling() {
-        this.SendMethod(`getUpdates?offset=${this._lastMessageId}`).then((response) => {
-            if (response.length > 0) {
-                this._lastMessageId = response[response.length - 1].update_id + 1;
+        this.SendMethod(`getUpdates?offset=${this._lastMessageId}`)
+            .then((response) => {
+                if (response.length > 0) {
+                    this._lastMessageId = response[response.length - 1].update_id + 1
 
-                for (let update of response) {
-                    // All updates
-                    this.emit('update', update);
+                    for (let update of response) {
+                        // All updates
+                        this.emit('update', update)
 
-                    let message = update.message;
-                    if (message) {
-                        // Message
-                        if (message.text) {
-                            this.emit('message', message);
-                        }
+                        let message = update.message
+                        if (message) {
+                            // Message
+                            if (message.text) {
+                                this.emit('message', message)
+                            }
 
-                        // Sticker
-                        if (message.sticker) {
-                            this.emit('sticker', message);
-                        }
+                            // Sticker
+                            if (message.sticker) {
+                                this.emit('sticker', message)
+                            }
 
-                        // New Chat Members
-                        if (message.new_chat_members) {
-                            for (let member of message.new_chat_members) {
-                                if (member.id === this.user.id) {
-                                    this.emit('newChatJoined', message);
-                                } else {
-                                    this.emit('newChatMember', message);
+                            // New Chat Members
+                            if (message.new_chat_members) {
+                                for (let member of message.new_chat_members) {
+                                    if (member.id === this.user.id) {
+                                        this.emit('newChatJoined', message)
+                                    } else {
+                                        this.emit('newChatMember', message)
+                                    }
                                 }
                             }
-                        }
 
-                        // Left Chat Member
-                        if (message.left_chat_member) {
-                            if (message.left_chat_member.id === this.user.id) {
-                                this.emit('leftChat', message);
-                            } else {
-                                this.emit('leftChatMember', message);
+                            // Left Chat Member
+                            if (message.left_chat_member) {
+                                if (message.left_chat_member.id === this.user.id) {
+                                    this.emit('leftChat', message)
+                                } else {
+                                    this.emit('leftChatMember', message)
+                                }
                             }
                         }
                     }
                 }
-            }
-            this.StartPolling();
-        }).catch(err => {
-            console.error(err);
+                this.StartPolling()
+            })
+            .catch((err) => {
+                console.error(err)
 
-            setTimeout(() => {
-                console.log('Restaring polling...');
-                this.StartPolling();
-            }, 5000);
-        });
+                setTimeout(() => {
+                    console.log('Restaring polling...')
+                    this.StartPolling()
+                }, 5000)
+            })
     }
 }
 
-module.exports = Telegram;
+module.exports = Telegram
