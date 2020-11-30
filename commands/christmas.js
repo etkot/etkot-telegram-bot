@@ -12,11 +12,11 @@ const endings = [
     'rosolli.png', //6
     'meetöihin.png', //7
     'booli.png', //8
-    '1.png', //9
+    'joulius.png', //9
     'grandtheft.png', //10
     'viinanmäärä.png', //11
     'sima.png', //12
-    '1.png', //13
+    'eijoulua.png', //13
     'mayhem.png', //14
     'jokoonjoulu.png', //15
     'ilmapallo.png', //16
