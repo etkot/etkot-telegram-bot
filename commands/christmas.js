@@ -32,6 +32,11 @@ const endings = [
 ]
 var images = _.range(24).map((num) => `${base}/${endings[num]}`)
 
+// NOTE: This will prevent the same image from being pinned multiple times
+//       but will be reset if the bot is restarted (e.g. crashes or is updated).
+//       Too lazy to save it somewhere on disk so this will work for now
+let lastDate
+
 exports.christmas = {
     help: 'Avaa päivän joulukalenteriluukun',
     usage: '/christmas',
@@ -57,8 +62,12 @@ exports.christmas = {
                 .then((res) => {
                     if (message_id) {
                         telegram.DeleteMessage(update.chat, message_id)
+                    }
+
+                    if (lastDate !== today.date()) {
                         telegram.PinMessage(update.chat, res.result.message_id, { disable_notification: true })
                     }
+                    lastDate = today.date()
                 })
                 .catch((reason) => {
                     console.log('Failed to send image')
