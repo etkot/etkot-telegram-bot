@@ -148,10 +148,10 @@ class Telegram extends EventEmitter {
                 const res = await Axios.post(`${this.botUrl}sendPhoto`, form, {
                     headers: form.getHeaders(),
                 })
-                resolve(res.response)
+                resolve(res.data)
             } catch (error) {
-                if (error.response) {
-                    reject(`Telegram error (${error.response.data.error_code}): ${error.response.data.description}`)
+                if (error.data) {
+                    reject(`Telegram error (${error.data.error_code}): ${error.data.description}`)
                 }
                 reject(error)
             }
@@ -220,6 +220,19 @@ class Telegram extends EventEmitter {
         return this.SendMethod(`deleteMessage?${createUrl({ chat_id, message_id })}`)
     }
 
+    /**
+     * Pins a message
+     * @param {(number|string|Object)} chat_id - ID of the chat
+     * @param {string} message_id - Identifier of a message to pin
+     * @param {Object} [options] - Optional parameters
+     * @param {boolean} [options.disable_notification] - Sends the message silently. Users will receive a notification with no sound.
+     * @returns {Promise} Telegram response
+     */
+    PinMessage(chat_id, message_id, options) {
+        if (typeof chat_id === 'object' && chat_id.id) chat_id = chat_id.id
+        return this.SendMethod(`pinChatMessage?${createUrl({ chat_id, message_id }, options)}`)
+    }
+    
     /**
      * Starts the polling process
      */

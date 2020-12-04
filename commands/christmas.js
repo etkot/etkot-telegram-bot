@@ -54,9 +54,10 @@ exports.christmas = {
                     disable_notification: true,
                     parse_mode: 'html',
                 })
-                .then(() => {
+                .then((res) => {
                     if (message_id) {
                         telegram.DeleteMessage(update.chat, message_id)
+                        telegram.PinMessage(update.chat, res.result.message_id, { disable_notification: true })
                     }
                 })
                 .catch((reason) => {
