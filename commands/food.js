@@ -47,7 +47,7 @@ const createMenuString = (menu) => {
     var menuString = '1 '
     var mealNumber = 1
 
-    menu.forEach((meal) => {
+    menu?.forEach((meal) => {
         meal.mo.forEach((element) => {
             menuString += element.mpn
             menuString += ', '
@@ -64,7 +64,7 @@ const createPizzaString = (menu) => {
     var pizzaString = '1 '
     var mealNumber = 1
 
-    menu[0].mo.forEach((element) => {
+    menu[0].mo?.forEach((element) => {
         pizzaString += element.mpn
         pizzaString += ', '
         mealNumber += 1
@@ -86,7 +86,7 @@ const foodAlert = new CronJob('0 10 * * *', function () {
         const fullmenu = await fetchMenus()
 
         let newtonFilteredFoods = []
-        fullmenu.data.restaurants_tty.res_newton.meals.forEach((meal) => {
+        fullmenu.data?.restaurants_tty?.res_newton?.meals?.forEach((meal) => {
             for (food of foods) {
                 meal.mo.forEach((item) => {
                     if (item.mpn == food) {
@@ -96,7 +96,7 @@ const foodAlert = new CronJob('0 10 * * *', function () {
             }
         })
         let reaktoriFilteredFoods = []
-        fullmenu.data.restaurants_tty.res_reaktori.meals.forEach((meal) => {
+        fullmenu.data?.restaurants_tty?.res_reaktori?.meals?.forEach((meal) => {
             for (food of foods) {
                 meal.mo.forEach((item) => {
                     if (item.mpn == food) {
@@ -106,7 +106,7 @@ const foodAlert = new CronJob('0 10 * * *', function () {
             }
         })
         let hertsiFilteredFoods = []
-        fullmenu.data.restaurants_tty.res_hertsi.meals.forEach((meal) => {
+        fullmenu.data?.restaurants_tty?.res_hertsi?.meals?.forEach((meal) => {
             for (food of foods) {
                 meal.mo.forEach((item) => {
                     if (item.mpn == food) {
@@ -173,7 +173,7 @@ exports.menuNewton = {
     aliases: ['menuN', 'mN', 'newton'],
     func: async (args, update) => {
         const fullmenu = await fetchMenus()
-        const newtonMenu = fullmenu.data.restaurants_tty.res_newton.meals
+        const newtonMenu = fullmenu.data?.restaurants_tty?.res_newton?.meals
 
         const menuString = createMenuString(newtonMenu)
 
@@ -190,7 +190,7 @@ exports.pizza = {
     aliases: ['pitsa', 'pistsa'],
     func: async (args, update) => {
         const fullmenu = await fetchMenus()
-        const newtonPizza = fullmenu.data.restaurants_tty.res_newton_street.meals
+        const newtonPizza = fullmenu.data?.restaurants_tty?.res_newton_street?.meals
 
         const menuString = newtonPizza.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :('
 
@@ -207,7 +207,7 @@ exports.menuHertsi = {
     aliases: ['menuH', 'mH', 'hertsi'],
     func: async (args, update) => {
         const fullmenu = await fetchMenus()
-        const hertsiMenu = fullmenu.data.restaurants_tty.res_hertsi.meals
+        const hertsiMenu = fullmenu.data?.restaurants_tty?.res_hertsi?.meals
 
         const menuString = createMenuString(hertsiMenu)
 
@@ -223,7 +223,7 @@ exports.menuReaktori = {
     aliases: ['menuR', 'mR', 'reaktori'],
     func: async (args, update) => {
         const fullmenu = await fetchMenus()
-        const reaktoriMenu = fullmenu.data.restaurants_tty.res_reaktori.meals
+        const reaktoriMenu = fullmenu.data?.restaurants_tty?.res_reaktori?.meals
 
         var i
         for (i = reaktoriMenu.length - 1; i >= 0; i -= 1) {
