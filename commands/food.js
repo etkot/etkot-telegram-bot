@@ -241,16 +241,35 @@ exports.menuReaktori = {
     },
 }
 
+exports.menuKonehuone = {
+    help: 'Kertoo Café Konehuoneen menun',
+    usage: '/menuKonehuone',
+    aliases: ['menuK', 'mK', 'konehuone'],
+    func: async (args, update) => {
+        const fullmenu = await fetchMenus()
+        
+        const konehuoneMenu = fullmenu.data?.restaurants_tty?.res_konehuone?.meals
+
+        const menuString = createMenuString(konehuoneMenu)
+
+        telegram.SendMessage(update.chat, `<b>Konehuone:</b> \n ${menuString}`, {
+            parse_mode: 'HTML',
+            disable_notification: true,
+        })
+    },
+}
+
 exports.menu = {
     help: 'Kertoo päivän menut',
     usage: '/menus',
     aliases: ['menus', 'food', 'ruoka'],
     func: async (args, update) => {
         const fullmenu = await fetchMenus()
-        const reaktoriMenu = fullmenu.data.restaurants_tty.res_reaktori.meals
-        const hertsiMenu = fullmenu.data.restaurants_tty.res_hertsi.meals
-        const newtonMenu = fullmenu.data.restaurants_tty.res_newton.meals
-        const newtonPizza = fullmenu.data.restaurants_tty.res_newton_street.meals
+        const reaktoriMenu = fullmenu.data?.restaurants_tty?.res_reaktori?.meals
+        const hertsiMenu = fullmenu.data?.restaurants_tty?.res_hertsi?.meals
+        const newtonMenu = fullmenu.data?.restaurants_tty?.res_newton?.meals
+        const newtonPizza = fullmenu.data?.restaurants_tty?.res_newton_street?.meals
+        const konehuoneMenu = fullmenu.data?.restaurants_tty?.res_konehuone?.meals
 
         var i
         for (i = reaktoriMenu.length - 1; i >= 0; i -= 1) {
@@ -263,10 +282,11 @@ exports.menu = {
         const menuHertsiString = createMenuString(hertsiMenu)
         const menuNewtonString = createMenuString(newtonMenu)
         const menuPizzaString = newtonPizza.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :( \n'
+        const menuKonehuoneString = createMenuString(konehuoneMenu)
 
         telegram.SendMessage(
             update.chat,
-            `<b>Reaktori:</b>\n ${menuRektoriString}\n<b>Newton:</b>\n ${menuNewtonString}\n<b>Newton Pizza:</b>\n ${menuPizzaString}\n<b>Hertsi:</b>\n ${menuHertsiString}`,
+            `<b>Reaktori:</b>\n ${menuRektoriString}\n<b>Newton:</b>\n ${menuNewtonString}\n<b>Newton Pizza:</b>\n ${menuPizzaString}\n<b>Hertsi:</b>\n ${menuHertsiString}\n<b>Konehuone:</b>\n ${menuKonehuoneString}`,
             { parse_mode: 'HTML', disable_notification: true }
         )
     },
