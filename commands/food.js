@@ -48,7 +48,7 @@ const createMenuString = (menu) => {
     var mealNumber = 1
 
     menu?.forEach((meal) => {
-        meal.mo.forEach((element) => {
+        meal?.mo?.forEach((element) => {
             menuString += element.mpn
             menuString += ', '
         })
@@ -64,7 +64,7 @@ const createPizzaString = (menu) => {
     var pizzaString = '1 '
     var mealNumber = 1
 
-    menu[0].mo?.forEach((element) => {
+    menu[0]?.mo?.forEach((element) => {
         pizzaString += element.mpn
         pizzaString += ', '
         mealNumber += 1
@@ -86,59 +86,61 @@ const foodAlert = new CronJob('0 10 * * *', function () {
         const fullmenu = await fetchMenus()
 
         let newtonFilteredFoods = []
-        fullmenu.data?.restaurants_tty?.res_newton?.meals?.forEach((meal) => {
-            for (food of foods) {
-                meal.mo.forEach((item) => {
-                    if (item.mpn == food) {
-                        newtonFilteredFoods.push(food)
-                    }
-                })
-            }
-        })
-        let reaktoriFilteredFoods = []
-        fullmenu.data?.restaurants_tty?.res_reaktori?.meals?.forEach((meal) => {
-            for (food of foods) {
-                meal.mo.forEach((item) => {
-                    if (item.mpn == food) {
-                        reaktoriFilteredFoods.push(food)
-                    }
-                })
-            }
-        })
-        let hertsiFilteredFoods = []
-        fullmenu.data?.restaurants_tty?.res_hertsi?.meals?.forEach((meal) => {
-            for (food of foods) {
-                meal.mo.forEach((item) => {
-                    if (item.mpn == food) {
-                        hertsiFilteredFoods.push(food)
-                    }
-                })
-            }
-        })
+        if (fullmenu?.data?.restaurants_tty) {
+            fullmenu.data.restaurants_tty.res_newton?.meals?.forEach((meal) => {
+                for (food of foods) {
+                    meal.mo.forEach((item) => {
+                        if (item.mpn == food) {
+                            newtonFilteredFoods.push(food)
+                        }
+                    })
+                }
+            })
+            let reaktoriFilteredFoods = []
+            fullmenu.data.restaurants_tty.res_reaktori?.meals?.forEach((meal) => {
+                for (food of foods) {
+                    meal.mo.forEach((item) => {
+                        if (item.mpn == food) {
+                            reaktoriFilteredFoods.push(food)
+                        }
+                    })
+                }
+            })
+            let hertsiFilteredFoods = []
+            fullmenu.data.restaurants_tty.res_hertsi?.meals?.forEach((meal) => {
+                for (food of foods) {
+                    meal.mo.forEach((item) => {
+                        if (item.mpn == food) {
+                            hertsiFilteredFoods.push(food)
+                        }
+                    })
+                }
+            })
 
-        let msg = 'Tarjolla olevat lempiruuat:\n'
+            let msg = 'Tarjolla olevat lempiruuat:\n'
 
-        if (newtonFilteredFoods.length !== 0) {
-            msg += `<b>Newton:</b>\n`
-            for (let food of newtonFilteredFoods) {
-                msg += `  ${food},\n`
+            if (newtonFilteredFoods.length !== 0) {
+                msg += `<b>Newton:</b>\n`
+                for (let food of newtonFilteredFoods) {
+                    msg += `  ${food},\n`
+                }
             }
-        }
-        if (reaktoriFilteredFoods.length !== 0) {
-            msg += `<b>Reaktori:</b>\n`
-            for (let food of reaktoriFilteredFoods) {
-                msg += `  ${food},\n`
+            if (reaktoriFilteredFoods.length !== 0) {
+                msg += `<b>Reaktori:</b>\n`
+                for (let food of reaktoriFilteredFoods) {
+                    msg += `  ${food},\n`
+                }
             }
-        }
-        if (hertsiFilteredFoods.length !== 0) {
-            msg += `<b>Hertsi:</b>\n`
-            for (let food of hertsiFilteredFoods) {
-                msg += `  ${food},\n`
+            if (hertsiFilteredFoods.length !== 0) {
+                msg += `<b>Hertsi:</b>\n`
+                for (let food of hertsiFilteredFoods) {
+                    msg += `  ${food},\n`
+                }
             }
-        }
 
-        if (newtonFilteredFoods.length !== 0 || reaktoriFilteredFoods.length !== 0 || hertsiFilteredFoods.length !== 0) {
-            telegram.SendMessage(process.env.TG_CHAT, msg, { disable_notification: true, parse_mode: 'html' })
+            if (newtonFilteredFoods.length !== 0 || reaktoriFilteredFoods.length !== 0 || hertsiFilteredFoods.length !== 0) {
+                telegram.SendMessage(process.env.TG_CHAT, msg, { disable_notification: true, parse_mode: 'html' })
+            }
         }
     })
 })
@@ -272,7 +274,7 @@ exports.menu = {
         const konehuoneMenu = fullmenu.data?.restaurants_tty?.res_konehuone?.meals
 
         var i
-        for (i = reaktoriMenu.length - 1; i >= 0; i -= 1) {
+        for (i = reaktoriMenu?.length - 1; i >= 0; i -= 1) {
             if (reaktoriMenu[i].kok === 'Jälkiruoka' || reaktoriMenu[i].kok === 'Salaattiaterian proteiiniosa') {
                 reaktoriMenu.splice(i, 1)
             }
@@ -281,7 +283,7 @@ exports.menu = {
         const menuRektoriString = createMenuString(reaktoriMenu)
         const menuHertsiString = createMenuString(hertsiMenu)
         const menuNewtonString = createMenuString(newtonMenu)
-        const menuPizzaString = newtonPizza.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :( \n'
+        const menuPizzaString = newtonPizza?.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :( \n'
         const menuKonehuoneString = createMenuString(konehuoneMenu)
 
         telegram.SendMessage(
