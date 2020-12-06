@@ -1,4 +1,3 @@
-const https = require('https')
 const EventEmitter = require('events')
 const Axios = require('axios')
 const FormData = require('form-data')
@@ -48,24 +47,12 @@ class Telegram extends EventEmitter {
      * @returns {Promise} Telegram response
      */
     SendMethod(method) {
-        return new Promise((resolve, reject) => {
-            try {
-                https
-                    .get(this.botUrl + method, (res) => {
-                        res.on('data', (d) => {
-                            let data = JSON.parse(d)
-                            if (data.ok) {
-                                resolve(data.result)
-                            } else {
-                                reject(`Telegram error (${data.error_code}): ${data.description} (method: ${method})`)
-                            }
-                        })
-                    })
-                    .on('error', (e) => {
-                        reject(e)
-                    })
-            } catch (error) {
-                reject(error)
+        return new Promise(async (resolve, reject) => {
+            const result = await Axios.get(this.botUrl + method)
+            if (result.data.ok) {
+                resolve(result.data.result)
+            } else {
+                reject(`Telegram error (${result.data.error_code}): ${result.data.description} (method: ${method})`)
             }
         })
     }
