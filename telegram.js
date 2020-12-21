@@ -224,8 +224,6 @@ class Telegram extends EventEmitter {
      * Starts the polling process
      */
     StartPolling() {
-        console.log("poll", !this.polling);
-
         if (this.polling)
             return
 
