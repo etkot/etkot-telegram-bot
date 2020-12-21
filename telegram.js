@@ -224,59 +224,83 @@ class Telegram extends EventEmitter {
      * Starts the polling process
      */
     StartPolling() {
+        console.log("poll", !this.polling);
+
+        if (this.polling)
+            return
+
+        this.polling = true
+
+        let restarted = false
+        let Restart = () => {
+            if (restarted)
+                return
+            
+            restarted = true
+            clearTimeout(timeout)
+            this.polling = false
+            this.StartPolling()
+        }
+
+        let timeout = setTimeout(() => { console.log("New getUpdates wasn't sent in 10 seconds!"); Restart(); }, 10 * 1000)
+
         this.SendMethod(`getUpdates?offset=${this._lastMessageId}`)
             .then((response) => {
                 if (response.length > 0) {
                     this._lastMessageId = response[response.length - 1].update_id + 1
 
                     for (let update of response) {
-                        // All updates
-                        this.emit('update', update)
-
-                        let message = update.message
-                        if (message) {
-                            // Message
-                            if (message.text) {
-                                this.emit('message', message)
-                            }
-
-                            // Sticker
-                            if (message.sticker) {
-                                this.emit('sticker', message)
-                            }
-
-                            // New Chat Members
-                            if (message.new_chat_members) {
-                                for (let member of message.new_chat_members) {
-                                    if (member.id === this.user.id) {
-                                        this.emit('newChatJoined', message)
-                                    } else {
-                                        this.emit('newChatMember', message)
-                                    }
-                                }
-                            }
-
-                            // Left Chat Member
-                            if (message.left_chat_member) {
-                                if (message.left_chat_member.id === this.user.id) {
-                                    this.emit('leftChat', message)
-                                } else {
-                                    this.emit('leftChatMember', message)
-                                }
-                            }
-                        }
+                        this._ProcessUpdate(update);
                     }
                 }
-                this.StartPolling()
+               Restart()
             })
             .catch((err) => {
                 console.error(err)
 
                 setTimeout(() => {
                     console.log('Restaring polling...')
-                    this.StartPolling()
+                    Restart()
                 }, 5000)
             })
+    }
+
+    _ProcessUpdate(update) {
+        // All updates
+        this.emit('update', update)
+
+        let message = update.message
+        if (message) {
+            // Message
+            if (message.text) {
+                this.emit('message', message)
+            }
+
+            // Sticker
+            if (message.sticker) {
+                this.emit('sticker', message)
+            }
+
+            // New Chat Members
+            if (message.new_chat_members) {
+                for (let member of message.new_chat_members) {
+                    if (member.id === this.user.id) {
+                        this.emit('newChatJoined', message)
+                    } else {
+                        this.emit('newChatMember', message)
+                    }
+                }
+            }
+
+            // Left Chat Member
+            if (message.left_chat_member) {
+                if (message.left_chat_member.id === this.user.id) {
+                    this.emit('leftChat', message)
+                } else {
+                    this.emit('leftChatMember', message)
+                }
+            }
+        }
     }
 }
 
