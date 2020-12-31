@@ -72,10 +72,13 @@ exports.quotestats = {
                 return 0;
             });
 
+            let total = 0;
             let str = '<b>Quote stats</b>\n';
             for (const user of result) {
                 str += `${user._id}: ${user.count}\n`;
+                total += user.count;
             }
+            str += `<i>Total:</i> <b>${total}</b>`;
 
             telegram.SendMessage(update.chat, str, { disable_notification: true, parse_mode: 'HTML' });
         });
