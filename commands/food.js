@@ -47,8 +47,8 @@ const createMenuString = (menu) => {
     var menuString = '1 '
     var mealNumber = 1
 
-    menu.forEach((meal) => {
-        meal.mo.forEach((element) => {
+    menu?.forEach((meal) => {
+        meal?.mo?.forEach((element) => {
             menuString += element.mpn
             menuString += ', '
         })
@@ -64,7 +64,7 @@ const createPizzaString = (menu) => {
     var pizzaString = '1 '
     var mealNumber = 1
 
-    menu[0].mo.forEach((element) => {
+    menu[0]?.mo?.forEach((element) => {
         pizzaString += element.mpn
         pizzaString += ', '
         mealNumber += 1
@@ -86,59 +86,61 @@ const foodAlert = new CronJob('0 10 * * *', function () {
         const fullmenu = await fetchMenus()
 
         let newtonFilteredFoods = []
-        fullmenu.data.restaurants_tty.res_newton.meals.forEach((meal) => {
-            for (food of foods) {
-                meal.mo.forEach((item) => {
-                    if (item.mpn == food) {
-                        newtonFilteredFoods.push(food)
-                    }
-                })
-            }
-        })
-        let reaktoriFilteredFoods = []
-        fullmenu.data.restaurants_tty.res_reaktori.meals.forEach((meal) => {
-            for (food of foods) {
-                meal.mo.forEach((item) => {
-                    if (item.mpn == food) {
-                        reaktoriFilteredFoods.push(food)
-                    }
-                })
-            }
-        })
-        let hertsiFilteredFoods = []
-        fullmenu.data.restaurants_tty.res_hertsi.meals.forEach((meal) => {
-            for (food of foods) {
-                meal.mo.forEach((item) => {
-                    if (item.mpn == food) {
-                        hertsiFilteredFoods.push(food)
-                    }
-                })
-            }
-        })
+        if (fullmenu?.data?.restaurants_tty) {
+            fullmenu.data.restaurants_tty.res_newton?.meals?.forEach((meal) => {
+                for (food of foods) {
+                    meal.mo.forEach((item) => {
+                        if (item.mpn == food) {
+                            newtonFilteredFoods.push(food)
+                        }
+                    })
+                }
+            })
+            let reaktoriFilteredFoods = []
+            fullmenu.data.restaurants_tty.res_reaktori?.meals?.forEach((meal) => {
+                for (food of foods) {
+                    meal.mo.forEach((item) => {
+                        if (item.mpn == food) {
+                            reaktoriFilteredFoods.push(food)
+                        }
+                    })
+                }
+            })
+            let hertsiFilteredFoods = []
+            fullmenu.data.restaurants_tty.res_hertsi?.meals?.forEach((meal) => {
+                for (food of foods) {
+                    meal.mo.forEach((item) => {
+                        if (item.mpn == food) {
+                            hertsiFilteredFoods.push(food)
+                        }
+                    })
+                }
+            })
 
-        let msg = 'Tarjolla olevat lempiruuat:\n'
+            let msg = 'Tarjolla olevat lempiruuat:\n'
 
-        if (newtonFilteredFoods.length !== 0) {
-            msg += `<b>Newton:</b>\n`
-            for (let food of newtonFilteredFoods) {
-                msg += `  ${food},\n`
+            if (newtonFilteredFoods.length !== 0) {
+                msg += `<b>Newton:</b>\n`
+                for (let food of newtonFilteredFoods) {
+                    msg += `  ${food},\n`
+                }
             }
-        }
-        if (reaktoriFilteredFoods.length !== 0) {
-            msg += `<b>Reaktori:</b>\n`
-            for (let food of reaktoriFilteredFoods) {
-                msg += `  ${food},\n`
+            if (reaktoriFilteredFoods.length !== 0) {
+                msg += `<b>Reaktori:</b>\n`
+                for (let food of reaktoriFilteredFoods) {
+                    msg += `  ${food},\n`
+                }
             }
-        }
-        if (hertsiFilteredFoods.length !== 0) {
-            msg += `<b>Hertsi:</b>\n`
-            for (let food of hertsiFilteredFoods) {
-                msg += `  ${food},\n`
+            if (hertsiFilteredFoods.length !== 0) {
+                msg += `<b>Hertsi:</b>\n`
+                for (let food of hertsiFilteredFoods) {
+                    msg += `  ${food},\n`
+                }
             }
-        }
 
-        if (newtonFilteredFoods.length !== 0 || reaktoriFilteredFoods.length !== 0 || hertsiFilteredFoods.length !== 0) {
-            telegram.SendMessage(process.env.TG_CHAT, msg, { disable_notification: true, parse_mode: 'html' })
+            if (newtonFilteredFoods.length !== 0 || reaktoriFilteredFoods.length !== 0 || hertsiFilteredFoods.length !== 0) {
+                telegram.SendMessage(process.env.TG_CHAT, msg, { disable_notification: true, parse_mode: 'html' })
+            }
         }
     })
 })
@@ -173,7 +175,7 @@ exports.menuNewton = {
     aliases: ['menuN', 'mN', 'newton'],
     func: async (args, update) => {
         const fullmenu = await fetchMenus()
-        const newtonMenu = fullmenu.data.restaurants_tty.res_newton.meals
+        const newtonMenu = fullmenu.data?.restaurants_tty?.res_newton?.meals
 
         const menuString = createMenuString(newtonMenu)
 
@@ -190,7 +192,7 @@ exports.pizza = {
     aliases: ['pitsa', 'pistsa'],
     func: async (args, update) => {
         const fullmenu = await fetchMenus()
-        const newtonPizza = fullmenu.data.restaurants_tty.res_newton_street.meals
+        const newtonPizza = fullmenu.data?.restaurants_tty?.res_newton_street?.meals
 
         const menuString = newtonPizza.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :('
 
@@ -207,7 +209,7 @@ exports.menuHertsi = {
     aliases: ['menuH', 'mH', 'hertsi'],
     func: async (args, update) => {
         const fullmenu = await fetchMenus()
-        const hertsiMenu = fullmenu.data.restaurants_tty.res_hertsi.meals
+        const hertsiMenu = fullmenu.data?.restaurants_tty?.res_hertsi?.meals
 
         const menuString = createMenuString(hertsiMenu)
 
@@ -223,7 +225,7 @@ exports.menuReaktori = {
     aliases: ['menuR', 'mR', 'reaktori'],
     func: async (args, update) => {
         const fullmenu = await fetchMenus()
-        const reaktoriMenu = fullmenu.data.restaurants_tty.res_reaktori.meals
+        const reaktoriMenu = fullmenu.data?.restaurants_tty?.res_reaktori?.meals
 
         var i
         for (i = reaktoriMenu.length - 1; i >= 0; i -= 1) {
@@ -241,19 +243,38 @@ exports.menuReaktori = {
     },
 }
 
+exports.menuKonehuone = {
+    help: 'Kertoo Café Konehuoneen menun',
+    usage: '/menuKonehuone',
+    aliases: ['menuK', 'mK', 'konehuone'],
+    func: async (args, update) => {
+        const fullmenu = await fetchMenus()
+        
+        const konehuoneMenu = fullmenu.data?.restaurants_tty?.res_konehuone?.meals
+
+        const menuString = createMenuString(konehuoneMenu)
+
+        telegram.SendMessage(update.chat, `<b>Konehuone:</b> \n ${menuString}`, {
+            parse_mode: 'HTML',
+            disable_notification: true,
+        })
+    },
+}
+
 exports.menu = {
     help: 'Kertoo päivän menut',
     usage: '/menus',
     aliases: ['menus', 'food', 'ruoka'],
     func: async (args, update) => {
         const fullmenu = await fetchMenus()
-        const reaktoriMenu = fullmenu.data.restaurants_tty.res_reaktori.meals
-        const hertsiMenu = fullmenu.data.restaurants_tty.res_hertsi.meals
-        const newtonMenu = fullmenu.data.restaurants_tty.res_newton.meals
-        const newtonPizza = fullmenu.data.restaurants_tty.res_newton_street.meals
+        const reaktoriMenu = fullmenu.data?.restaurants_tty?.res_reaktori?.meals
+        const hertsiMenu = fullmenu.data?.restaurants_tty?.res_hertsi?.meals
+        const newtonMenu = fullmenu.data?.restaurants_tty?.res_newton?.meals
+        const newtonPizza = fullmenu.data?.restaurants_tty?.res_newton_street?.meals
+        const konehuoneMenu = fullmenu.data?.restaurants_tty?.res_konehuone?.meals
 
         var i
-        for (i = reaktoriMenu.length - 1; i >= 0; i -= 1) {
+        for (i = reaktoriMenu?.length - 1; i >= 0; i -= 1) {
             if (reaktoriMenu[i].kok === 'Jälkiruoka' || reaktoriMenu[i].kok === 'Salaattiaterian proteiiniosa') {
                 reaktoriMenu.splice(i, 1)
             }
@@ -262,11 +283,12 @@ exports.menu = {
         const menuRektoriString = createMenuString(reaktoriMenu)
         const menuHertsiString = createMenuString(hertsiMenu)
         const menuNewtonString = createMenuString(newtonMenu)
-        const menuPizzaString = newtonPizza.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :( \n'
+        const menuPizzaString = newtonPizza?.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :( \n'
+        const menuKonehuoneString = createMenuString(konehuoneMenu)
 
         telegram.SendMessage(
             update.chat,
-            `<b>Reaktori:</b>\n ${menuRektoriString}\n<b>Newton:</b>\n ${menuNewtonString}\n<b>Newton Pizza:</b>\n ${menuPizzaString}\n<b>Hertsi:</b>\n ${menuHertsiString}`,
+            `<b>Reaktori:</b>\n ${menuRektoriString}\n<b>Newton:</b>\n ${menuNewtonString}\n<b>Newton Pizza:</b>\n ${menuPizzaString}\n<b>Hertsi:</b>\n ${menuHertsiString}\n<b>Konehuone:</b>\n ${menuKonehuoneString}`,
             { parse_mode: 'HTML', disable_notification: true }
         )
     },

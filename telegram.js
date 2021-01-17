@@ -1,4 +1,3 @@
-const https = require('https')
 const EventEmitter = require('events')
 const Axios = require('axios')
 const FormData = require('form-data')
@@ -48,24 +47,12 @@ class Telegram extends EventEmitter {
      * @returns {Promise} Telegram response
      */
     SendMethod(method) {
-        return new Promise((resolve, reject) => {
-            try {
-                https
-                    .get(this.botUrl + method, (res) => {
-                        res.on('data', (d) => {
-                            let data = JSON.parse(d)
-                            if (data.ok) {
-                                resolve(data.result)
-                            } else {
-                                reject(`Telegram error (${data.error_code}): ${data.description} (method: ${method})`)
-                            }
-                        })
-                    })
-                    .on('error', (e) => {
-                        reject(e)
-                    })
-            } catch (error) {
-                reject(error)
+        return new Promise(async (resolve, reject) => {
+            const result = await Axios.get(this.botUrl + method)
+            if (result.data.ok) {
+                resolve(result.data.result)
+            } else {
+                reject(`Telegram error (${result.data.error_code}): ${result.data.description} (method: ${method})`)
             }
         })
     }
@@ -237,59 +224,81 @@ class Telegram extends EventEmitter {
      * Starts the polling process
      */
     StartPolling() {
+        if (this.polling)
+            return
+
+        this.polling = true
+
+        let restarted = false
+        let Restart = () => {
+            if (restarted)
+                return
+            
+            restarted = true
+            clearTimeout(timeout)
+            this.polling = false
+            this.StartPolling()
+        }
+
+        let timeout = setTimeout(() => { console.log("New getUpdates wasn't sent in 10 seconds!"); Restart(); }, 10 * 1000)
+
         this.SendMethod(`getUpdates?offset=${this._lastMessageId}`)
             .then((response) => {
                 if (response.length > 0) {
                     this._lastMessageId = response[response.length - 1].update_id + 1
 
                     for (let update of response) {
-                        // All updates
-                        this.emit('update', update)
-
-                        let message = update.message
-                        if (message) {
-                            // Message
-                            if (message.text) {
-                                this.emit('message', message)
-                            }
-
-                            // Sticker
-                            if (message.sticker) {
-                                this.emit('sticker', message)
-                            }
-
-                            // New Chat Members
-                            if (message.new_chat_members) {
-                                for (let member of message.new_chat_members) {
-                                    if (member.id === this.user.id) {
-                                        this.emit('newChatJoined', message)
-                                    } else {
-                                        this.emit('newChatMember', message)
-                                    }
-                                }
-                            }
-
-                            // Left Chat Member
-                            if (message.left_chat_member) {
-                                if (message.left_chat_member.id === this.user.id) {
-                                    this.emit('leftChat', message)
-                                } else {
-                                    this.emit('leftChatMember', message)
-                                }
-                            }
-                        }
+                        this._ProcessUpdate(update);
                     }
                 }
-                this.StartPolling()
+               Restart()
             })
             .catch((err) => {
                 console.error(err)
 
                 setTimeout(() => {
                     console.log('Restaring polling...')
-                    this.StartPolling()
+                    Restart()
                 }, 5000)
             })
+    }
+
+    _ProcessUpdate(update) {
+        // All updates
+        this.emit('update', update)
+
+        let message = update.message
+        if (message) {
+            // Message
+            if (message.text) {
+                this.emit('message', message)
+            }
+
+            // Sticker
+            if (message.sticker) {
+                this.emit('sticker', message)
+            }
+
+            // New Chat Members
+            if (message.new_chat_members) {
+                for (let member of message.new_chat_members) {
+                    if (member.id === this.user.id) {
+                        this.emit('newChatJoined', message)
+                    } else {
+                        this.emit('newChatMember', message)
+                    }
+                }
+            }
+
+            // Left Chat Member
+            if (message.left_chat_member) {
+                if (message.left_chat_member.id === this.user.id) {
+                    this.emit('leftChat', message)
+                } else {
+                    this.emit('leftChatMember', message)
+                }
+            }
+        }
     }
 }
 
