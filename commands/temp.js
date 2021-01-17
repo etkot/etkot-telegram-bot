@@ -1,16 +1,20 @@
 const { telegram } = require('../index')
 const axios = require('axios')
+const port = process.env.LOMMI_API
 
-const getTemperature = async () => {
-  let data = await axios.get('http://84.249.53.179:5002/api/parveke')
-  console.log(data)
+const getTempData = async () => {
+    let data = await axios.get(port)
+    return data
 }
 
 exports.craps = {
-  help: 'Antaan Lommin parvekkeen lämpötilan',
-  usage: '/temp',
-  aliases: ['t', 'lomminparveke'],
-  func: (args, update) => {
-    getTemperature()
-  },
+    help: 'Antaan Lommin parvekkeen lämpötilan',
+    usage: '/temp',
+    aliases: ['t', 'lomminparveke'],
+    func: (args, update) => {
+        const data = getTempData()
+        console.log(data)
+
+        //telegram.SendMessage(update.chat, `${data}`, { disable_notification: true, parse_mode: 'html' })
+    },
 }
