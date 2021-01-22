@@ -1,4 +1,3 @@
-const { telegram } = require('../index')
 const dayjs = require('dayjs')
 const _ = require('lodash')
 
@@ -40,7 +39,7 @@ exports.christmas = {
   help: 'Avaa päivän joulukalenteriluukun',
   usage: '/christmas',
   aliases: ['ch', 'luukku'],
-  func: (args, update) => {
+  func: (args, update, telegram) => {
     const today = dayjs()
     const christmasDay = dayjs('2020-12-25')
 

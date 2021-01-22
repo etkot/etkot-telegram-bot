@@ -1,4 +1,3 @@
-const { telegram } = require('../index')
 const mongoUtil = require('../mongoUtil')
 const axios = require('axios')
 const CronJob = require('cron').CronJob
@@ -151,7 +150,7 @@ exports.enableFoodAlerts = {
     help: 'Tarkistaa päivittäin onko lempiruokia saatavilla',
     usage: '/enableFoodAlerts',
     aliases: ['EFA'],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         foodAlert.start()
         console.log('FoodAlerts enabled')
         telegram.SendMessage(update.chat, 'FoodAlerts enabled', { disable_notification: true, parse_mode: 'html' })
@@ -162,7 +161,7 @@ exports.disableFoodAlerts = {
     help: 'Lopettaa lempiruokien tarkistamisen',
     usage: '/disableFoodAlerts',
     aliases: ['DFA'],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         foodAlert.stop()
         console.log('FoodAlerts disabled')
         telegram.SendMessage(update.chat, 'FoodAlerts disabled', { disable_notification: true, parse_mode: 'html' })
@@ -173,7 +172,7 @@ exports.menuNewton = {
     help: 'Kertoo Newtonin menun',
     usage: '/menuNewton',
     aliases: ['menuN', 'mN', 'newton'],
-    func: async (args, update) => {
+    func: async (args, update, telegram) => {
         const fullmenu = await fetchMenus()
         const newtonMenu = fullmenu.data?.restaurants_tty?.res_newton?.meals
 
@@ -190,7 +189,7 @@ exports.pizza = {
     help: 'Kertoo Newtonin pizza-menun',
     usage: '/pizza',
     aliases: ['pitsa', 'pistsa'],
-    func: async (args, update) => {
+    func: async (args, update, telegram) => {
         const fullmenu = await fetchMenus()
         const newtonPizza = fullmenu.data?.restaurants_tty?.res_newton_street?.meals
 
@@ -207,7 +206,7 @@ exports.menuHertsi = {
     help: 'Kertoo Hertsin menun',
     usage: '/menuHertsi',
     aliases: ['menuH', 'mH', 'hertsi'],
-    func: async (args, update) => {
+    func: async (args, update, telegram) => {
         const fullmenu = await fetchMenus()
         const hertsiMenu = fullmenu.data?.restaurants_tty?.res_hertsi?.meals
 
@@ -223,7 +222,7 @@ exports.menuReaktori = {
     help: 'Kertoo Reaktorin menun',
     usage: '/menuReaktori',
     aliases: ['menuR', 'mR', 'reaktori'],
-    func: async (args, update) => {
+    func: async (args, update, telegram) => {
         const fullmenu = await fetchMenus()
         const reaktoriMenu = fullmenu.data?.restaurants_tty?.res_reaktori?.meals
 
@@ -247,7 +246,7 @@ exports.menuKonehuone = {
     help: 'Kertoo Café Konehuoneen menun',
     usage: '/menuKonehuone',
     aliases: ['menuK', 'mK', 'konehuone'],
-    func: async (args, update) => {
+    func: async (args, update, telegram) => {
         const fullmenu = await fetchMenus()
         
         const konehuoneMenu = fullmenu.data?.restaurants_tty?.res_konehuone?.meals
@@ -265,7 +264,7 @@ exports.menu = {
     help: 'Kertoo päivän menut',
     usage: '/menus',
     aliases: ['menus', 'food', 'ruoka'],
-    func: async (args, update) => {
+    func: async (args, update, telegram) => {
         const fullmenu = await fetchMenus()
         const reaktoriMenu = fullmenu.data?.restaurants_tty?.res_reaktori?.meals
         const hertsiMenu = fullmenu.data?.restaurants_tty?.res_hertsi?.meals
@@ -298,7 +297,7 @@ exports.fondue = {
     help: 'Luo pollin ruokapaikan valitsemiselle',
     usage: 'fondue',
     aliases: ['foodPoll', 'fp'],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         telegram.SendPoll(update.chat, 'Fondue?', ['Reaktori', 'Newton', 'Hertsi', 'Såås'], {
             disable_notification: true,
             is_anonymous: false,
@@ -311,7 +310,7 @@ exports.addFood = {
     help: 'Lisää uuden lempiruuan',
     usage: '/addFood',
     aliases: ['lisääRuoka', 'addF', 'aF'],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         if (args.length < 1) {
             helpCommands.usage.func(['addFood'], update)
             return
@@ -334,7 +333,7 @@ exports.foods = {
     help: 'Listaa tallessa olevat lempiruuat',
     usage: '/foods',
     aliases: ['lempiruuat'],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         GetCollection().find({}).toArray((err, docs) => {
             let msg = '<b>Lempiruuat:</b>\n'
             for (let doc of docs) {

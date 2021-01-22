@@ -1,4 +1,3 @@
-const { telegram } = require('../index');
 const net = require('net');
 
 
@@ -22,7 +21,7 @@ exports.minecraft = {
     help: 'Kertoo kuinka monta pelaajaa serverillä on',
     usage: '/minecraft',
     aliases: [ 'mc' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         let host = process.env.MC_ADDR;
         let port = Number(process.env.MC_PORT);
 

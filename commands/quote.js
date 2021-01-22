@@ -1,5 +1,4 @@
 const mongoUtil = require('../mongoUtil');
-const { telegram } = require('../index');
 const helpCommands = require('./help');
 
 let collection = undefined;
@@ -15,7 +14,7 @@ exports.quote = {
     help: 'Lähettää satunnaisen quoten',
     usage: '/quote [name]',
     aliases: [ 'q', 'quoite', 'quoye' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         let query = {};
         if (args.length > 0) {
             query.name = new RegExp(`^${args[0]}$`,'i');
@@ -37,7 +36,7 @@ exports.addq = {
     help: 'Lisää uuden quoten käyttäjälle',
     usage: '/addq <name> <quote>',
     aliases: [ 'aq' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         if (args.length < 2) {
             helpCommands.usage.func([ "addq" ], update);
             return;
@@ -61,7 +60,7 @@ exports.quotestats = {
     help: 'Näyttää kuinka monta quotea käyttäjillä on',
     usage: '/quotestats',
     aliases: [ 'qs', 'qstats' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         GetCollection().aggregate([ { $group : { _id : '$name', count : { $sum : 1 } } } ]).toArray((err, result) => {
             result.sort((a, b) => { 
                 if (b.count - a.count !== 0) {

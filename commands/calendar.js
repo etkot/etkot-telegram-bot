@@ -1,5 +1,4 @@
 const mongoUtil = require('../mongoUtil');
-const { telegram } = require('../index');
 const helpCommands = require('./help');
 
 const dayjs = require('dayjs');
@@ -78,7 +77,7 @@ exports.calendar = {
     help: 'Lähettää kaikki tulevat tapahtumat',
     usage: '/calendar',
     aliases: [ 'cal', 'kalenteri', 'events' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         GetCollection().find({ dateTime: { $gte: new Date() } }).sort({dateTime: 1}).toArray((err, docs) => {
             if (docs.length > 0) {
                 let msg = '<b>Kalenteri:</b>';
@@ -99,7 +98,7 @@ exports.addevent = {
     help: 'Lisää uuden tapahtuman kalenteriin',
     usage: '/addevent <date> <time> <description>',
     aliases: [ 'adde', 'ae' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         if (args.length < 3) {
             helpCommands.usage.func([ "addevent" ], update);
             return;
@@ -120,7 +119,7 @@ exports.removeevent = {
     help: 'Poistaa tapahtuman kalenterista',
     usage: '/removeevent <id>',
     aliases: [ 'removee', 're' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         if (args.length < 1) {
             helpCommands.usage.func([ "addevent" ], update);
             return;

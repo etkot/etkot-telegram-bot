@@ -1,4 +1,3 @@
-const { telegram } = require('../index')
 const axios = require('axios')
 const port = process.env.LOMMI_API
 
@@ -11,7 +10,7 @@ exports.temp = {
     help: 'Antaan Lommin parvekkeen lämpötilan',
     usage: '/temp',
     aliases: ['t', 'lomminparveke'],
-    func: async (args, update) => {
+    func: async (args, update, telegram) => {
         const data = await getTempData()
         const temp = data.data.data.temperature
         const feels = data.data.data.feels_like

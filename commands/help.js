@@ -1,9 +1,7 @@
-const { telegram } = require('../index');
-
 exports.help = {
     usage: '/help [command]',
     aliases: [ 'h' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         const commands = require('./index').commands;
         let msg = '';
 
@@ -31,7 +29,7 @@ exports.usage = {
     help: 'Kertoo miten komentoa käytetään',
     usage: '/usage <command>',
     aliases: [ 'u' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         const commands = require('./index');
         let msg;
 

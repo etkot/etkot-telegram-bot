@@ -1,4 +1,3 @@
-const { telegram } = require('../index');
 const helpCommands = require('./help');
 
 const animals = [
@@ -97,7 +96,7 @@ exports.poll = {
     help: 'Lähettää pollin',
     usage: '/poll <question>',
     aliases: [ 'p' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         Send('poll', args, update, false);
     }
 }
@@ -106,7 +105,7 @@ exports.pollanonymous = {
     help: 'Lähettää anonyymin pollin',
     usage: '/pollanonymous <question>',
     aliases: [ 'pollanon', 'pa' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         Send('pollanonymous', args, update, true);
     }
 }

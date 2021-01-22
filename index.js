@@ -3,9 +3,8 @@ require('./mongoUtil').connectToServer(process.env.DB_NAME);
 
 const tg = require('./telegram');
 const telegram = new tg(process.env.TG_TOKEN);
-exports.telegram = telegram;
 
-const commands = require('./commands');
+let commands;
 
 telegram.on('update', (update) => {
     //console.log(update);
@@ -21,7 +20,7 @@ telegram.on('message', (update) => {
         let cmd = args.shift().replace(`@${telegram.user.username}`, '');
 
         if (commands.commands[cmd]) {
-            commands.commands[cmd].func(args, update);
+            commands.commands[cmd].func(args, update, telegram);
         }
     }
 });
@@ -33,7 +32,7 @@ telegram.on('sticker', (update) => {
 
     const func = commands.FindTrigger('sticker', update.sticker.file_unique_id);
     if (func) {
-        func(update);
+        func(update, telegram);
     }
 });
 
@@ -46,6 +45,14 @@ telegram.on('newChatJoined', (update) => {
     }
 });
 
-setTimeout(() => {
-    telegram.StartPolling();
-}, 1000);
+require('./commands')()
+    .then((cmds) => {
+        commands = cmds;
+        console.log('Commands loaded');
+
+        telegram.StartPolling();
+    })
+    .catch((err) => {
+        console.error('Could not initialize:', err);
+        process.exit(1);
+    })

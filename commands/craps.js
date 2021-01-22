@@ -1,10 +1,8 @@
-const { telegram } = require('../index');
-
 exports.craps = {
     help: 'Heittää kaksi noppaa',
     usage: '/craps',
     aliases: [ 'c' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         telegram.SendDice(update.chat, { disable_notification: true }).then(response => {
             let diceValue = response.dice.value;
 

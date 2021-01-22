@@ -1,6 +1,5 @@
 const mongodb = require('mongodb');
 const mongoUtil = require('../mongoUtil');
-const { telegram } = require('../index');
 const helpCommands = require('./help');
 
 let collection = undefined;
@@ -20,7 +19,7 @@ exports.socialcredit = {
     help: 'Listaa kaikkien pisteet',
     usage: '/socialcredit',
     aliases: [ 'credit', 'sc' ],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         GetCollection().find({}).toArray((err, docs) => {
             let users = {};
             for (let doc of docs) {

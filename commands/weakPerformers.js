@@ -1,4 +1,3 @@
-const { telegram } = require('../index')
 const helpCommands = require('./help')
 const mongoUtil = require('../mongoUtil');
 
@@ -15,7 +14,7 @@ exports.weakPerformers = {
     help: 'Listaa heikot suorittajat ',
     usage: '/heikot',
     aliases: ['heikot', 'weakPeople', 'weak'],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         GetCollection().find({}).toArray((err, docs) => {
             if (docs.length !== 0) {
                 let msg = '<b>Heikkojen suorittajien lista:</b>\n'
@@ -35,7 +34,7 @@ exports.addPerformer = {
     help: 'Lisää uuden heikon suorittaja',
     usage: '/lisääHeikko',
     aliases: ['lisääHeikko', 'addH', 'aH'],
-    func: (args, update) => {
+    func: (args, update, telegram) => {
         if (args.length < 1) {
             helpCommands.usage.func([ 'addPerformer' ], update);
             return;

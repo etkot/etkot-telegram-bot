@@ -1,5 +1,3 @@
-const { telegram } = require('../index')
-
 const untilEndMsg = [
     {
         300: 'KOMPPANIASSA HERÄTYS!',
@@ -24,7 +22,7 @@ exports.tj = {
   help: 'Kertoo nykyisen tj:n',
   usage: '/tänäänjäljellä',
   aliases: ['tjlaskuri'],
-  func: (args, update) => {
+  func: (args, update, telegram) => {
     const startDate = new Date(2020, 6, 6)
     const endDate = new Date(2021, 5, 17)
     const today = new Date()
