@@ -35,49 +35,52 @@ var images = _.range(24).map(num => `${base}/${endings[num]}`)
 //       Too lazy to save it somewhere on disk so this will work for now
 let lastDate
 
-exports.christmas = {
-  help: 'Avaa päivän joulukalenteriluukun',
-  usage: '/christmas',
-  aliases: ['ch', 'luukku'],
-  func: (args, update, telegram) => {
-    const today = dayjs()
-    const christmasDay = dayjs('2020-12-25')
+module.exports = (commander) => {
+  commander.addCommand({
+    commands: [ 'christmas', 'ch', 'luukku' ], 
+    arguments: [],
+    help: 'Avaa päivän joulukalenteriluukun', 
 
-    if (today.get('month') !== 11) {
-      telegram.SendMessage(update.chat, 'Ei nyt ole joulukuu!')
-    } else if (today.format() === christmasDay.format()) {
-      telegram.SendMessage(update.chat, 'Hyvää joulua!', {
-        disable_notification: true,
-        parse_mode: 'html',
-      })
-    } else if (today.format() > christmasDay.format()) {
-      telegram.SendMessage(update.chat, 'Joulu meni jo :D', {
-        disable_notification: true,
-        parse_mode: 'html',
-      })
-    } else {
-      let message_id = null
-      telegram
-        .SendMessage(update.chat, 'Avataan luukkua!!')
-        .then(res => (message_id = res.message_id))
-      telegram
-        .SendLocalPhoto(update.chat, images[today.get('date') - 1], `Luukku ${today.get('date')}`, {
+    func: (args, update, telegram) => {
+      const today = dayjs()
+      const christmasDay = dayjs('2020-12-25')
+
+      if (today.get('month') !== 11) {
+        telegram.SendMessage(update.chat, 'Ei nyt ole joulukuu!')
+      } else if (today.format() === christmasDay.format()) {
+        telegram.SendMessage(update.chat, 'Hyvää joulua!', {
           disable_notification: true,
           parse_mode: 'html',
         })
-        .then(res => {
-          if (message_id) {
-            telegram.DeleteMessage(update.chat, message_id)
-          }
+      } else if (today.format() > christmasDay.format()) {
+        telegram.SendMessage(update.chat, 'Joulu meni jo :D', {
+          disable_notification: true,
+          parse_mode: 'html',
+        })
+      } else {
+        let message_id = null
+        telegram
+          .SendMessage(update.chat, 'Avataan luukkua!!')
+          .then(res => (message_id = res.message_id))
+        telegram
+          .SendLocalPhoto(update.chat, images[today.get('date') - 1], `Luukku ${today.get('date')}`, {
+            disable_notification: true,
+            parse_mode: 'html',
+          })
+          .then(res => {
+            if (message_id) {
+              telegram.DeleteMessage(update.chat, message_id)
+            }
 
-          if (lastDate !== today.date()) {
-            telegram.PinMessage(update.chat, res.result.message_id, { disable_notification: true })
-          }
-          lastDate = today.date()
-        })
-        .catch(reason => {
-          console.log('Failed to send image')
-        })
-    }
-  },
+            if (lastDate !== today.date()) {
+              telegram.PinMessage(update.chat, res.result.message_id, { disable_notification: true })
+            }
+            lastDate = today.date()
+          })
+          .catch(reason => {
+            console.log('Failed to send image')
+          })
+      }
+    },
+  });
 }

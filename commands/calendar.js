@@ -72,70 +72,74 @@ const parseDateTime = (date, time) => {
 }
 
 
+module.exports = (commander) => {
+    commander.addCommand({
+        commands: [ 'calendar', 'cal', 'kalenteri', 'events' ], 
+        arguments: [],
+        help: 'Lähettää kaikki tulevat tapahtumat', 
 
-exports.calendar = {
-    help: 'Lähettää kaikki tulevat tapahtumat',
-    usage: '/calendar',
-    aliases: [ 'cal', 'kalenteri', 'events' ],
-    func: (args, update, telegram) => {
-        GetCollection().find({ dateTime: { $gte: new Date() } }).sort({dateTime: 1}).toArray((err, docs) => {
-            if (docs.length > 0) {
-                let msg = '<b>Kalenteri:</b>';
-                for (let i in docs) {
-                    msg += `\n  ${Number(i)+1}. ${dayjs(docs[i].dateTime).format('DD.MM.YYYY HH.mm')} - ${docs[i].description}`
+        func: (args, update, telegram) => {
+            GetCollection().find({ dateTime: { $gte: new Date() } }).sort({dateTime: 1}).toArray((err, docs) => {
+                if (docs.length > 0) {
+                    let msg = '<b>Kalenteri:</b>';
+                    for (let i in docs) {
+                        msg += `\n  ${Number(i)+1}. ${dayjs(docs[i].dateTime).format('DD.MM.YYYY HH.mm')} - ${docs[i].description}`
+                    }
+
+                    telegram.SendMessage(update.chat, msg, { disable_notification: true, parse_mode: 'HTML' });
+                } 
+                else {
+                    telegram.SendMessage(update.chat, 'Ei tapahtumia', { disable_notification: true });
                 }
-
-                telegram.SendMessage(update.chat, msg, { disable_notification: true, parse_mode: 'HTML' });
-            } 
-            else {
-                telegram.SendMessage(update.chat, 'Ei tapahtumia', { disable_notification: true });
-            }
-        });
-    }
-}
-
-exports.addevent = {
-    help: 'Lisää uuden tapahtuman kalenteriin',
-    usage: '/addevent <date> <time> <description>',
-    aliases: [ 'adde', 'ae' ],
-    func: (args, update, telegram) => {
-        if (args.length < 3) {
-            helpCommands.usage.func([ "addevent" ], update);
-            return;
+            });
         }
+    });
 
-        let date = args.shift();
-        let time = args.shift();
-        let description = args.join(' ');
-
-        let dateTime = parseDateTime(date, time);
+    commander.addCommand({
+        commands: [ 'addevent', 'adde', 'ae' ], 
+        arguments: [ '<date>', '<time>', '<description>' ],
+        help: 'Lisää uuden tapahtuman kalenteriin', 
         
-        GetCollection().insertOne({ dateTime: new Date(dateTime), description });
-        telegram.SendMessage(update.chat, `Tapahtuma lisätty`, { disable_notification: true });
-    }
-}
-
-exports.removeevent = {
-    help: 'Poistaa tapahtuman kalenterista',
-    usage: '/removeevent <id>',
-    aliases: [ 'removee', 're' ],
-    func: (args, update, telegram) => {
-        if (args.length < 1) {
-            helpCommands.usage.func([ "addevent" ], update);
-            return;
-        }
-
-        id = Number(args[0]) - 1;
-
-        GetCollection().find({ dateTime: { $gte: new Date() } }).sort({dateTime: 1}).toArray((err, docs) => {
-            if (docs.length > id) {
-                GetCollection().deleteOne({ _id: docs[id]._id }, (err, results) => {
-                    telegram.SendMessage(update.chat, `Tapahtuma "${docs[id].description}" poistettu`, { disable_notification: true });
-                });
-            } 
-            else {
-                telegram.SendMessage(update.chat, 'Tapahtumaa ei löytynt', { disable_notification: true });
+        func: (args, update, telegram) => {
+            if (args.length < 3) {
+                helpCommands.usage.func([ "addevent" ], update);
+                return;
             }
-        });
-    }
+
+            let date = args.shift();
+            let time = args.shift();
+            let description = args.join(' ');
+
+            let dateTime = parseDateTime(date, time);
+            
+            GetCollection().insertOne({ dateTime: new Date(dateTime), description });
+            telegram.SendMessage(update.chat, `Tapahtuma lisätty`, { disable_notification: true });
+        }
+    });
+
+    commander.addCommand({
+        commands: [ 'removeevent', 'removee', 're' ], 
+        arguments: [ '<id>' ],
+        help: 'Poistaa tapahtuman kalenterista', 
+
+        func: (args, update, telegram) => {
+            if (args.length < 1) {
+                helpCommands.usage.func([ "addevent" ], update);
+                return;
+            }
+
+            id = Number(args[0]) - 1;
+
+            GetCollection().find({ dateTime: { $gte: new Date() } }).sort({dateTime: 1}).toArray((err, docs) => {
+                if (docs.length > id) {
+                    GetCollection().deleteOne({ _id: docs[id]._id }, (err, results) => {
+                        telegram.SendMessage(update.chat, `Tapahtuma "${docs[id].description}" poistettu`, { disable_notification: true });
+                    });
+                } 
+                else {
+                    telegram.SendMessage(update.chat, 'Tapahtumaa ei löytynt', { disable_notification: true });
+                }
+            });
+        }
+    });
 }

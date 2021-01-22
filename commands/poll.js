@@ -92,20 +92,24 @@ const Send = (cmd, args, update, anonymous) => {
     telegram.SendPoll(update.chat, question, [ 'tää', 'epätää', RandomAnimal() ], { is_anonymous: anonymous, disable_notification: true, reply_to_message_id: reply });
 }
 
-exports.poll = {
-    help: 'Lähettää pollin',
-    usage: '/poll <question>',
-    aliases: [ 'p' ],
-    func: (args, update, telegram) => {
-        Send('poll', args, update, false);
-    }
-}
+module.exports = (commander) => {
+    commander.addCommand({
+        commands: [ 'poll', 'p' ], 
+        arguments: [ '<question>' ],
+        help: 'Lähettää pollin', 
+        
+        func: (args, update, telegram) => {
+            Send('poll', args, update, false);
+        }
+    });
 
-exports.pollanonymous = {
-    help: 'Lähettää anonyymin pollin',
-    usage: '/pollanonymous <question>',
-    aliases: [ 'pollanon', 'pa' ],
-    func: (args, update, telegram) => {
-        Send('pollanonymous', args, update, true);
-    }
+    commander.addCommand({
+        commands: [ 'pollanonymous', 'pollanon', 'pa' ], 
+        arguments: [ '<question>' ],
+        help: 'Lähettää anonyymin pollin', 
+        
+        func: (args, update, telegram) => {
+            Send('pollanonymous', args, update, true);
+        }
+    });
 }

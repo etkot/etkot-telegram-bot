@@ -4,7 +4,7 @@ require('./mongoUtil').connectToServer(process.env.DB_NAME);
 const tg = require('./telegram');
 const telegram = new tg(process.env.TG_TOKEN);
 
-let commands;
+let commander;
 
 telegram.on('update', (update) => {
     //console.log(update);
@@ -19,9 +19,7 @@ telegram.on('message', (update) => {
         let args = update.text.substr(1).split(' ');
         let cmd = args.shift().replace(`@${telegram.user.username}`, '');
 
-        if (commands.commands[cmd]) {
-            commands.commands[cmd].func(args, update, telegram);
-        }
+        commander.onCommand(cmd, args, update, telegram);
     }
 });
 
@@ -30,10 +28,7 @@ telegram.on('sticker', (update) => {
         return;
     }
 
-    const func = commands.FindTrigger('sticker', update.sticker.file_unique_id);
-    if (func) {
-        func(update, telegram);
-    }
+    commander.onTrigger(update.sticker.file_unique_id, update, telegram)
 });
 
 telegram.on('newChatJoined', (update) => {
@@ -46,8 +41,8 @@ telegram.on('newChatJoined', (update) => {
 });
 
 require('./commands')()
-    .then((cmds) => {
-        commands = cmds;
+    .then((cmdr) => {
+        commander = cmdr;
         console.log('Commands loaded');
 
         telegram.StartPolling();

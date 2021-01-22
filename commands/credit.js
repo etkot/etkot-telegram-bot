@@ -15,88 +15,88 @@ const GetCollection = () => {
     return collection;
 }
 
-exports.socialcredit = {
-    help: 'Listaa kaikkien pisteet',
-    usage: '/socialcredit',
-    aliases: [ 'credit', 'sc' ],
-    func: (args, update, telegram) => {
-        GetCollection().find({}).toArray((err, docs) => {
-            let users = {};
-            for (let doc of docs) {
-                if (users[doc.username] === undefined)
-                    users[doc.username] = 0;
+module.exports = (commander) => {
+    commander.addCommand({
+        commands: [ 'socialcredit', 'credit', 'sc' ], 
+        arguments: [],
+        help: 'Listaa kaikkien pisteet', 
 
-                for (let credit in doc.plus_credits)
-                    users[doc.username]++;
-                for (let credit in doc.minus_credits)
-                    users[doc.username]--;
-            }
+        func: (args, update, telegram) => {
+            GetCollection().find({}).toArray((err, docs) => {
+                let users = {};
+                for (let doc of docs) {
+                    if (users[doc.username] === undefined)
+                        users[doc.username] = 0;
 
-            var sortable = [];
-            for (var user in users) {
-                sortable.push({ user, credit: users[user] });
-            }
+                    for (let credit in doc.plus_credits)
+                        users[doc.username]++;
+                    for (let credit in doc.minus_credits)
+                        users[doc.username]--;
+                }
 
-            sortable.sort(function(a, b) {
-                return b.credit - a.credit;
+                var sortable = [];
+                for (var user in users) {
+                    sortable.push({ user, credit: users[user] });
+                }
+
+                sortable.sort(function(a, b) {
+                    return b.credit - a.credit;
+                });
+
+                let msg = '<b>Social credit:</b>\n';
+                for (let obj of sortable) {
+                    msg += `  ${obj.user}: ${obj.credit * 20}\n`;
+                }
+
+                telegram.SendMessage(update.chat, msg, { disable_notification: true, parse_mode: 'html' });
             });
-
-            let msg = '<b>Social credit:</b>\n';
-            for (let obj of sortable) {
-                msg += `  ${obj.user}: ${obj.credit * 20}\n`;
-            }
-
-            telegram.SendMessage(update.chat, msg, { disable_notification: true, parse_mode: 'html' });
-        });
-    },
-    triggers: [
-        {
-            type: 'sticker',
-            on: 'AgADAgADf3BGHA',
-            func: (update) => {
-                if (update.reply_to_message === undefined)
-                    return;
-
-                const fromUser = update.from.username;
-                const toUser = update.reply_to_message.from.username;
-                
-                const credit = {
-                    from: fromUser,
-                    msg: update.reply_to_message.message_id,
-                    date: update.date,
-                }
-            
-                GetCollection().updateOne({ username: toUser }, { $push: { plus_credits: credit } })
-                    .then((result) => {
-                        if (result.modifiedCount == 0) {
-                            GetCollection().insertOne({ username: toUser, plus_credits: [ credit ] });
-                        }
-                    });
-            }
-        },
-        {
-            type: 'sticker',
-            on: 'AgADAwADf3BGHA',
-            func: (update) => {
-                if (update.reply_to_message === undefined)
-                    return;
-                
-                const fromUser = update.from.username;
-                const toUser = update.reply_to_message.from.username;
-                
-                const credit = {
-                    from: fromUser,
-                    msg: update.reply_to_message.message_id,
-                    date: update.date,
-                }
-            
-                GetCollection().updateOne({ username: toUser }, { $push: { minus_credits: credit } })
-                    .then((result) => {
-                        if (result.modifiedCount == 0) {
-                            GetCollection().insertOne({ username: toUser, minus_credits: [ credit ] });
-                        }
-                    });
-            }
         }
-    ]
+    });
+
+    commander.addTrigger({
+        ids: [ 'AgADAgADf3BGHA' ],
+        func: (update) => {
+            if (update.reply_to_message === undefined)
+                return;
+
+            const fromUser = update.from.username;
+            const toUser = update.reply_to_message.from.username;
+            
+            const credit = {
+                from: fromUser,
+                msg: update.reply_to_message.message_id,
+                date: update.date,
+            }
+        
+            GetCollection().updateOne({ username: toUser }, { $push: { plus_credits: credit } })
+                .then((result) => {
+                    if (result.modifiedCount == 0) {
+                        GetCollection().insertOne({ username: toUser, plus_credits: [ credit ] });
+                    }
+                });
+        }
+    });
+    commander.addTrigger({
+        ids: [ 'AgADAwADf3BGHA' ],
+        func: (update) => {
+            if (update.reply_to_message === undefined)
+                return;
+            
+            const fromUser = update.from.username;
+            const toUser = update.reply_to_message.from.username;
+            
+            const credit = {
+                from: fromUser,
+                msg: update.reply_to_message.message_id,
+                date: update.date,
+            }
+        
+            GetCollection().updateOne({ username: toUser }, { $push: { minus_credits: credit } })
+                .then((result) => {
+                    if (result.modifiedCount == 0) {
+                        GetCollection().insertOne({ username: toUser, minus_credits: [ credit ] });
+                    }
+                });
+        }
+    });
 }

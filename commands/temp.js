@@ -6,17 +6,20 @@ const getTempData = async () => {
     return data
 }
 
-exports.temp = {
-    help: 'Antaan Lommin parvekkeen lämpötilan',
-    usage: '/temp',
-    aliases: ['t', 'lomminparveke'],
-    func: async (args, update, telegram) => {
-        const data = await getTempData()
-        const temp = data.data.data.temperature
-        const feels = data.data.data.feels_like
-        telegram.SendMessage(
-            update.chat, 
-            `<b>Lämpötila: </b> ${Math.round(temp * 10) / 10}°C \n<b>Tuntuu kuin: </b> ${Math.round(feels * 10) / 10}°C`, 
-            { disable_notification: true, parse_mode: 'html' })
-    },
+module.exports = (commander) => {
+    commander.addCommand({
+        commands: [ 'temp', 't', 'lomminparveke' ], 
+        arguments: [],
+        help: 'Antaan Lommin parvekkeen lämpötilan', 
+        
+        func: async (args, update, telegram) => {
+            const data = await getTempData()
+            const temp = data.data.data.temperature
+            const feels = data.data.data.feels_like
+            telegram.SendMessage(
+                update.chat, 
+                `<b>Lämpötila: </b> ${Math.round(temp * 10) / 10}°C \n<b>Tuntuu kuin: </b> ${Math.round(feels * 10) / 10}°C`, 
+                { disable_notification: true, parse_mode: 'html' })
+        },
+    });
 }

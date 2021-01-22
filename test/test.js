@@ -4,7 +4,7 @@ const commands = require('../commands');
 
 describe('Commands', function() {
     describe('Initialization', function() {
-        it('No duplicate commands or aliases', function(done) {
+        it('No duplicate commands', function(done) {
             commands()
                 .then(() => done())
                 .catch(done)

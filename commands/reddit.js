@@ -23,15 +23,6 @@ const SendSubredditImage = (subreddit, update, telegram) => {
     })
 }
 
-exports.phmeme = {
-    help: "Lähettää top ProgrammerHumor memen",
-    usage: "/phmeme",
-    aliases: ["ph", "phm", "ProgrammerHumor"],
-    func: (args, update, telegram) => {
-        SendSubredditImage("ProgrammerHumor", update, telegram)
-    },
-}
-
 const subreddits = [
     "dankmemes",
     "me_irl",
@@ -40,12 +31,25 @@ const subreddits = [
     "comedynecrophilia"
 ]
 
-exports.meme = {
-    help: "Lähettää top universaalin memen",
-    usage: "/meme",
-    aliases: ["m"],
-    func: (args, update, telegram) => {
-        let index = Math.floor(Math.random() * subreddits.length)
-        SendSubredditImage(subreddits[index], update, telegram)
-    },
+module.exports = (commander) => {
+    commander.addCommand({
+        commands: [ 'phmeme', 'ph', 'phm', 'ProgrammerHumor' ], 
+        arguments: [],
+        help: 'Lähettää top ProgrammerHumor memen', 
+        
+        func: (args, update, telegram) => {
+            SendSubredditImage("ProgrammerHumor", update, telegram)
+        },
+    });
+
+    commander.addCommand({
+        commands: [ 'meme', 'm' ], 
+        arguments: [],
+        help: 'Lähettää top universaalin memen',
+
+        func: (args, update, telegram) => {
+            let index = Math.floor(Math.random() * subreddits.length)
+            SendSubredditImage(subreddits[index], update, telegram)
+        },
+    });
 }

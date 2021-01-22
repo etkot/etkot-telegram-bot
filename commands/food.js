@@ -146,200 +146,214 @@ const foodAlert = new CronJob('0 10 * * *', function () {
 
 foodAlert.start()
 
-exports.enableFoodAlerts = {
-    help: 'Tarkistaa päivittäin onko lempiruokia saatavilla',
-    usage: '/enableFoodAlerts',
-    aliases: ['EFA'],
-    func: (args, update, telegram) => {
-        foodAlert.start()
-        console.log('FoodAlerts enabled')
-        telegram.SendMessage(update.chat, 'FoodAlerts enabled', { disable_notification: true, parse_mode: 'html' })
-    },
-}
+module.exports = (commander) => {
+    commander.addCommand({
+        commands: [ 'enablefoodalerts', 'efa' ], 
+        arguments: [],
+        help: 'Tarkistaa päivittäin onko lempiruokia saatavilla', 
 
-exports.disableFoodAlerts = {
-    help: 'Lopettaa lempiruokien tarkistamisen',
-    usage: '/disableFoodAlerts',
-    aliases: ['DFA'],
-    func: (args, update, telegram) => {
-        foodAlert.stop()
-        console.log('FoodAlerts disabled')
-        telegram.SendMessage(update.chat, 'FoodAlerts disabled', { disable_notification: true, parse_mode: 'html' })
-    },
-}
+        func: (args, update, telegram) => {
+            foodAlert.start()
+            console.log('FoodAlerts enabled')
+            telegram.SendMessage(update.chat, 'FoodAlerts enabled', { disable_notification: true, parse_mode: 'html' })
+        },
+    });
 
-exports.menuNewton = {
-    help: 'Kertoo Newtonin menun',
-    usage: '/menuNewton',
-    aliases: ['menuN', 'mN', 'newton'],
-    func: async (args, update, telegram) => {
-        const fullmenu = await fetchMenus()
-        const newtonMenu = fullmenu.data?.restaurants_tty?.res_newton?.meals
+    commander.addCommand({
+        commands: [ 'disablefoodalerts', 'dfa' ], 
+        arguments: [],
+        help: 'Lopettaa lempiruokien tarkistamisen', 
 
-        const menuString = createMenuString(newtonMenu)
+        func: (args, update, telegram) => {
+            foodAlert.stop()
+            console.log('FoodAlerts disabled')
+            telegram.SendMessage(update.chat, 'FoodAlerts disabled', { disable_notification: true, parse_mode: 'html' })
+        },
+    });
 
-        telegram.SendMessage(update.chat, `<b>Newton:</b> \n ${menuString}`, {
-            parse_mode: 'HTML',
-            disable_notification: true,
-        })
-    },
-}
+    commander.addCommand({
+        commands: [ 'menunewton', 'menun', 'mn', 'newton' ], 
+        arguments: [],
+        help: 'Kertoo Newtonin menun', 
 
-exports.pizza = {
-    help: 'Kertoo Newtonin pizza-menun',
-    usage: '/pizza',
-    aliases: ['pitsa', 'pistsa'],
-    func: async (args, update, telegram) => {
-        const fullmenu = await fetchMenus()
-        const newtonPizza = fullmenu.data?.restaurants_tty?.res_newton_street?.meals
+        func: async (args, update, telegram) => {
+            const fullmenu = await fetchMenus()
+            const newtonMenu = fullmenu.data?.restaurants_tty?.res_newton?.meals
 
-        const menuString = newtonPizza.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :('
+            const menuString = createMenuString(newtonMenu)
 
-        telegram.SendMessage(update.chat, `<b>Newton Pizza:</b> \n ${menuString}`, {
-            parse_mode: 'HTML',
-            disable_notification: true,
-        })
-    },
-}
+            telegram.SendMessage(update.chat, `<b>Newton:</b> \n ${menuString}`, {
+                parse_mode: 'HTML',
+                disable_notification: true,
+            })
+        },
+    });
 
-exports.menuHertsi = {
-    help: 'Kertoo Hertsin menun',
-    usage: '/menuHertsi',
-    aliases: ['menuH', 'mH', 'hertsi'],
-    func: async (args, update, telegram) => {
-        const fullmenu = await fetchMenus()
-        const hertsiMenu = fullmenu.data?.restaurants_tty?.res_hertsi?.meals
+    commander.addCommand({
+        commands: [ 'pizza', 'pitsa', 'pistsa' ], 
+        arguments: [],
+        help: 'Kertoo Newtonin pizza-menun', 
 
-        const menuString = createMenuString(hertsiMenu)
+        func: async (args, update, telegram) => {
+            const fullmenu = await fetchMenus()
+            const newtonPizza = fullmenu.data?.restaurants_tty?.res_newton_street?.meals
 
-        telegram.SendMessage(update.chat, `<b>Hertsi:</b> \n ${menuString}`, {
-            parse_mode: 'HTML',
-            disable_notification: true,
-        })
-    },
-}
-exports.menuReaktori = {
-    help: 'Kertoo Reaktorin menun',
-    usage: '/menuReaktori',
-    aliases: ['menuR', 'mR', 'reaktori'],
-    func: async (args, update, telegram) => {
-        const fullmenu = await fetchMenus()
-        const reaktoriMenu = fullmenu.data?.restaurants_tty?.res_reaktori?.meals
+            const menuString = newtonPizza.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :('
 
-        var i
-        for (i = reaktoriMenu.length - 1; i >= 0; i -= 1) {
-            if (reaktoriMenu[i].kok === 'Jälkiruoka' || reaktoriMenu[i].kok === 'Salaattiaterian proteiiniosa') {
-                reaktoriMenu.splice(i, 1)
+            telegram.SendMessage(update.chat, `<b>Newton Pizza:</b> \n ${menuString}`, {
+                parse_mode: 'HTML',
+                disable_notification: true,
+            })
+        },
+    });
+
+    commander.addCommand({
+        commands: [ 'menuhertsi', 'menuh', 'mh', 'hertsi' ], 
+        arguments: [],
+        help: 'Kertoo Hertsin menun', 
+
+        func: async (args, update, telegram) => {
+            const fullmenu = await fetchMenus()
+            const hertsiMenu = fullmenu.data?.restaurants_tty?.res_hertsi?.meals
+
+            const menuString = createMenuString(hertsiMenu)
+
+            telegram.SendMessage(update.chat, `<b>Hertsi:</b> \n ${menuString}`, {
+                parse_mode: 'HTML',
+                disable_notification: true,
+            })
+        },
+    });
+    
+    commander.addCommand({
+        commands: [ 'menureaktori', 'menur', 'mr', 'reaktori' ], 
+        arguments: [],
+        help: 'Kertoo Reaktorin menun',
+
+        func: async (args, update, telegram) => {
+            const fullmenu = await fetchMenus()
+            const reaktoriMenu = fullmenu.data?.restaurants_tty?.res_reaktori?.meals
+
+            var i
+            for (i = reaktoriMenu.length - 1; i >= 0; i -= 1) {
+                if (reaktoriMenu[i].kok === 'Jälkiruoka' || reaktoriMenu[i].kok === 'Salaattiaterian proteiiniosa') {
+                    reaktoriMenu.splice(i, 1)
+                }
             }
-        }
 
-        const menuString = createMenuString(reaktoriMenu)
+            const menuString = createMenuString(reaktoriMenu)
 
-        telegram.SendMessage(update.chat, `<b>Reaktori:</b> \n ${menuString}`, {
-            parse_mode: 'HTML',
-            disable_notification: true,
-        })
-    },
-}
+            telegram.SendMessage(update.chat, `<b>Reaktori:</b> \n ${menuString}`, {
+                parse_mode: 'HTML',
+                disable_notification: true,
+            })
+        },
+    });
 
-exports.menuKonehuone = {
-    help: 'Kertoo Café Konehuoneen menun',
-    usage: '/menuKonehuone',
-    aliases: ['menuK', 'mK', 'konehuone'],
-    func: async (args, update, telegram) => {
-        const fullmenu = await fetchMenus()
+    commander.addCommand({
+        commands: [ 'menukonehuone', 'menuk', 'mk', 'konehuone' ], 
+        arguments: [],
+        help: 'Kertoo Café Konehuoneen menun',
+
+        func: async (args, update, telegram) => {
+            const fullmenu = await fetchMenus()
+            
+            const konehuoneMenu = fullmenu.data?.restaurants_tty?.res_konehuone?.meals
+
+            const menuString = createMenuString(konehuoneMenu)
+
+            telegram.SendMessage(update.chat, `<b>Konehuone:</b> \n ${menuString}`, {
+                parse_mode: 'HTML',
+                disable_notification: true,
+            })
+        },
+    });
+
+    commander.addCommand({
+        commands: [ 'menus', 'food', 'ruoka' ], 
+        arguments: [],
+        help: 'Kertoo päivän menut',
+
+        func: async (args, update, telegram) => {
+            const fullmenu = await fetchMenus()
+            const reaktoriMenu = fullmenu.data?.restaurants_tty?.res_reaktori?.meals
+            const hertsiMenu = fullmenu.data?.restaurants_tty?.res_hertsi?.meals
+            const newtonMenu = fullmenu.data?.restaurants_tty?.res_newton?.meals
+            const newtonPizza = fullmenu.data?.restaurants_tty?.res_newton_street?.meals
+            const konehuoneMenu = fullmenu.data?.restaurants_tty?.res_konehuone?.meals
+
+            var i
+            for (i = reaktoriMenu?.length - 1; i >= 0; i -= 1) {
+                if (reaktoriMenu[i].kok === 'Jälkiruoka' || reaktoriMenu[i].kok === 'Salaattiaterian proteiiniosa') {
+                    reaktoriMenu.splice(i, 1)
+                }
+            }
+
+            const menuRektoriString = createMenuString(reaktoriMenu)
+            const menuHertsiString = createMenuString(hertsiMenu)
+            const menuNewtonString = createMenuString(newtonMenu)
+            const menuPizzaString = newtonPizza?.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :( \n'
+            const menuKonehuoneString = createMenuString(konehuoneMenu)
+
+            telegram.SendMessage(
+                update.chat,
+                `<b>Reaktori:</b>\n ${menuRektoriString}\n<b>Newton:</b>\n ${menuNewtonString}\n<b>Newton Pizza:</b>\n ${menuPizzaString}\n<b>Hertsi:</b>\n ${menuHertsiString}\n<b>Konehuone:</b>\n ${menuKonehuoneString}`,
+                { parse_mode: 'HTML', disable_notification: true }
+            )
+        },
+    });
+
+    commander.addCommand({
+        commands: [ 'fondue', 'foodpoll', 'fp' ], 
+        arguments: [],
+        help: 'Luo pollin ruokapaikan valitsemiselle',
         
-        const konehuoneMenu = fullmenu.data?.restaurants_tty?.res_konehuone?.meals
+        func: (args, update, telegram) => {
+            telegram.SendPoll(update.chat, 'Fondue?', ['Reaktori', 'Newton', 'Hertsi', 'Såås'], {
+                disable_notification: true,
+                is_anonymous: false,
+                allows_multiple_answers: true,
+            })
+        },
+    });
 
-        const menuString = createMenuString(konehuoneMenu)
-
-        telegram.SendMessage(update.chat, `<b>Konehuone:</b> \n ${menuString}`, {
-            parse_mode: 'HTML',
-            disable_notification: true,
-        })
-    },
-}
-
-exports.menu = {
-    help: 'Kertoo päivän menut',
-    usage: '/menus',
-    aliases: ['menus', 'food', 'ruoka'],
-    func: async (args, update, telegram) => {
-        const fullmenu = await fetchMenus()
-        const reaktoriMenu = fullmenu.data?.restaurants_tty?.res_reaktori?.meals
-        const hertsiMenu = fullmenu.data?.restaurants_tty?.res_hertsi?.meals
-        const newtonMenu = fullmenu.data?.restaurants_tty?.res_newton?.meals
-        const newtonPizza = fullmenu.data?.restaurants_tty?.res_newton_street?.meals
-        const konehuoneMenu = fullmenu.data?.restaurants_tty?.res_konehuone?.meals
-
-        var i
-        for (i = reaktoriMenu?.length - 1; i >= 0; i -= 1) {
-            if (reaktoriMenu[i].kok === 'Jälkiruoka' || reaktoriMenu[i].kok === 'Salaattiaterian proteiiniosa') {
-                reaktoriMenu.splice(i, 1)
+    commander.addCommand({
+        commands: [ 'addfood', 'lisääruoka', 'addf', 'af' ], 
+        arguments: [],
+        help: 'Lisää uuden lempiruuan',
+        
+        func: (args, update, telegram) => {
+            if (args.length < 1) {
+                helpCommands.usage.func(['addFood'], update)
+                return
             }
-        }
 
-        const menuRektoriString = createMenuString(reaktoriMenu)
-        const menuHertsiString = createMenuString(hertsiMenu)
-        const menuNewtonString = createMenuString(newtonMenu)
-        const menuPizzaString = newtonPizza?.length >= 1 ? createPizzaString(newtonPizza) : 'Ei ole :( \n'
-        const menuKonehuoneString = createMenuString(konehuoneMenu)
+            let food = args.join(' ')
 
-        telegram.SendMessage(
-            update.chat,
-            `<b>Reaktori:</b>\n ${menuRektoriString}\n<b>Newton:</b>\n ${menuNewtonString}\n<b>Newton Pizza:</b>\n ${menuPizzaString}\n<b>Hertsi:</b>\n ${menuHertsiString}\n<b>Konehuone:</b>\n ${menuKonehuoneString}`,
-            { parse_mode: 'HTML', disable_notification: true }
-        )
-    },
-}
+            GetCollection().findOne({ food }, (err, result) => {
+                if (result === null) {
+                    GetCollection().insertOne({ food })
+                    telegram.SendMessage(update.chat, `Lempiruoka lisätty`, { disable_notification: true })
+                } else {
+                    telegram.SendMessage(update.chat, `Lempiruoka on jo listassa`, { disable_notification: true })
+                }
+            })
+        },
+    });
 
-exports.fondue = {
-    help: 'Luo pollin ruokapaikan valitsemiselle',
-    usage: 'fondue',
-    aliases: ['foodPoll', 'fp'],
-    func: (args, update, telegram) => {
-        telegram.SendPoll(update.chat, 'Fondue?', ['Reaktori', 'Newton', 'Hertsi', 'Såås'], {
-            disable_notification: true,
-            is_anonymous: false,
-            allows_multiple_answers: true,
-        })
-    },
-}
-
-exports.addFood = {
-    help: 'Lisää uuden lempiruuan',
-    usage: '/addFood',
-    aliases: ['lisääRuoka', 'addF', 'aF'],
-    func: (args, update, telegram) => {
-        if (args.length < 1) {
-            helpCommands.usage.func(['addFood'], update)
-            return
-        }
-
-        let food = args.join(' ')
-
-        GetCollection().findOne({ food }, (err, result) => {
-            if (result === null) {
-                GetCollection().insertOne({ food })
-                telegram.SendMessage(update.chat, `Lempiruoka lisätty`, { disable_notification: true })
-            } else {
-                telegram.SendMessage(update.chat, `Lempiruoka on jo listassa`, { disable_notification: true })
-            }
-        })
-    },
-}
-
-exports.foods = {
-    help: 'Listaa tallessa olevat lempiruuat',
-    usage: '/foods',
-    aliases: ['lempiruuat'],
-    func: (args, update, telegram) => {
-        GetCollection().find({}).toArray((err, docs) => {
-            let msg = '<b>Lempiruuat:</b>\n'
-            for (let doc of docs) {
-                msg += `  ${doc.food}\n`
-            }
-            telegram.SendMessage(update.chat, msg, { disable_notification: true, parse_mode: 'html' })
-        })
-    },
+    commander.addCommand({
+        commands: [ 'foods', 'lempiruuat' ], 
+        arguments: [],
+        help: 'Listaa tallessa olevat lempiruuat',
+        
+        func: (args, update, telegram) => {
+            GetCollection().find({}).toArray((err, docs) => {
+                let msg = '<b>Lempiruuat:</b>\n'
+                for (let doc of docs) {
+                    msg += `  ${doc.food}\n`
+                }
+                telegram.SendMessage(update.chat, msg, { disable_notification: true, parse_mode: 'html' })
+            })
+        },
+    });
 }
