@@ -7,7 +7,7 @@ const getTempData = async () => {
     return data
 }
 
-exports.craps = {
+exports.temp = {
     help: 'Antaan Lommin parvekkeen lämpötilan',
     usage: '/temp',
     aliases: ['t', 'lomminparveke'],
