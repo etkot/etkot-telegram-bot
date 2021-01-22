@@ -1,8 +1,8 @@
 exports.help = {
     usage: '/help [command]',
     aliases: [ 'h' ],
-    func: (args, update, telegram) => {
-        const commands = require('./index').commands;
+    func: async (args, update, telegram) => {
+        const commands = (await require('./index')()).commands;
         let msg = '';
 
         if (args.length > 0) {

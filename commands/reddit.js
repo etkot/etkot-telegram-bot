@@ -1,6 +1,6 @@
 const axios = require("axios")
 
-const SendSubredditImage = (subreddit, update) => {
+const SendSubredditImage = (subreddit, update, telegram) => {
     axios({
         method: "GET",
         url: `https://www.reddit.com/r/${subreddit}/top/.json`,
@@ -28,7 +28,7 @@ exports.phmeme = {
     usage: "/phmeme",
     aliases: ["ph", "phm", "ProgrammerHumor"],
     func: (args, update, telegram) => {
-        SendSubredditImage("ProgrammerHumor", update)
+        SendSubredditImage("ProgrammerHumor", update, telegram)
     },
 }
 
@@ -46,6 +46,6 @@ exports.meme = {
     aliases: ["m"],
     func: (args, update, telegram) => {
         let index = Math.floor(Math.random() * subreddits.length)
-        SendSubredditImage(subreddits[index], update)
+        SendSubredditImage(subreddits[index], update, telegram)
     },
 }
