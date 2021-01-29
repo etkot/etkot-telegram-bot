@@ -2,8 +2,8 @@ const axios = require('axios')
 const port = process.env.LOMMI_API
 
 const getTempData = async () => {
-    let data = await axios.get(port)
-    return data
+    let res = await axios.get(port)
+    return res.data.data;
 }
 
 module.exports = (commander) => {
@@ -13,9 +13,7 @@ module.exports = (commander) => {
         help: 'Antaan Lommin parvekkeen lämpötilan', 
         
         func: async (args, update, telegram) => {
-            const data = await getTempData()
-            const temp = data.data.data.temperature
-            const feels = data.data.data.feels_like
+            const { temperature: temp, feels_like: feels } = await getTempData()
             telegram.SendMessage(
                 update.chat, 
                 `<b>Lämpötila: </b> ${Math.round(temp * 10) / 10}°C \n<b>Tuntuu kuin: </b> ${Math.round(feels * 10) / 10}°C`, 
