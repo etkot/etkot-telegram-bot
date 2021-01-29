@@ -1,7 +1,7 @@
 const dayjs = require('dayjs')
 const _ = require('lodash')
 
-const base = './images/joulukalenteri'
+const base = '../images/joulukalenteri'
 const endings = [
   'nyssetulee.png', //1
   'tontutseuraa.png', //2
