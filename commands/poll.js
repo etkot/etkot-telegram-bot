@@ -72,7 +72,7 @@ const animals = [
 
 const RandomAnimal = () => animals[Math.floor(Math.random() * Math.floor(animals.length))];
 
-const Send = (cmd, args, update, anonymous) => {
+const Send = (cmd, args, update, telegram, anonymous) => {
     question = args.join(' ');
     let reply = undefined;
 
@@ -99,7 +99,7 @@ module.exports = (commander) => {
         help: 'Lähettää pollin', 
         
         func: (args, update, telegram) => {
-            Send('poll', args, update, false);
+            Send('poll', args, update, telegram, false);
         }
     });
 
@@ -109,7 +109,7 @@ module.exports = (commander) => {
         help: 'Lähettää anonyymin pollin', 
         
         func: (args, update, telegram) => {
-            Send('pollanonymous', args, update, true);
+            Send('pollanonymous', args, update, telegram, true);
         }
     });
 }
