@@ -1,13 +1,16 @@
-const assert = require('assert');
+const assert = require('assert')
 
-const commands = require('../commands');
+const commands = require('../dist/commands').default
 
-describe('Commands', function() {
-    describe('Initialization', function() {
-        it('No duplicate commands', function(done) {
+describe('Commands', function () {
+    describe('Initialization', function () {
+        it('No duplicate commands', function (done) {
             commands()
-                .then(() => done())
+                .then(() => {
+                    console.log('done')
+                    done()
+                })
                 .catch(done)
-        });
-    });
-});
+        })
+    })
+})
