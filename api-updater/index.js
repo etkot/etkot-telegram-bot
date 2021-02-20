@@ -134,7 +134,7 @@ main()
 /*  TS type file creation  */
 /***************************/
 
-const parseType = (type) => {
+const parseType = (type, tgPrefix) => {
     if (type === 'Integer') type = 'number'
     if (type === 'Int') type = 'number'
     if (type === 'Float') type = 'number'
@@ -143,21 +143,23 @@ const parseType = (type) => {
     if (type === 'Boolean') type = 'boolean'
     if (type === 'True') type = 'boolean'
 
-    if (type.indexOf(' or ') !== -1) type = type.split(' or ').map(parseType).join('|')
+    const parseTypeRecursive = (el) => parseType(el, tgPrefix)
+
+    if (type.indexOf(' or ') !== -1) type = type.split(' or ').map(parseTypeRecursive).join('|')
     if (type.indexOf('rray of ') !== -1) {
         let arrayType = type.replace(/Array of (.+)/gi, '$1')
         if (arrayType.indexOf(', ') !== -1 || arrayType.indexOf(' and ') !== -1 || arrayType.indexOf(' or ') !== -1)
             type = `Array<${arrayType
                 .split(/(?:, )|(?: and )|(?: or )/g)
-                .map(parseType)
+                .map(parseTypeRecursive)
                 .join('|')}>`
-        else type = `Array<${parseType(arrayType)}>`
+        else type = `Array<${parseTypeRecursive(arrayType)}>`
     }
 
     if (!tgTypes.find((t) => t.name === type) && tgTypes.find((t) => t.name === type.substring(0, type.length - 1)))
         type = type.substring(0, type.length - 1)
 
-    if (tgTypes.find((t) => t.name === type)) type = `TG.${type}`
+    if (tgTypes.find((t) => t.name === type) && tgPrefix?.length > 0) type = `${tgPrefix}.${type}`
 
     return type
 }
@@ -170,35 +172,35 @@ const makeTsTypeFile = (data) => {
         ts += ' '.repeat(tabs * tabSize) + str + '\n'
     }
 
-    addLine(0, 'export namespace TG {')
-    addLine(1, '/** Any Telegram object */')
-    addLine(1, 'export interface TGObject {')
-    addLine(2, '/** Name of the interface that implements this interface */')
-    addLine(2, 'objectName: string,')
-    addLine(1, '}')
-    addLine(1, '/** Any Telegram type */')
-    addLine(1, 'export interface Type extends TGObject {}')
-    addLine(1, '/** Any Telegram method */')
-    addLine(1, 'export interface Method extends TGObject {}')
+    //addLine(0, 'export namespace TG {')
+    addLine(0, '/** Any Telegram object */')
+    addLine(0, 'export interface TGObject {')
+    addLine(1, '/** Name of the interface that implements this interface */')
+    addLine(1, 'objectName: string,')
+    addLine(0, '}')
+    addLine(0, '/** Any Telegram type */')
+    addLine(0, 'export type Type = TGObject')
+    addLine(0, '/** Any Telegram method */')
+    addLine(0, 'export type Method = TGObject')
     addLine(0, '')
 
-    addLine(1, '/** Possible responses from the Telegram API */')
-    addLine(1, 'export type ResponseResult = Type | Array<Type> | string | number | true;')
+    addLine(0, '/** Possible responses from the Telegram API */')
+    addLine(0, 'export type ResponseResult = Type | Array<Type> | string | number | true')
     addLine(0, '')
 
-    addLine(1, '/** Response from a Telegram API method */')
-    addLine(1, 'export interface Response {')
-    addLine(2, '/** Whether the request was successful and the result*/')
-    addLine(2, 'ok: boolean,')
-    addLine(2, '/** Result of the query if ok is true */')
-    addLine(2, 'result?: ResponseResult,')
-    addLine(2, '/** Error code if ok is false */')
-    addLine(2, 'error_code?: number,')
-    addLine(2, '/** Human-readable description */')
-    addLine(2, 'description?: string,')
-    addLine(2, '/** Optional field which can help to automatically handle some error */')
-    addLine(2, 'parameters?: ResponseParameters,')
-    addLine(1, '}')
+    addLine(0, '/** Response from a Telegram API method */')
+    addLine(0, 'export interface Response {')
+    addLine(1, '/** Whether the request was successful and the result*/')
+    addLine(1, 'ok: boolean,')
+    addLine(1, '/** Result of the query if ok is true */')
+    addLine(1, 'result?: ResponseResult,')
+    addLine(1, '/** Error code if ok is false */')
+    addLine(1, 'error_code?: number,')
+    addLine(1, '/** Human-readable description */')
+    addLine(1, 'description?: string,')
+    addLine(1, '/** Optional field which can help to automatically handle some error */')
+    addLine(1, 'parameters?: ResponseParameters,')
+    addLine(0, '}')
     addLine(0, '')
 
     for (let i = 0; i < data.length; i++) {
@@ -206,32 +208,59 @@ const makeTsTypeFile = (data) => {
         const isUnion = obj.types !== undefined
         const isType = obj.name[0] === obj.name[0].toUpperCase()
 
-        addLine(1, `/** ${obj.description} */`)
+        addLine(0, `/** ${obj.description} */`)
 
         if (isUnion) {
-            addLine(1, `export type ${obj.name} = ${obj.types.join(' | ')};`)
+            addLine(0, `export type ${obj.name} = ${obj.types.join(' | ')}`)
         } else {
-            addLine(1, `export interface ${obj.name} extends ${isType ? 'Type' : 'Method'} {`)
+            addLine(0, `export class ${obj.name} implements ${isType ? 'Type' : 'Method'} {`)
 
-            addLine(2, `/** Name of this interface as a string */`)
-            addLine(2, `objectName: '${obj.name}'`)
+            addLine(1, `/** Name of this interface as a string */`)
+            addLine(1, `objectName = '${obj.name}'`)
 
             for (let j = 0; j < obj.fields?.length; j++) {
                 const { name, optional, description, type } = obj.fields[j]
 
-                addLine(2, `/** ${description} */`)
-                addLine(2, `${name}${optional ? '?' : ''}: ${parseType(type)},`)
+                addLine(1, `/** ${description} */`)
+                addLine(1, `${name}${optional ? '?' : ''}: ${parseType(type)}`)
             }
 
-            addLine(1, '}')
+            if (obj.fields) {
+                addLine(0, '')
+
+                let fields = [...obj.fields]
+                fields.sort((a, b) => a.optional * 2 - 1 - (b.optional * 2 - 1))
+
+                let str = 'constructor('
+                for (let j = 0; j < fields.length; j++) {
+                    const { name, optional, type } = fields[j]
+
+                    str += `${name}${optional ? '?' : ''}: ${parseType(type)}, `
+                }
+                str = str.slice(0, -2)
+                str += ') {'
+
+                addLine(1, str)
+
+                for (let j = 0; j < fields.length; j++) {
+                    const { name } = fields[j]
+
+                    addLine(2, `this.${name} = ${name}`)
+                }
+
+                addLine(1, '}')
+            }
+
+            addLine(0, '}')
         }
 
         addLine(0, '')
     }
 
-    addLine(0, '}')
+    //addLine(0, '}')
 
-    fs.writeFile(path.join(__dirname, '../types/telegram.ts'), ts, () => {
+    fs.writeFile(path.join(__dirname, '../src/types/telegram.ts'), ts, (err) => {
+        if (err) throw err
         console.log('Typescript types written in types/telegram.ts')
     })
 }
@@ -256,9 +285,10 @@ const makeTsMethodFile = (data) => {
         const required = method.fields?.filter((field) => !field.optional)
         const optional = method.fields?.filter((field) => field.optional)
 
-        const ftntsc = (field) => `${field.name}: ${parseType(field.type)}`
-        const ftnts = (field) => `${field.name}?: ${parseType(field.type)}`
+        const ftntsc = (field) => `${field.name}: ${parseType(field.type, 'TG')}`
+        const ftnts = (field) => `${field.name}?: ${parseType(field.type, 'TG')}`
         const ftns = (field) => `${field.name}`
+        const ftnso = (field) => `optional?.${field.name}`
 
         const hasRequired = required?.length > 0
         const hasOptional = optional?.length > 0
@@ -270,7 +300,7 @@ const makeTsMethodFile = (data) => {
         const paramsString = requiredParamsString + middleString + optionalParamsString
 
         const requiredObjectString = hasRequired ? required.map(ftns).join(', ') : ''
-        const optionalObjectString = hasOptional ? '...optional' : ''
+        const optionalObjectString = hasOptional ? optional.map(ftnso).join(', ') : ''
 
         const objectString = requiredObjectString + middleString + optionalObjectString
 
@@ -282,7 +312,7 @@ const makeTsMethodFile = (data) => {
             const element = returnTypeRegexOutput[i]
 
             const returnTypeRegexOut = element[1] || element[2] || element[3]
-            returnTypes.push(returnTypeRegexOut === 'True' ? 'true' : parseType(returnTypeRegexOut))
+            returnTypes.push(returnTypeRegexOut === 'True' ? 'true' : parseType(returnTypeRegexOut, 'TG'))
         }
 
         // Special cases where I'm not going to make the regex work
@@ -297,7 +327,7 @@ const makeTsMethodFile = (data) => {
         addLine(1, `${method.name}(${paramsString}): Promise<${returnTypes.join(' | ')}> {`)
         addLine(
             2,
-            `return this.sendMethod({ ${objectString} } as TG.${method.name}) as Promise<${returnTypes.join(' | ')}>`
+            `return this.sendMethod(new TG.${method.name}(${objectString})) as Promise<${returnTypes.join(' | ')}>`
         )
         addLine(1, '}')
         addLine(0, '')

@@ -8,7 +8,7 @@ export default (commander: Commander): void => {
 
         func: async (args, message, telegram) => {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const commands = (await require('./index')()).commands
+            const commands = (await require('./index').default()).commands
             let msg = ''
 
             if (args.length > 0) {

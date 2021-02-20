@@ -6,6 +6,11 @@ import WeekOfYear from 'dayjs/plugin/weekOfYear'
 import { Telegram } from '../telegram'
 import { Commander } from '.'
 
+interface Meal {
+    mo: [{ mpn: string }]
+}
+type Menu = [Meal]
+
 const weekDays = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la']
 dayjs.extend(WeekOfYear)
 
@@ -37,12 +42,12 @@ const fetchMenus = async () => {
     }
 }
 
-const createMenuString = (menu: any) => {
+const createMenuString = (menu: Menu) => {
     let menuString = '1 '
     let mealNumber = 1
 
-    menu?.forEach((meal: any) => {
-        meal?.mo?.forEach((element: any) => {
+    menu?.forEach((meal) => {
+        meal?.mo?.forEach((element) => {
             menuString += element.mpn
             menuString += ', '
         })
@@ -54,11 +59,11 @@ const createMenuString = (menu: any) => {
     return menuString
 }
 
-const createPizzaString = (menu: any) => {
+const createPizzaString = (menu: Menu) => {
     let pizzaString = '1 '
     let mealNumber = 1
 
-    menu[0]?.mo?.forEach((element: any) => {
+    menu[0]?.mo?.forEach((element) => {
         pizzaString += element.mpn
         pizzaString += ', '
         mealNumber += 1
@@ -85,9 +90,9 @@ const initialize = (telegram: Telegram) => {
 
                 const newtonFilteredFoods: string[] = []
                 if (fullmenu?.data?.restaurants_tty) {
-                    fullmenu.data.restaurants_tty.res_newton?.meals?.forEach((meal: any) => {
+                    fullmenu.data.restaurants_tty.res_newton?.meals?.forEach((meal: Meal) => {
                         for (const food of foods) {
-                            meal.mo.forEach((item: { mpn: string }) => {
+                            meal.mo.forEach((item) => {
                                 if (item.mpn == food) {
                                     newtonFilteredFoods.push(food)
                                 }
@@ -95,9 +100,9 @@ const initialize = (telegram: Telegram) => {
                         }
                     })
                     const reaktoriFilteredFoods: string[] = []
-                    fullmenu.data.restaurants_tty.res_reaktori?.meals?.forEach((meal: any) => {
+                    fullmenu.data.restaurants_tty.res_reaktori?.meals?.forEach((meal: Meal) => {
                         for (const food of foods) {
-                            meal.mo.forEach((item: { mpn: string }) => {
+                            meal.mo.forEach((item) => {
                                 if (item.mpn == food) {
                                     reaktoriFilteredFoods.push(food)
                                 }
@@ -105,9 +110,9 @@ const initialize = (telegram: Telegram) => {
                         }
                     })
                     const hertsiFilteredFoods: string[] = []
-                    fullmenu.data.restaurants_tty.res_hertsi?.meals?.forEach((meal: any) => {
+                    fullmenu.data.restaurants_tty.res_hertsi?.meals?.forEach((meal: Meal) => {
                         for (const food of foods) {
-                            meal.mo.forEach((item: { mpn: string }) => {
+                            meal.mo.forEach((item) => {
                                 if (item.mpn == food) {
                                     hertsiFilteredFoods.push(food)
                                 }

@@ -1,6 +1,18 @@
 import { Commander } from '.'
 import { getCollection } from '../mongoUtil'
 
+
+interface Credit {
+    from: string,
+    msg: string,
+    date: Date,
+}
+interface CreditDocument {
+    username: string;
+    plus_credits: Array<Credit>;
+    minus_credits: Array<Credit>;
+}
+
 export default (commander: Commander): void => {
     commander.addCommand({
         commands: ['socialcredit', 'credit', 'sc'],
@@ -10,8 +22,8 @@ export default (commander: Commander): void => {
         func: (args, message, telegram) => {
             getCollection('credit')
                 .find({})
-                .toArray((err, docs: Array<any>) => {
-                    const users: { [key: string]: any } = {}
+                .toArray((err, docs: Array<CreditDocument>) => {
+                    const users: { [key: string]: number } = {}
                     for (const doc of docs) {
                         if (users[doc.username] === undefined) users[doc.username] = 0
 

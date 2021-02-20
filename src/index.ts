@@ -35,7 +35,7 @@ telegram.on(TGEvent.message, (message) => {
 
     if (message?.text?.charAt(0) == '/') {
         const args = message.text.substr(1).split(' ')
-        const cmd = args.shift() as string
+        const cmd = args.shift()?.split('@')[0] as string
 
         commander.onCommand(cmd, args, message, telegram)
     }

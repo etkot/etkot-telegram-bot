@@ -1,5 +1,5 @@
 import { Commander } from '.'
-import { TG } from '../types/telegram'
+import * as TG from '../types/telegram'
 import { Telegram } from '../telegram'
 
 const animals = [

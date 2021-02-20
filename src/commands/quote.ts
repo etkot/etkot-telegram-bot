@@ -8,7 +8,7 @@ export default (commander: Commander): void => {
         help: 'Lähettää satunnaisen quoten',
 
         func: (args, message, telegram) => {
-            let query: any
+            const query: { name?: RegExp } = {}
             if (args.length > 0) {
                 query.name = new RegExp(`^${args[0]}$`, 'i')
             }

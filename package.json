@@ -10,7 +10,8 @@
         "lint": "eslint src",
         "lint:fix": "eslint src --fix",
         "prettier": "npx prettier --write src/**/*.ts",
-        "test": "npm run lint && mocha --exit"
+        "test": "npm run lint && mocha --exit",
+        "update-api": "node api-updater"
     },
     "author": "",
     "license": "ISC",

@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 
-import { TG } from '../types/telegram'
+import * as TG from '../types/telegram'
 import { TelegramMethods } from './methods'
 
 export enum TGEvent {
@@ -115,6 +115,7 @@ export class Telegram extends TelegramMethods {
 
                     for (const update of response) {
                         this._ProcessUpdate(update)
+                        console.log(update)
                     }
                 }
                 Restart()

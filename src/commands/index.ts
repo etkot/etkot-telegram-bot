@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { TG } from '../types/telegram'
+import * as TG from '../types/telegram'
 import { Telegram } from '../telegram'
 
 type Initializer = (telegram: Telegram) => void
