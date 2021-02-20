@@ -4,7 +4,14 @@ import dayjs from 'dayjs'
 import { Commander } from '.'
 
 import customParseFormat from 'dayjs/plugin/customParseFormat'
+import { ObjectId } from 'mongodb'
 dayjs.extend(customParseFormat)
+
+interface EventDocument {
+    _id?: ObjectId
+    dateTime: Date
+    description: string
+}
 
 const parseDateTime = (date: string, time: string) => {
     const now = dayjs()
@@ -63,7 +70,7 @@ export default (commander: Commander): void => {
         help: 'Lähettää kaikki tulevat tapahtumat',
 
         func: (args, message, telegram) => {
-            getCollection('calendar')
+            getCollection<EventDocument>('calendar')
                 .find({ dateTime: { $gte: new Date() } })
                 .sort({ dateTime: 1 })
                 .toArray((err, docs) => {
@@ -95,7 +102,7 @@ export default (commander: Commander): void => {
 
             const dateTime = parseDateTime(date, time)
 
-            getCollection('calendar').insertOne({ dateTime: new Date(dateTime), description })
+            getCollection<EventDocument>('calendar').insertOne({ dateTime: new Date(dateTime), description })
             telegram.sendMessage(message.chat.id, `Tapahtuma lisätty`, { disable_notification: true })
         },
     })
@@ -108,12 +115,12 @@ export default (commander: Commander): void => {
         func: (args, message, telegram) => {
             const id = Number(args[0]) - 1
 
-            getCollection('calendar')
+            getCollection<EventDocument>('calendar')
                 .find({ dateTime: { $gte: new Date() } })
                 .sort({ dateTime: 1 })
                 .toArray((err, docs) => {
                     if (docs.length > id) {
-                        getCollection('calendar').deleteOne({ _id: docs[id]._id }, () => {
+                        getCollection<EventDocument>('calendar').deleteOne({ _id: docs[id]._id }, () => {
                             telegram.sendMessage(message.chat.id, `Tapahtuma "${docs[id].description}" poistettu`, {
                                 disable_notification: true,
                             })

@@ -11,6 +11,10 @@ interface Meal {
 }
 type Menu = [Meal]
 
+interface FoodDocument {
+    food: string
+}
+
 const weekDays = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la']
 dayjs.extend(WeekOfYear)
 
@@ -78,7 +82,7 @@ let foodAlert: CronJob
 const initialize = (telegram: Telegram) => {
     // WARNING! You are entering a manual code zone
     const foodAlert = new CronJob('0 10 * * *', function () {
-        getCollection('foods')
+        getCollection<FoodDocument>('foods')
             .find({})
             .toArray(async (err, docs) => {
                 const foods: string[] = []
@@ -349,7 +353,7 @@ export default (commander: Commander): void => {
 
             getCollection('foods').findOne({ food }, (err, result) => {
                 if (result === null) {
-                    getCollection('foods').insertOne({ food })
+                    getCollection<FoodDocument>('foods').insertOne({ food })
                     telegram.sendMessage(message.chat.id, `Lempiruoka lisätty`, { disable_notification: true })
                 } else {
                     telegram.sendMessage(message.chat.id, `Lempiruoka on jo listassa`, { disable_notification: true })
@@ -364,7 +368,7 @@ export default (commander: Commander): void => {
         help: 'Listaa tallessa olevat lempiruuat',
 
         func: (args, message, telegram) => {
-            getCollection('foods')
+            getCollection<FoodDocument>('foods')
                 .find({})
                 .toArray((err, docs) => {
                     let msg = '<b>Lempiruuat:</b>\n'

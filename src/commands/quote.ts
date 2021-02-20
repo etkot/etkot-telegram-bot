@@ -1,5 +1,12 @@
+import { ObjectId } from 'mongodb'
 import { Commander } from '.'
 import { getCollection } from '../mongoUtil'
+
+interface QuoteDocument {
+    _id: ObjectId
+    name: string
+    quote: string
+}
 
 export default (commander: Commander): void => {
     commander.addCommand({
@@ -13,7 +20,7 @@ export default (commander: Commander): void => {
                 query.name = new RegExp(`^${args[0]}$`, 'i')
             }
 
-            getCollection('quotes')
+            getCollection<QuoteDocument>('quotes')
                 .find(query)
                 .toArray((err, docs) => {
                     if (docs.length > 0) {
@@ -36,12 +43,12 @@ export default (commander: Commander): void => {
         help: 'Lisää uuden quoten käyttäjälle',
 
         func: (args, message, telegram) => {
-            const name = args.shift()
+            const name = args.shift() as string
             const quote = args.join(' ')
 
-            getCollection('quotes').findOne({ name, quote }, (err, result) => {
+            getCollection<QuoteDocument>('quotes').findOne({ name, quote }, (err, result) => {
                 if (result === null) {
-                    getCollection('quotes').insertOne({ name, quote })
+                    getCollection<QuoteDocument>('quotes').insertOne({ name, quote })
                     telegram.sendMessage(message.chat.id, `Quote lisätty`, { disable_notification: true })
                 } else {
                     telegram.sendMessage(message.chat.id, `Quote on jo olemassa`, { disable_notification: true })
@@ -56,9 +63,11 @@ export default (commander: Commander): void => {
         help: 'Näyttää kuinka monta quotea käyttäjillä on',
 
         func: (args, message, telegram) => {
-            getCollection('quotes')
+            getCollection<QuoteDocument>('quotes')
                 .aggregate([{ $group: { _id: '$name', count: { $sum: 1 } } }])
-                .toArray((err, result) => {
+                .toArray((err, res) => {
+                    const result = (res as unknown) as [{ _id: string; count: number }]
+
                     result.sort((a, b) => {
                         if (b.count - a.count !== 0) {
                             return b.count - a.count

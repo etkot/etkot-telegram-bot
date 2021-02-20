@@ -1,16 +1,17 @@
+import { ObjectId } from 'mongodb'
 import { Commander } from '.'
 import { getCollection } from '../mongoUtil'
 
-
 interface Credit {
-    from: string,
-    msg: string,
-    date: Date,
+    from: string
+    msg: number
+    date: number
 }
 interface CreditDocument {
-    username: string;
-    plus_credits: Array<Credit>;
-    minus_credits: Array<Credit>;
+    _id: ObjectId
+    username: string
+    plus_credits?: Array<Credit>
+    minus_credits?: Array<Credit>
 }
 
 export default (commander: Commander): void => {
@@ -20,15 +21,15 @@ export default (commander: Commander): void => {
         help: 'Listaa kaikkien pisteet',
 
         func: (args, message, telegram) => {
-            getCollection('credit')
+            getCollection<CreditDocument>('credit')
                 .find({})
-                .toArray((err, docs: Array<CreditDocument>) => {
+                .toArray((err, docs) => {
                     const users: { [key: string]: number } = {}
                     for (const doc of docs) {
                         if (users[doc.username] === undefined) users[doc.username] = 0
 
-                        users[doc.username] += doc.plus_credits.length
-                        users[doc.username] -= doc.minus_credits.length
+                        users[doc.username] += doc.plus_credits?.length || 0
+                        users[doc.username] -= doc.minus_credits?.length || 0
                     }
 
                     const sortable = []
@@ -55,20 +56,20 @@ export default (commander: Commander): void => {
         func: (message) => {
             if (message.reply_to_message === undefined) return
 
-            const fromUser = message.from?.username
-            const toUser = message.reply_to_message.from?.username
+            const fromUser = message.from?.username || ''
+            const toUser = message.reply_to_message.from?.username || ''
 
-            const credit = {
+            const credit: Credit = {
                 from: fromUser,
                 msg: message.reply_to_message.message_id,
                 date: message.date,
             }
 
-            getCollection('credit')
+            getCollection<CreditDocument>('credit')
                 .updateOne({ username: toUser }, { $push: { plus_credits: credit } })
                 .then((result) => {
                     if (result.modifiedCount == 0) {
-                        getCollection('credit').insertOne({ username: toUser, plus_credits: [credit] })
+                        getCollection<CreditDocument>('credit').insertOne({ username: toUser, plus_credits: [credit] })
                     }
                 })
         },
@@ -78,20 +79,20 @@ export default (commander: Commander): void => {
         func: (message) => {
             if (message.reply_to_message === undefined) return
 
-            const fromUser = message.from?.username
-            const toUser = message.reply_to_message.from?.username
+            const fromUser = message.from?.username || ''
+            const toUser = message.reply_to_message.from?.username || ''
 
-            const credit = {
+            const credit: Credit = {
                 from: fromUser,
                 msg: message.reply_to_message.message_id,
                 date: message.date,
             }
 
-            getCollection('credit')
+            getCollection<CreditDocument>('credit')
                 .updateOne({ username: toUser }, { $push: { minus_credits: credit } })
                 .then((result) => {
                     if (result.modifiedCount == 0) {
-                        getCollection('credit').insertOne({ username: toUser, minus_credits: [credit] })
+                        getCollection<CreditDocument>('credit').insertOne({ username: toUser, minus_credits: [credit] })
                     }
                 })
         },

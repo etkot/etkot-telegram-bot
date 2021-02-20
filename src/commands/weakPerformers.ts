@@ -1,6 +1,11 @@
 import { getCollection } from '../mongoUtil'
 import { Commander } from '.'
 
+interface PerformerDocument {
+    name: string
+    score: number
+}
+
 export default (commander: Commander): void => {
     commander.addCommand({
         commands: ['weakperformers', 'heikot', 'weakpeople', 'weak'],
@@ -8,7 +13,7 @@ export default (commander: Commander): void => {
         help: 'Listaa heikot suorittajat',
 
         func: (args, message, telegram) => {
-            getCollection('heikot')
+            getCollection<PerformerDocument>('heikot')
                 .find({})
                 .toArray((err, docs) => {
                     if (docs.length !== 0) {
@@ -33,15 +38,15 @@ export default (commander: Commander): void => {
         help: 'Lisää uuden heikon suorittaja',
 
         func: (args, message, telegram) => {
-            const name = args.shift()?.trim()
+            const name = args[0].trim()
             const score = 1
 
-            getCollection('heikot').findOne({ name, score }, (err, result) => {
+            getCollection<PerformerDocument>('heikot').findOne({ name, score }, (err, result) => {
                 if (result === null) {
-                    getCollection('heikot').insertOne({ name, score })
+                    getCollection<PerformerDocument>('heikot').insertOne({ name, score })
                     telegram.sendMessage(message.chat.id, `Heikko suorittaja lisätty`, { disable_notification: true })
                 } else {
-                    getCollection('heikot').updateOne({ name: result.name }, { $inc: { score: 1 } })
+                    getCollection<PerformerDocument>('heikot').updateOne({ name: result.name }, { $inc: { score: 1 } })
                     telegram.sendMessage(message.chat.id, `Uusi heikko suoritus lisätty`, {
                         disable_notification: true,
                     })
