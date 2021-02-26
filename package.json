@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "ts-node src",
+        "start": "ts-node-dev src",
         "build": "tsc --build tsconfig.json",
         "production": "NODE_ENV=production node dist",
         "lint": "eslint src",

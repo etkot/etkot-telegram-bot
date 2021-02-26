@@ -1,10 +1,10 @@
-import { getCollection } from '../mongoUtil'
 import axios from 'axios'
 import { CronJob } from 'cron'
 import dayjs from 'dayjs'
 import WeekOfYear from 'dayjs/plugin/weekOfYear'
-import { Telegram } from '../telegram'
 import { Commander } from '.'
+import { getCollection } from '../mongoUtil'
+import { Telegram } from '../telegram'
 
 interface Meal {
     mo: [{ mpn: string }]
@@ -19,12 +19,13 @@ const weekDays = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la']
 dayjs.extend(WeekOfYear)
 
 const fetchVersion = async () => {
-    const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().week()}/v.json`
+    // dayjs().week() for some reason returns the current week + 1 in the year 2021 at least
+    const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().week() - 1}/v.json`
     try {
         const result = await axios.get(url)
         return result.data.v
-    } catch {
-        console.log('Version not recieved')
+    } catch (error) {
+        console.log('Version not recieved', error.response.status, error.response.statusText, error.config.url)
         return null
     }
 }
@@ -32,16 +33,15 @@ const fetchVersion = async () => {
 const fetchMenus = async () => {
     const date = new Date()
     const version = await fetchVersion()
-    //console.log(dayjs().year(), dayjs().week(), version, weekDays[date.getDay()])
-    const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().week()}/${version}/${
+    // dayjs().week() for some reason returns the current week + 1 in the year 2021 at least
+    const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().week() - 1}/${version}/${
         weekDays[date.getDay()]
     }.json`
     try {
         const result = await axios.get(url)
-        console.log('Got the goods')
         return result.data
     } catch (error) {
-        console.log('No menus recieved')
+        console.log('No menus recieved', error.response.status, error.response.statusText, error.config.url)
         return null
     }
 }
