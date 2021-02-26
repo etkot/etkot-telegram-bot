@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events'
-
 import * as TG from '../types/telegram'
 import { TelegramMethods } from './methods'
 
@@ -115,7 +114,6 @@ export class Telegram extends TelegramMethods {
 
                     for (const update of response) {
                         this._ProcessUpdate(update)
-                        console.log(update)
                     }
                 }
                 Restart()
