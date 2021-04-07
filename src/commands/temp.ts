@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Commander } from '.'
 
-const addr = process.env.LOMMI_API || ''
+const addr = "https://lommi.xyz/api/parveke"
 
 interface TempData {
     temperature: number
