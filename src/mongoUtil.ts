@@ -1,5 +1,8 @@
-import { MongoClient, Db, Collection } from 'mongodb'
-const url = 'mongodb://localhost:27017'
+import { Collection, Db, MongoClient } from 'mongodb'
+
+const addr = process.env.DB_ADDR || 'localhost'
+const port = process.env.DB_PORT || '27017'
+const url = `mongodb://${addr}:${port}`
 
 let _db: Db
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
