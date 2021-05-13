@@ -22,7 +22,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY package*.json ./
-COPY ./.env ./.env
 RUN npm install --quiet --only=production
 
 ## We just need the build to execute the command
