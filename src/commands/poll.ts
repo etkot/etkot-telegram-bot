@@ -1,6 +1,6 @@
 import { Commander } from '.'
-import * as TG from '../types/telegram'
 import { Telegram } from '../telegram'
+import * as TG from '../types/telegram'
 
 const animals = [
     'Supikoira',
@@ -96,6 +96,7 @@ export default (commander: Commander): void => {
     commander.addCommand({
         commands: ['poll', 'p'],
         arguments: ['<question>'],
+        allowReply: true,
         help: 'Lähettää pollin',
 
         func: (args, message, telegram) => {
@@ -106,6 +107,7 @@ export default (commander: Commander): void => {
     commander.addCommand({
         commands: ['pollanonymous', 'pollanon', 'pa'],
         arguments: ['<question>'],
+        allowReply: true,
         help: 'Lähettää anonyymin pollin',
 
         func: (args, message, telegram) => {

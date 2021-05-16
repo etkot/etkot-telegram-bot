@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import * as TG from '../types/telegram'
 import { Telegram } from '../telegram'
+import * as TG from '../types/telegram'
 
 type Initializer = (telegram: Telegram) => void
 type CommandFunction = (args: string[], message: TG.Message, telegram: Telegram) => void
@@ -10,6 +10,7 @@ type TriggerFunction = (message: TG.Message, telegram: Telegram) => void
 interface Command {
     commands: string[]
     arguments: string[]
+    allowReply?: boolean
     help: string
     func: CommandFunction
 }
@@ -68,8 +69,10 @@ export class Commander {
 
         const command = this.commands[cmd]
 
+        const hasReply = command.allowReply && message.reply_to_message
+
         const shouldHave = command.arguments.filter((arg) => arg.charAt(0) === '<').length
-        if (args.length < shouldHave) {
+        if (args.length < shouldHave && !hasReply) {
             this.commands['usage'].func([cmd], message, telegram)
             return false
         }
