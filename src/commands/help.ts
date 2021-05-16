@@ -1,4 +1,4 @@
-import { Commander } from '.'
+import commanderInit, { Commander } from '.'
 
 export default (commander: Commander): void => {
     commander.addCommand({
@@ -41,7 +41,7 @@ export default (commander: Commander): void => {
                 msg = `Käyttö: /usage <command>`
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const command = ((await require('./index')()) as Commander).commands[args[0]]
+                const command = ((await commanderInit()) as Commander).commands[args[0]]
                 msg = `Käyttö: /${command.commands[0]} ${command.arguments.join(' ')}`
             }
 
