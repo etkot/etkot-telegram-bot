@@ -27,8 +27,8 @@ export default (commander: Commander): void => {
         help: 'Kertoo nykyisen tj:n',
 
         func: (args, message, telegram) => {
-            const startDate = new Date(2020, 6, 6)
-            const endDate = new Date(2021, 5, 17)
+            const startDate = new Date(2021, 6, 5)
+            const endDate = new Date(2022, 5, 16)
             const today = new Date()
 
             const dayDiff = (d1: Date, d2: Date) => {
