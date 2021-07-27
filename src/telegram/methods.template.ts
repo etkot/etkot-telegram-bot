@@ -21,9 +21,19 @@ export abstract class TelegramMethods {
                         reject(`Telegram error (${error_code}): ${description} (method: ${methodName})`)
                     }
                 })
-                .catch(({ response: { status, statusText } }: { response: { status: number; statusText: string } }) => {
-                    reject(`HTTP error (${status}): ${statusText} (method: ${methodName})`)
-                })
+                .catch(
+                    ({
+                        response: {
+                            status,
+                            statusText,
+                            data: { description },
+                        },
+                    }: {
+                        response: { status: number; statusText: string; data: { description: string } }
+                    }) => {
+                        reject(`HTTP error (${status}): ${statusText} (method: ${methodName}) ${description}`)
+                    }
+                )
         })
     }
 
