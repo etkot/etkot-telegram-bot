@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb'
 import { Commander } from '.'
 import { getCollection } from '../mongoUtil'
+import oaiUtils from '../openAIUtils'
 
 interface QuoteDocument {
     _id: ObjectId
@@ -66,7 +67,7 @@ export default (commander: Commander): void => {
             getCollection<QuoteDocument>('quotes')
                 .aggregate([{ $group: { _id: '$name', count: { $sum: 1 } } }])
                 .toArray((err, res) => {
-                    const result = (res as unknown) as [{ _id: string; count: number }]
+                    const result = res as unknown as [{ _id: string; count: number }]
 
                     result.sort((a, b) => {
                         if (b.count - a.count !== 0) {
@@ -86,6 +87,42 @@ export default (commander: Commander): void => {
                     str += `<i>Total:</i> <b>${total}</b>`
 
                     telegram.sendMessage(message.chat.id, str, { disable_notification: true, parse_mode: 'HTML' })
+                })
+        },
+    })
+    commander.addCommand({
+        commands: ['generatequote', 'gq'],
+        arguments: ['[name]'],
+        help: 'generoi quoten henkilölle',
+
+        func: (args, message, telegram) => {
+            const query: { name?: RegExp } = {}
+            if (args.length > 0) {
+                query.name = new RegExp(`^${args[0]}$`, 'i')
+            }
+
+            getCollection<QuoteDocument>('quotes')
+                .find(query)
+                .toArray((err, docs) => {
+                    if (docs.length > 0) {
+                        if (!query.name) {
+                            const selectedPerson = docs[Math.floor(Math.random() * docs.length)].name
+                            docs = docs.filter((quote) => quote.name === selectedPerson)
+                        }
+                        const randomizedQuotes = docs.sort(() => 0.5 - Math.random()).slice(0, 5)
+
+                        const selectedQuotes = randomizedQuotes.map((doc) => `"${doc.quote}"`).join('\n')
+
+                        oaiUtils.generate(`"${selectedQuotes}`).then((generatedQuote) =>
+                            telegram.sendMessage(message.chat.id, `"${generatedQuote}" - AI-${docs[0].name}`, {
+                                disable_notification: true,
+                            })
+                        )
+                    } else {
+                        telegram.sendMessage(message.chat.id, 'Tuolta henkilöltä ei löydy quoteja :(', {
+                            disable_notification: true,
+                        })
+                    }
                 })
         },
     })
