@@ -113,11 +113,16 @@ export default (commander: Commander): void => {
 
                         const selectedQuotes = randomizedQuotes.map((doc) => `"${doc.quote}"`).join('\n')
 
-                        oaiUtils.generate(`"${selectedQuotes}`).then((generatedQuote) =>
-                            telegram.sendMessage(message.chat.id, `${generatedQuote} - AI-${docs[0].name}`, {
-                                disable_notification: true,
+                        oaiUtils
+                            .generate(`"${selectedQuotes}`)
+                            .then((generatedQuote) =>
+                                telegram.sendMessage(message.chat.id, `${generatedQuote} - AI-${docs[0].name}`, {
+                                    disable_notification: true,
+                                })
+                            )
+                            .catch((res) => {
+                                console.error('Could not generate quote:', res.response.status, res.response.statusText)
                             })
-                        )
                     } else {
                         telegram.sendMessage(message.chat.id, 'Tuolta henkilöltä ei löydy quoteja :(', {
                             disable_notification: true,
