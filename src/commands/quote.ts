@@ -107,17 +107,28 @@ export default (commander: Commander): void => {
                     if (docs.length > 0) {
                         if (!query.name) {
                             const selectedPerson = docs[Math.floor(Math.random() * docs.length)].name
-                            docs = docs.filter((quote) => quote.name === selectedPerson)
+                            docs = docs.filter((quote) => quote.name.toLowerCase === selectedPerson.toLowerCase)
                         }
                         const randomizedQuotes = docs.sort(() => 0.5 - Math.random()).slice(0, 5)
 
-                        const selectedQuotes = randomizedQuotes.map((doc) => `"${doc.quote}"`).join('\n')
+                        const selectedQuotes = randomizedQuotes.map((doc) => `${doc.quote}`).join('\n')
 
-                        oaiUtils.generate(`"${selectedQuotes}`).then((generatedQuote) =>
-                            telegram.sendMessage(message.chat.id, `"${generatedQuote}" - AI-${docs[0].name}`, {
-                                disable_notification: true,
+                        oaiUtils
+                            .generate(selectedQuotes)
+                            .then((generatedQuote) =>
+                                telegram.sendMessage(
+                                    message.chat.id,
+                                    `"${generatedQuote.length ? generatedQuote : selectedQuotes[0]}" - AI-${
+                                        docs[0].name
+                                    }`,
+                                    {
+                                        disable_notification: true,
+                                    }
+                                )
+                            )
+                            .catch((res) => {
+                                console.error('Could not generate quote:', res.response.status, res.response.statusText)
                             })
-                        )
                     } else {
                         telegram.sendMessage(message.chat.id, 'Tuolta henkilöltä ei löydy quoteja :(', {
                             disable_notification: true,
