@@ -107,7 +107,7 @@ export default (commander: Commander): void => {
                     if (docs.length > 0) {
                         if (!query.name) {
                             const selectedPerson = docs[Math.floor(Math.random() * docs.length)].name
-                            docs = docs.filter((quote) => quote.name === selectedPerson)
+                            docs = docs.filter((quote) => quote.name.toLowerCase === selectedPerson.toLowerCase)
                         }
                         const randomizedQuotes = docs.sort(() => 0.5 - Math.random()).slice(0, 5)
 
