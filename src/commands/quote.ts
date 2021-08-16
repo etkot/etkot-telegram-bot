@@ -111,14 +111,20 @@ export default (commander: Commander): void => {
                         }
                         const randomizedQuotes = docs.sort(() => 0.5 - Math.random()).slice(0, 5)
 
-                        const selectedQuotes = randomizedQuotes.map((doc) => `"${doc.quote}"`).join('\n')
+                        const selectedQuotes = randomizedQuotes.map((doc) => `${doc.quote}`).join('\n')
 
                         oaiUtils
-                            .generate(`"${selectedQuotes}`)
+                            .generate(selectedQuotes)
                             .then((generatedQuote) =>
-                                telegram.sendMessage(message.chat.id, `${generatedQuote} - AI-${docs[0].name}`, {
-                                    disable_notification: true,
-                                })
+                                telegram.sendMessage(
+                                    message.chat.id,
+                                    `"${generatedQuote.length ? generatedQuote : selectedQuotes[0]}" - AI-${
+                                        docs[0].name
+                                    }`,
+                                    {
+                                        disable_notification: true,
+                                    }
+                                )
                             )
                             .catch((res) => {
                                 console.error('Could not generate quote:', res.response.status, res.response.statusText)

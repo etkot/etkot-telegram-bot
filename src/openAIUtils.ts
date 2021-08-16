@@ -7,7 +7,7 @@ const openai: OpenAI = new OpenAI(OAI_API_KEY)
 const generate = async (input: string): Promise<string> => {
     const response: any = await openai.complete({
         engine: 'davinci',
-        prompt: input + '\n',
+        prompt: input.slice(-3).match(/[\r\n]/) ? input : input + '\n',
         maxTokens: 64,
         temperature: 0.7, // randomness
         topP: 1,
