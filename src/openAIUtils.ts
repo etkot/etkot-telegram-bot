@@ -11,8 +11,8 @@ const generate = async (input: string): Promise<string> => {
         maxTokens: 64,
         temperature: 0.7, // randomness
         topP: 1,
-        presencePenalty: 0,
-        frequencyPenalty: 0,
+        presencePenalty: 0.2,
+        frequencyPenalty: 0.2,
         bestOf: 1,
         n: 1,
         stream: false,
