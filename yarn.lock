@@ -1911,6 +1911,14 @@ once@^1.3.0, once@^1.3.1, once@^1.4.0:
   dependencies:
     wrappy "1"
 
+openai-api@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/openai-api/-/openai-api-1.2.4.tgz#a17b9e6fa3517761dcdf4099cf69cc08a76afeff"
+  integrity sha512-vTjnz1SEMuAatQpH3uT7k82PnkxhMBADXdX/dncYnxn1C9kP44us0U8N+Xur9jcyOeRdIlMXBIqn5jDacKZOPA==
+  dependencies:
+    axios "^0.21.1"
+    dotenv "^8.2.0"
+
 optionator@^0.8.1:
   version "0.8.3"
   resolved "https://registry.yarnpkg.com/optionator/-/optionator-0.8.3.tgz#84fa1d036fe9d3c7e21d99884b601167ec8fb495"
