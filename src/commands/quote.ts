@@ -114,7 +114,7 @@ export default (commander: Commander): void => {
                         const selectedQuotes = randomizedQuotes.map((doc) => `"${doc.quote}"`).join('\n')
 
                         oaiUtils.generate(`"${selectedQuotes}`).then((generatedQuote) =>
-                            telegram.sendMessage(message.chat.id, `"${generatedQuote}" - AI-${docs[0].name}`, {
+                            telegram.sendMessage(message.chat.id, `${generatedQuote} - AI-${docs[0].name}`, {
                                 disable_notification: true,
                             })
                         )
