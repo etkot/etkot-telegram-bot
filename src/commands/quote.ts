@@ -3,7 +3,7 @@ import { Commander } from '.'
 import { getCollection } from '../mongoUtil'
 import oaiUtils from '../openAIUtils'
 
-interface QuoteDocument {
+export interface QuoteDocument {
     _id: ObjectId
     name: string
     quote: string
@@ -109,16 +109,17 @@ export default (commander: Commander): void => {
                             const selectedPerson = docs[Math.floor(Math.random() * docs.length)].name
                             docs = docs.filter((quote) => quote.name.toLowerCase === selectedPerson.toLowerCase)
                         }
-                        const randomizedQuotes = docs.sort(() => 0.5 - Math.random()).slice(0, 5)
 
-                        const selectedQuotes = randomizedQuotes.map((doc) => `${doc.quote}`).join('\n')
+                        // Randomizes quote array and pick 8 of them to be sent to openAI generator
+                        const amountOfQuotes = 8
+                        const randomizedQuotes = docs.sort(() => 0.5 - Math.random()).slice(0, amountOfQuotes)
 
                         oaiUtils
-                            .generate(selectedQuotes)
+                            .generate(randomizedQuotes)
                             .then((generatedQuote) =>
                                 telegram.sendMessage(
                                     message.chat.id,
-                                    `"${generatedQuote.length ? generatedQuote : selectedQuotes[0]}" - AI-${
+                                    `"${generatedQuote.length ? generatedQuote : "error: returned empty :("}" - AI-${
                                         docs[0].name
                                     }`,
                                     {
