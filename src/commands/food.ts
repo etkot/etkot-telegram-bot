@@ -24,7 +24,7 @@ const fetchVersion = async () => {
     try {
         const result = await axios.get(url)
         return result.data.v
-    } catch (error) {
+    } catch (error: any) {
         console.log('Version not recieved', error.response.status, error.response.statusText, error.config.url)
         return null
     }
@@ -40,7 +40,7 @@ const fetchMenus = async () => {
     try {
         const result = await axios.get(url)
         return result.data
-    } catch (error) {
+    } catch (error: any) {
         console.log('No menus recieved', error.response.status, error.response.statusText, error.config.url)
         return null
     }
