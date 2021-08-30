@@ -3,7 +3,7 @@ import { Commander } from '.'
 import { getCollection } from '../mongoUtil'
 import oaiUtils from '../openAIUtils'
 
-interface QuoteDocument {
+export interface QuoteDocument {
     _id: ObjectId
     name: string
     quote: string
@@ -107,17 +107,29 @@ export default (commander: Commander): void => {
                     if (docs.length > 0) {
                         if (!query.name) {
                             const selectedPerson = docs[Math.floor(Math.random() * docs.length)].name
-                            docs = docs.filter((quote) => quote.name === selectedPerson)
+                            docs = docs.filter((quote) => quote.name.toLowerCase === selectedPerson.toLowerCase)
                         }
-                        const randomizedQuotes = docs.sort(() => 0.5 - Math.random()).slice(0, 5)
 
-                        const selectedQuotes = randomizedQuotes.map((doc) => `"${doc.quote}"`).join('\n')
+                        // Randomizes quote array and pick 8 of them to be sent to openAI generator
+                        const amountOfQuotes = 8
+                        const randomizedQuotes = docs.sort(() => 0.5 - Math.random()).slice(0, amountOfQuotes)
 
-                        oaiUtils.generate(`"${selectedQuotes}`).then((generatedQuote) =>
-                            telegram.sendMessage(message.chat.id, `"${generatedQuote}" - AI-${docs[0].name}`, {
-                                disable_notification: true,
+                        oaiUtils
+                            .generate(randomizedQuotes)
+                            .then((generatedQuote) =>
+                                telegram.sendMessage(
+                                    message.chat.id,
+                                    `"${generatedQuote.length ? generatedQuote : "error: returned empty :("}" - AI-${
+                                        docs[0].name
+                                    }`,
+                                    {
+                                        disable_notification: true,
+                                    }
+                                )
+                            )
+                            .catch((res) => {
+                                console.error('Could not generate quote:', res.response.status, res.response.statusText)
                             })
-                        )
                     } else {
                         telegram.sendMessage(message.chat.id, 'Tuolta henkilöltä ei löydy quoteja :(', {
                             disable_notification: true,
