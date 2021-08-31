@@ -19,16 +19,20 @@ const next = (el, target) => {
  * @param {string} html
  */
 const parseHTML = (html) => {
-    return html.replace(/<\/?([A-Za-z]+?) ?(?:href="(.+?)")?.*?>(?:(.+?)<\/a>)?/gi, (match, tag, link, text) => {
-        switch (tag) {
-            case 'a':
-                return `[${text}](${link[0] === '#' ? `https://core.telegram.org/bots/api${link}` : link})`
-            case 'br':
-                return ' '
-            default:
-                return ''
-        }
-    })
+    return html
+        .replace(
+            /<a ?(?:href="(.+?)")?.*?>(.+?)<\/a>/gi,
+            (match, link, text) => `[${text}](${link[0] === '#' ? `https://core.telegram.org/bots/api${link}` : link})`
+        )
+        .replace(/<(\/?[A-Za-z]+?).*?>/gi, (match, tag) => {
+            switch (tag) {
+                case 'br':
+                case '/br':
+                    return ' '
+                default:
+                    return ''
+            }
+        })
 }
 
 /**
@@ -261,7 +265,7 @@ const makeTsTypeFile = (data) => {
 
     fs.writeFile(path.join(__dirname, '../src/types/telegram.ts'), ts, (err) => {
         if (err) throw err
-        console.log('Typescript types written in types/telegram.ts')
+        console.log('Typescript types written in types.ts')
     })
 }
 
@@ -305,14 +309,18 @@ const makeTsMethodFile = (data) => {
         const objectString = requiredObjectString + middleString + optionalObjectString
 
         const removeMd = (text) => text.replace(/\[([A-Za-z]+?)\]\(.+?\)/g, '$1')
-        const returnTypeRegex = /(?:Returns (?:the )?(?:a )?(?:an )?((?:Array of )?[A-Za-z]+))|(?:(Array of [A-Za-z]+) (?:(?:objects)|(?:that were sent)) is returned)|(?:([A-Za-z]+) (?:object )?is returned)/gi
+        const returnTypeRegex =
+            /(?:Returns (?:the )?(?:edited )?(?:revoked )?(?:new )?(?:invite link as )?(?:a )?(?:an )?((?:Array of )?[A-Za-z]+))|(?:(Array of [A-Za-z]+) (?:(?:objects)|(?:that were sent)) is returned)|(?:((?:empty )?[A-Za-z]+) (?:object )?is returned)/gi
         const returnTypeRegexOutput = [...removeMd(method.description).matchAll(returnTypeRegex)]
         let returnTypes = []
         for (let i = 0; i < returnTypeRegexOutput.length; i++) {
             const element = returnTypeRegexOutput[i]
 
             const returnTypeRegexOut = element[1] || element[2] || element[3]
-            returnTypes.push(returnTypeRegexOut === 'True' ? 'true' : parseType(returnTypeRegexOut, 'TG'))
+
+            if (returnTypeRegexOut == 'empty list') continue
+
+            returnTypes.push(parseType(returnTypeRegexOut, 'TG'))
         }
 
         // Special cases where I'm not going to make the regex work

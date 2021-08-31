@@ -9,6 +9,77 @@ export interface QuoteDocument {
     quote: string
 }
 
+interface QuoteStats {
+    message: string
+    pageCount: number
+}
+
+const getQuoteStats = (page: number) => {
+    return new Promise<QuoteStats>((resolve, reject) => {
+        const len = 15
+        const start = page * len
+
+        getCollection<QuoteDocument>('quotes')
+            .aggregate<{ docs: { name: string; count: number }[]; quoteCount: number; docsCount: number }>([
+                { $group: { _id: '$name', count: { $sum: 1 } } }, // Count users' quotes
+                { $sort: { count: -1, _id: 1 } }, // Sort user from most quotes to least and by name if quote count is same
+                { $group: { _id: null, docs: { $push: { name: '$_id', count: '$count' } } } }, // Group all users into a single document
+                {
+                    $project: {
+                        docs: { $slice: ['$docs', start, len] }, // take the first 10 elements
+                        quoteCount: { $sum: '$docs.count' }, // Count all quotes
+                        docsCount: { $size: '$docs' }, // Count all documents
+                    },
+                },
+            ])
+            .toArray((err, [result]) => {
+                const pageCount = Math.ceil(result.docsCount / len)
+
+                let message = `<b>Quote stats</b>  (<i>Total:</i> <b>${result.quoteCount}</b>)\n`
+                for (const user of result.docs) {
+                    message += `${user.name}: ${user.count}\n`
+                }
+
+                resolve({ message, pageCount })
+            })
+    })
+}
+
+const genQuoteStatsReplyMarkup = (page: number, pageCount: number) => {
+    return {
+        objectName: 'InlineKeyboardMarkup',
+        inline_keyboard: [
+            [
+                {
+                    objectName: 'InlineKeyboardButton',
+                    text: '<< 1',
+                    callback_data: `qs 0 ${page}`,
+                },
+                {
+                    objectName: 'InlineKeyboardButton',
+                    text: `< ${Math.max(page - 1, 0) + 1}`,
+                    callback_data: `qs ${Math.max(page - 1, 0)} ${page}`,
+                },
+                {
+                    objectName: 'InlineKeyboardButton',
+                    text: (page + 1).toString(),
+                    callback_data: `qs ${page} ${page}`,
+                },
+                {
+                    objectName: 'InlineKeyboardButton',
+                    text: `${Math.min(page + 1, pageCount - 1) + 1} >`,
+                    callback_data: `qs ${Math.min(page + 1, pageCount - 1)} ${page}`,
+                },
+                {
+                    objectName: 'InlineKeyboardButton',
+                    text: `${pageCount} >>`,
+                    callback_data: `qs ${pageCount - 1} ${page}`,
+                },
+            ],
+        ],
+    }
+}
+
 export default (commander: Commander): void => {
     commander.addCommand({
         commands: ['quote', 'q', 'quoite', 'quoye'],
@@ -63,33 +134,39 @@ export default (commander: Commander): void => {
         arguments: [],
         help: 'Näyttää kuinka monta quotea käyttäjillä on',
 
-        func: (args, message, telegram) => {
-            getCollection<QuoteDocument>('quotes')
-                .aggregate([{ $group: { _id: '$name', count: { $sum: 1 } } }])
-                .toArray((err, res) => {
-                    const result = res as unknown as [{ _id: string; count: number }]
+        func: async (args, msg, telegram) => {
+            const page = 0
+            const { message, pageCount } = await getQuoteStats(page)
 
-                    result.sort((a, b) => {
-                        if (b.count - a.count !== 0) {
-                            return b.count - a.count
-                        }
-                        if (a._id > b._id) return 1
-                        if (a._id < b._id) return -1
-                        return 0
-                    })
-
-                    let total = 0
-                    let str = '<b>Quote stats</b>\n'
-                    for (const user of result) {
-                        str += `${user._id}: ${user.count}\n`
-                        total += user.count
-                    }
-                    str += `<i>Total:</i> <b>${total}</b>`
-
-                    telegram.sendMessage(message.chat.id, str, { disable_notification: true, parse_mode: 'HTML' })
-                })
+            telegram.sendMessage(msg.chat.id, message, {
+                disable_notification: true,
+                parse_mode: 'HTML',
+                reply_markup: genQuoteStatsReplyMarkup(page, pageCount),
+            })
         },
     })
+
+    commander.addCallbackQuery({
+        command: 'qs',
+        func: async (args, query, telegram) => {
+            const page = Number(args[0])
+            const oldPage = Number(args[1])
+
+            if (page === oldPage) return
+
+            const { message, pageCount } = await getQuoteStats(page)
+
+            telegram
+                .editMessageText(message, {
+                    chat_id: query.message?.chat.id,
+                    message_id: query.message?.message_id,
+                    parse_mode: 'HTML',
+                    reply_markup: genQuoteStatsReplyMarkup(page, pageCount),
+                })
+                .catch((err) => {})
+        },
+    })
+
     commander.addCommand({
         commands: ['generatequote', 'gq'],
         arguments: ['[name]'],
@@ -119,7 +196,7 @@ export default (commander: Commander): void => {
                             .then((generatedQuote) =>
                                 telegram.sendMessage(
                                     message.chat.id,
-                                    `"${generatedQuote.length ? generatedQuote : "error: returned empty :("}" - AI-${
+                                    `"${generatedQuote.length ? generatedQuote : 'error: returned empty :('}" - AI-${
                                         docs[0].name
                                     }`,
                                     {

@@ -39,10 +39,10 @@ export class Update implements Type {
     channel_post?: Message
     /** New version of a channel post that is known to the bot and was edited */
     edited_channel_post?: Message
-    /**  query */
-    inline_query: InlineQuery
-    /**  query that was chosen by a user and sent to their chat partner. Please see our documentation on the [feedback collecting](/bots/inline#collecting-feedback) for details on how to enable these updates for your bot. */
-    chosen_inline_result: ChosenInlineResult
+    /** New incoming [inline](https://core.telegram.org/bots/api#inline-mode) query */
+    inline_query?: InlineQuery
+    /** The result of an [inline](https://core.telegram.org/bots/api#inline-mode) query that was chosen by a user and sent to their chat partner. Please see our documentation on the [feedback collecting](/bots/inline#collecting-feedback) for details on how to enable these updates for your bot. */
+    chosen_inline_result?: ChosenInlineResult
     /** New incoming callback query */
     callback_query?: CallbackQuery
     /** New incoming shipping query. Only for invoices with flexible price */
@@ -53,20 +53,26 @@ export class Update implements Type {
     poll?: Poll
     /** A user changed their answer in a non-anonymous poll. Bots receive new votes only in polls that were sent by the bot itself. */
     poll_answer?: PollAnswer
+    /** The bot&#39;s chat member status was updated in a chat. For private chats, this update is received only when the bot is blocked or unblocked by the user. */
+    my_chat_member?: ChatMemberUpdated
+    /** A chat member&#39;s status was updated in a chat. The bot must be an administrator in the chat and must explicitly specify “chat_member” in the list of allowed_updates to receive these updates. */
+    chat_member?: ChatMemberUpdated
 
-    constructor(update_id: number, inline_query: InlineQuery, chosen_inline_result: ChosenInlineResult, message?: Message, edited_message?: Message, channel_post?: Message, edited_channel_post?: Message, callback_query?: CallbackQuery, shipping_query?: ShippingQuery, pre_checkout_query?: PreCheckoutQuery, poll?: Poll, poll_answer?: PollAnswer) {
+    constructor(update_id: number, message?: Message, edited_message?: Message, channel_post?: Message, edited_channel_post?: Message, inline_query?: InlineQuery, chosen_inline_result?: ChosenInlineResult, callback_query?: CallbackQuery, shipping_query?: ShippingQuery, pre_checkout_query?: PreCheckoutQuery, poll?: Poll, poll_answer?: PollAnswer, my_chat_member?: ChatMemberUpdated, chat_member?: ChatMemberUpdated) {
         this.update_id = update_id
-        this.inline_query = inline_query
-        this.chosen_inline_result = chosen_inline_result
         this.message = message
         this.edited_message = edited_message
         this.channel_post = channel_post
         this.edited_channel_post = edited_channel_post
+        this.inline_query = inline_query
+        this.chosen_inline_result = chosen_inline_result
         this.callback_query = callback_query
         this.shipping_query = shipping_query
         this.pre_checkout_query = pre_checkout_query
         this.poll = poll
         this.poll_answer = poll_answer
+        this.my_chat_member = my_chat_member
+        this.chat_member = chat_member
     }
 }
 
@@ -80,7 +86,7 @@ export class getUpdates implements Method {
     limit?: number
     /** Timeout in seconds for long polling. Defaults to 0, i.e. usual short polling. Should be positive, short polling should be used for testing purposes only. */
     timeout?: number
-    /** A JSON-serialized list of the update types you want your bot to receive. For example, specify [“message”, “edited_channel_post”, “callback_query”] to only receive updates of these types. See Update for a complete list of available update types. Specify an empty list to receive all updates regardless of type (default). If not specified, the previous setting will be used.Please note that this parameter doesn't affect updates created before the call to the getUpdates, so unwanted updates may be received for a short period of time. */
+    /** A JSON-serialized list of the update types you want your bot to receive. For example, specify [“message”, “edited_channel_post”, “callback_query”] to only receive updates of these types. See Update for a complete list of available update types. Specify an empty list to receive all update types except chat_member (default). If not specified, the previous setting will be used.Please note that this parameter doesn't affect updates created before the call to the getUpdates, so unwanted updates may be received for a short period of time. */
     allowed_updates?: Array<string>
 
     constructor(offset?: number, limit?: number, timeout?: number, allowed_updates?: Array<string>) {
@@ -103,7 +109,7 @@ export class setWebhook implements Method {
     ip_address?: string
     /** Maximum allowed number of simultaneous HTTPS connections to the webhook for update delivery, 1-100. Defaults to 40. Use lower values to limit the load on your bot's server, and higher values to increase your bot's throughput. */
     max_connections?: number
-    /** A JSON-serialized list of the update types you want your bot to receive. For example, specify [“message”, “edited_channel_post”, “callback_query”] to only receive updates of these types. See Update for a complete list of available update types. Specify an empty list to receive all updates regardless of type (default). If not specified, the previous setting will be used.Please note that this parameter doesn't affect updates created before the call to the setWebhook, so unwanted updates may be received for a short period of time. */
+    /** A JSON-serialized list of the update types you want your bot to receive. For example, specify [“message”, “edited_channel_post”, “callback_query”] to only receive updates of these types. See Update for a complete list of available update types. Specify an empty list to receive all update types except chat_member (default). If not specified, the previous setting will be used.Please note that this parameter doesn't affect updates created before the call to the setWebhook, so unwanted updates may be received for a short period of time. */
     allowed_updates?: Array<string>
     /** Pass True to drop all pending updates */
     drop_pending_updates?: boolean
@@ -154,7 +160,7 @@ export class WebhookInfo implements Type {
     last_error_message?: string
     /** Maximum allowed number of simultaneous HTTPS connections to the webhook for update delivery */
     max_connections?: number
-    /** A list of update types the bot is subscribed to. Defaults to all update types */
+    /** A list of update types the bot is subscribed to. Defaults to all update types except chat_member */
     allowed_updates?: Array<string>
 
     constructor(url: string, has_custom_certificate: boolean, pending_update_count: number, ip_address?: string, last_error_date?: number, last_error_message?: string, max_connections?: number, allowed_updates?: Array<string>) {
@@ -173,7 +179,7 @@ export class WebhookInfo implements Type {
 export class User implements Type {
     /** Name of this interface as a string */
     objectName = 'User'
-    /** Unique identifier for this user or bot */
+    /** Unique identifier for this user or bot. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a 64-bit integer or double-precision float type are safe for storing this identifier. */
     id: number
     /** True, if this user is a bot */
     is_bot: boolean
@@ -183,25 +189,25 @@ export class User implements Type {
     last_name?: string
     /** User&#39;s or bot&#39;s username */
     username?: string
-    /**  of the user&#39;s language */
-    language_code: string
-    /** . */
-    can_join_groups: boolean
-    /**  is disabled for the bot. Returned only in [getMe](https://core.telegram.org/bots/api#getme). */
-    can_read_all_group_messages: boolean
-    /** . */
-    supports_inline_queries: boolean
+    /** [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) of the user&#39;s language */
+    language_code?: string
+    /** True, if the bot can be invited to groups. Returned only in [getMe](https://core.telegram.org/bots/api#getme). */
+    can_join_groups?: boolean
+    /** True, if [privacy mode](https://core.telegram.org/bots#privacy-mode) is disabled for the bot. Returned only in [getMe](https://core.telegram.org/bots/api#getme). */
+    can_read_all_group_messages?: boolean
+    /** True, if the bot supports inline queries. Returned only in [getMe](https://core.telegram.org/bots/api#getme). */
+    supports_inline_queries?: boolean
 
-    constructor(id: number, is_bot: boolean, first_name: string, language_code: string, can_join_groups: boolean, can_read_all_group_messages: boolean, supports_inline_queries: boolean, last_name?: string, username?: string) {
+    constructor(id: number, is_bot: boolean, first_name: string, last_name?: string, username?: string, language_code?: string, can_join_groups?: boolean, can_read_all_group_messages?: boolean, supports_inline_queries?: boolean) {
         this.id = id
         this.is_bot = is_bot
         this.first_name = first_name
+        this.last_name = last_name
+        this.username = username
         this.language_code = language_code
         this.can_join_groups = can_join_groups
         this.can_read_all_group_messages = can_read_all_group_messages
         this.supports_inline_queries = supports_inline_queries
-        this.last_name = last_name
-        this.username = username
     }
 }
 
@@ -209,7 +215,7 @@ export class User implements Type {
 export class Chat implements Type {
     /** Name of this interface as a string */
     objectName = 'Chat'
-    /** Unique identifier for this chat. This number may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. */
+    /** Unique identifier for this chat. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this identifier. */
     id: number
     /** Type of chat, can be either “private”, “group”, “supergroup” or “channel” */
     type: string
@@ -221,32 +227,38 @@ export class Chat implements Type {
     first_name?: string
     /** Last name of the other party in a private chat */
     last_name?: string
-    /** . */
-    photo: ChatPhoto
-    /** . */
-    bio: string
-    /** . */
-    description: string
-    /** . Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
-    invite_link: string
-    /** . */
-    pinned_message: Message
-    /** . */
-    permissions: ChatPermissions
-    /** . */
-    slow_mode_delay: number
-    /** . */
-    sticker_set_name: string
-    /** . */
-    can_set_sticker_set: boolean
-    /** . */
-    linked_chat_id: number
-    /** . */
-    location: ChatLocation
+    /** Chat photo. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    photo?: ChatPhoto
+    /** Bio of the other party in a private chat. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    bio?: string
+    /** Description, for groups, supergroups and channel chats. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    description?: string
+    /** Primary invite link, for groups, supergroups and channel chats. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    invite_link?: string
+    /** The most recent pinned message (by sending date). Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    pinned_message?: Message
+    /** Default chat member permissions, for groups and supergroups. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    permissions?: ChatPermissions
+    /** For supergroups, the minimum allowed delay between consecutive messages sent by each unpriviledged user. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    slow_mode_delay?: number
+    /** The time after which all messages sent to the chat will be automatically deleted; in seconds. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    message_auto_delete_time?: number
+    /** For supergroups, name of group sticker set. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    sticker_set_name?: string
+    /** True, if the bot can change the group sticker set. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    can_set_sticker_set?: boolean
+    /** Unique identifier for the linked chat, i.e. the discussion group identifier for a channel and vice versa; for supergroups and channel chats. This identifier may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    linked_chat_id?: number
+    /** For supergroups, the location to which the supergroup is connected. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    location?: ChatLocation
 
-    constructor(id: number, type: string, photo: ChatPhoto, bio: string, description: string, invite_link: string, pinned_message: Message, permissions: ChatPermissions, slow_mode_delay: number, sticker_set_name: string, can_set_sticker_set: boolean, linked_chat_id: number, location: ChatLocation, title?: string, username?: string, first_name?: string, last_name?: string) {
+    constructor(id: number, type: string, title?: string, username?: string, first_name?: string, last_name?: string, photo?: ChatPhoto, bio?: string, description?: string, invite_link?: string, pinned_message?: Message, permissions?: ChatPermissions, slow_mode_delay?: number, message_auto_delete_time?: number, sticker_set_name?: string, can_set_sticker_set?: boolean, linked_chat_id?: number, location?: ChatLocation) {
         this.id = id
         this.type = type
+        this.title = title
+        this.username = username
+        this.first_name = first_name
+        this.last_name = last_name
         this.photo = photo
         this.bio = bio
         this.description = description
@@ -254,14 +266,11 @@ export class Chat implements Type {
         this.pinned_message = pinned_message
         this.permissions = permissions
         this.slow_mode_delay = slow_mode_delay
+        this.message_auto_delete_time = message_auto_delete_time
         this.sticker_set_name = sticker_set_name
         this.can_set_sticker_set = can_set_sticker_set
         this.linked_chat_id = linked_chat_id
         this.location = location
-        this.title = title
-        this.username = username
-        this.first_name = first_name
-        this.last_name = last_name
     }
 }
 
@@ -317,8 +326,8 @@ export class Message implements Type {
     sticker?: Sticker
     /** Message is a video, information about the video */
     video?: Video
-    /** , information about the video message */
-    video_note: VideoNote
+    /** Message is a [video note](https://telegram.org/blog/video-messages-and-telescope), information about the video message */
+    video_note?: VideoNote
     /** Message is a voice message, information about the file */
     voice?: Voice
     /** Caption for the animation, audio, document, photo, video or voice, 0-1024 characters */
@@ -329,8 +338,8 @@ export class Message implements Type {
     contact?: Contact
     /** Message is a dice with random value */
     dice?: Dice
-    /**  */
-    game: Game
+    /** Message is a game, information about the game. [More about games »](https://core.telegram.org/bots/api#games) */
+    game?: Game
     /** Message is a native poll, information about the poll */
     poll?: Poll
     /** Message is a venue, information about the venue. For backward compatibility, when this field is set, the location field will also be set */
@@ -353,34 +362,39 @@ export class Message implements Type {
     supergroup_chat_created?: boolean
     /** Service message: the channel has been created. This field can&#39;t be received in a message coming through updates, because bot can&#39;t be a member of a channel when it is created. It can only be found in reply_to_message if someone replies to a very first message in a channel. */
     channel_chat_created?: boolean
-    /** The group has been migrated to a supergroup with the specified identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. */
+    /** Service message: auto-delete timer settings changed in the chat */
+    message_auto_delete_timer_changed?: MessageAutoDeleteTimerChanged
+    /** The group has been migrated to a supergroup with the specified identifier. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this identifier. */
     migrate_to_chat_id?: number
-    /** The supergroup has been migrated from a group with the specified identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. */
+    /** The supergroup has been migrated from a group with the specified identifier. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this identifier. */
     migrate_from_chat_id?: number
     /** Specified message was pinned. Note that the Message object in this field will not contain further reply_to_message fields even if it is itself a reply. */
     pinned_message?: Message
-    /** , information about the invoice. [More about payments »](https://core.telegram.org/bots/api#payments) */
-    invoice: Invoice
-    /**  */
-    successful_payment: SuccessfulPayment
-    /**  */
-    connected_website: string
+    /** Message is an invoice for a [payment](https://core.telegram.org/bots/api#payments), information about the invoice. [More about payments »](https://core.telegram.org/bots/api#payments) */
+    invoice?: Invoice
+    /** Message is a service message about a successful payment, information about the payment. [More about payments »](https://core.telegram.org/bots/api#payments) */
+    successful_payment?: SuccessfulPayment
+    /** The domain name of the website on which the user has logged in. [More about Telegram Login »](/widgets/login) */
+    connected_website?: string
     /** Telegram Passport data */
     passport_data?: PassportData
     /** Service message. A user in the chat triggered another user&#39;s proximity alert while sharing Live Location. */
     proximity_alert_triggered?: ProximityAlertTriggered
+    /** Service message: voice chat scheduled */
+    voice_chat_scheduled?: VoiceChatScheduled
+    /** Service message: voice chat started */
+    voice_chat_started?: VoiceChatStarted
+    /** Service message: voice chat ended */
+    voice_chat_ended?: VoiceChatEnded
+    /** Service message: new participants invited to a voice chat */
+    voice_chat_participants_invited?: VoiceChatParticipantsInvited
     /** Inline keyboard attached to the message. login_url buttons are represented as ordinary url buttons. */
     reply_markup?: InlineKeyboardMarkup
 
-    constructor(message_id: number, date: number, chat: Chat, video_note: VideoNote, game: Game, invoice: Invoice, successful_payment: SuccessfulPayment, connected_website: string, from?: User, sender_chat?: Chat, forward_from?: User, forward_from_chat?: Chat, forward_from_message_id?: number, forward_signature?: string, forward_sender_name?: string, forward_date?: number, reply_to_message?: Message, via_bot?: User, edit_date?: number, media_group_id?: string, author_signature?: string, text?: string, entities?: Array<MessageEntity>, animation?: Animation, audio?: Audio, document?: Document, photo?: Array<PhotoSize>, sticker?: Sticker, video?: Video, voice?: Voice, caption?: string, caption_entities?: Array<MessageEntity>, contact?: Contact, dice?: Dice, poll?: Poll, venue?: Venue, location?: Location, new_chat_members?: Array<User>, left_chat_member?: User, new_chat_title?: string, new_chat_photo?: Array<PhotoSize>, delete_chat_photo?: boolean, group_chat_created?: boolean, supergroup_chat_created?: boolean, channel_chat_created?: boolean, migrate_to_chat_id?: number, migrate_from_chat_id?: number, pinned_message?: Message, passport_data?: PassportData, proximity_alert_triggered?: ProximityAlertTriggered, reply_markup?: InlineKeyboardMarkup) {
+    constructor(message_id: number, date: number, chat: Chat, from?: User, sender_chat?: Chat, forward_from?: User, forward_from_chat?: Chat, forward_from_message_id?: number, forward_signature?: string, forward_sender_name?: string, forward_date?: number, reply_to_message?: Message, via_bot?: User, edit_date?: number, media_group_id?: string, author_signature?: string, text?: string, entities?: Array<MessageEntity>, animation?: Animation, audio?: Audio, document?: Document, photo?: Array<PhotoSize>, sticker?: Sticker, video?: Video, video_note?: VideoNote, voice?: Voice, caption?: string, caption_entities?: Array<MessageEntity>, contact?: Contact, dice?: Dice, game?: Game, poll?: Poll, venue?: Venue, location?: Location, new_chat_members?: Array<User>, left_chat_member?: User, new_chat_title?: string, new_chat_photo?: Array<PhotoSize>, delete_chat_photo?: boolean, group_chat_created?: boolean, supergroup_chat_created?: boolean, channel_chat_created?: boolean, message_auto_delete_timer_changed?: MessageAutoDeleteTimerChanged, migrate_to_chat_id?: number, migrate_from_chat_id?: number, pinned_message?: Message, invoice?: Invoice, successful_payment?: SuccessfulPayment, connected_website?: string, passport_data?: PassportData, proximity_alert_triggered?: ProximityAlertTriggered, voice_chat_scheduled?: VoiceChatScheduled, voice_chat_started?: VoiceChatStarted, voice_chat_ended?: VoiceChatEnded, voice_chat_participants_invited?: VoiceChatParticipantsInvited, reply_markup?: InlineKeyboardMarkup) {
         this.message_id = message_id
         this.date = date
         this.chat = chat
-        this.video_note = video_note
-        this.game = game
-        this.invoice = invoice
-        this.successful_payment = successful_payment
-        this.connected_website = connected_website
         this.from = from
         this.sender_chat = sender_chat
         this.forward_from = forward_from
@@ -402,11 +416,13 @@ export class Message implements Type {
         this.photo = photo
         this.sticker = sticker
         this.video = video
+        this.video_note = video_note
         this.voice = voice
         this.caption = caption
         this.caption_entities = caption_entities
         this.contact = contact
         this.dice = dice
+        this.game = game
         this.poll = poll
         this.venue = venue
         this.location = location
@@ -418,11 +434,19 @@ export class Message implements Type {
         this.group_chat_created = group_chat_created
         this.supergroup_chat_created = supergroup_chat_created
         this.channel_chat_created = channel_chat_created
+        this.message_auto_delete_timer_changed = message_auto_delete_timer_changed
         this.migrate_to_chat_id = migrate_to_chat_id
         this.migrate_from_chat_id = migrate_from_chat_id
         this.pinned_message = pinned_message
+        this.invoice = invoice
+        this.successful_payment = successful_payment
+        this.connected_website = connected_website
         this.passport_data = passport_data
         this.proximity_alert_triggered = proximity_alert_triggered
+        this.voice_chat_scheduled = voice_chat_scheduled
+        this.voice_chat_started = voice_chat_started
+        this.voice_chat_ended = voice_chat_ended
+        this.voice_chat_participants_invited = voice_chat_participants_invited
         this.reply_markup = reply_markup
     }
 }
@@ -443,7 +467,7 @@ export class MessageId implements Type {
 export class MessageEntity implements Type {
     /** Name of this interface as a string */
     objectName = 'MessageEntity'
-    /** Type of the entity. Can be “mention” () */
+    /** Type of the entity. Can be “mention” (@username), “hashtag” (#hashtag), “cashtag” ($USD), “bot_command” (/start@jobs_bot), “url” (https://telegram.org), “email” (do-not-reply@telegram.org), “phone_number” (+1-212-555-0123), “bold” (bold text), “italic” (italic text), “underline” (underlined text), “strikethrough” (strikethrough text), “code” (monowidth string), “pre” (monowidth block), “text_link” (for clickable text URLs), “text_mention” (for users [without usernames](https://telegram.org/blog/edit#new-mentions)) */
     type: string
     /** Offset in UTF-16 code units to the start of the entity */
     offset: number
@@ -686,17 +710,17 @@ export class Contact implements Type {
     first_name: string
     /** Contact&#39;s last name */
     last_name?: string
-    /** Contact&#39;s user identifier in Telegram */
+    /** Contact&#39;s user identifier in Telegram. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a 64-bit integer or double-precision float type are safe for storing this identifier. */
     user_id?: number
-    /**  */
-    vcard: string
+    /** Additional data about the contact in the form of a [vCard](https://en.wikipedia.org/wiki/VCard) */
+    vcard?: string
 
-    constructor(phone_number: string, first_name: string, vcard: string, last_name?: string, user_id?: number) {
+    constructor(phone_number: string, first_name: string, last_name?: string, user_id?: number, vcard?: string) {
         this.phone_number = phone_number
         this.first_name = first_name
-        this.vcard = vcard
         this.last_name = last_name
         this.user_id = user_id
+        this.vcard = vcard
     }
 }
 
@@ -706,7 +730,7 @@ export class Dice implements Type {
     objectName = 'Dice'
     /** Emoji on which the dice throw animation is based */
     emoji: string
-    /** Value of the dice, 1-6 for “” and “” base emoji, 1-5 for “” and “” base emoji, 1-64 for “” base emoji */
+    /** Value of the dice, 1-6 for “”, “” and “” base emoji, 1-5 for “” and “” base emoji, 1-64 for “” base emoji */
     value: number
 
     constructor(emoji: string, value: number) {
@@ -839,17 +863,17 @@ export class Venue implements Type {
     foursquare_type?: string
     /** Google Places identifier of the venue */
     google_place_id?: string
-    /** .) */
-    google_place_type: string
+    /** Google Places type of the venue. (See [supported types](https://developers.google.com/places/web-service/supported_types).) */
+    google_place_type?: string
 
-    constructor(location: Location, title: string, address: string, google_place_type: string, foursquare_id?: string, foursquare_type?: string, google_place_id?: string) {
+    constructor(location: Location, title: string, address: string, foursquare_id?: string, foursquare_type?: string, google_place_id?: string, google_place_type?: string) {
         this.location = location
         this.title = title
         this.address = address
-        this.google_place_type = google_place_type
         this.foursquare_id = foursquare_id
         this.foursquare_type = foursquare_type
         this.google_place_id = google_place_id
+        this.google_place_type = google_place_type
     }
 }
 
@@ -871,6 +895,60 @@ export class ProximityAlertTriggered implements Type {
     }
 }
 
+/** This object represents a service message about a change in auto-delete timer settings. */
+export class MessageAutoDeleteTimerChanged implements Type {
+    /** Name of this interface as a string */
+    objectName = 'MessageAutoDeleteTimerChanged'
+    /** New auto-delete time for messages in the chat */
+    message_auto_delete_time: number
+
+    constructor(message_auto_delete_time: number) {
+        this.message_auto_delete_time = message_auto_delete_time
+    }
+}
+
+/** This object represents a service message about a voice chat scheduled in the chat. */
+export class VoiceChatScheduled implements Type {
+    /** Name of this interface as a string */
+    objectName = 'VoiceChatScheduled'
+    /** Point in time (Unix timestamp) when the voice chat is supposed to be started by a chat administrator */
+    start_date: number
+
+    constructor(start_date: number) {
+        this.start_date = start_date
+    }
+}
+
+/** This object represents a service message about a voice chat started in the chat. Currently holds no information. */
+export class VoiceChatStarted implements Type {
+    /** Name of this interface as a string */
+    objectName = 'VoiceChatStarted'
+}
+
+/** This object represents a service message about a voice chat ended in the chat. */
+export class VoiceChatEnded implements Type {
+    /** Name of this interface as a string */
+    objectName = 'VoiceChatEnded'
+    /** Voice chat duration; in seconds */
+    duration: number
+
+    constructor(duration: number) {
+        this.duration = duration
+    }
+}
+
+/** This object represents a service message about new members invited to a voice chat. */
+export class VoiceChatParticipantsInvited implements Type {
+    /** Name of this interface as a string */
+    objectName = 'VoiceChatParticipantsInvited'
+    /** New members that were invited to the voice chat */
+    users?: Array<User>
+
+    constructor(users?: Array<User>) {
+        this.users = users
+    }
+}
+
 /** This object represent a user&#39;s profile pictures. */
 export class UserProfilePhotos implements Type {
     /** Name of this interface as a string */
@@ -886,7 +964,7 @@ export class UserProfilePhotos implements Type {
     }
 }
 
-/** This object represents a file ready to be downloaded. The file can be downloaded via the link . */
+/** This object represents a file ready to be downloaded. The file can be downloaded via the link https://api.telegram.org/file/bot&lt;token&gt;/&lt;file_path&gt;. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling [getFile](https://core.telegram.org/bots/api#getfile). */
 export class File implements Type {
     /** Name of this interface as a string */
     objectName = 'File'
@@ -917,14 +995,17 @@ export class ReplyKeyboardMarkup implements Type {
     resize_keyboard?: boolean
     /** Requests clients to hide the keyboard as soon as it&#39;s been used. The keyboard will still be available, but clients will automatically display the usual letter-keyboard in the chat – the user can press a special button in the input field to see the custom keyboard again. Defaults to false. */
     one_time_keyboard?: boolean
-    /**  object; 2) if the bot&#39;s message is a reply (has reply_to_message_id), sender of the original message.Example: A user requests to change the bot&#39;s language, bot replies to the request with a keyboard to select the new language. Other users in the group don&#39;t see the keyboard. */
-    selective: boolean
+    /** The placeholder to be shown in the input field when the keyboard is active; 1-64 characters */
+    input_field_placeholder?: string
+    /** Use this parameter if you want to show the keyboard to specific users only. Targets: 1) users that are @mentioned in the text of the [Message](https://core.telegram.org/bots/api#message) object; 2) if the bot&#39;s message is a reply (has reply_to_message_id), sender of the original message.Example: A user requests to change the bot&#39;s language, bot replies to the request with a keyboard to select the new language. Other users in the group don&#39;t see the keyboard. */
+    selective?: boolean
 
-    constructor(keyboard: Array<Array<KeyboardButton>>, selective: boolean, resize_keyboard?: boolean, one_time_keyboard?: boolean) {
+    constructor(keyboard: Array<Array<KeyboardButton>>, resize_keyboard?: boolean, one_time_keyboard?: boolean, input_field_placeholder?: string, selective?: boolean) {
         this.keyboard = keyboard
-        this.selective = selective
         this.resize_keyboard = resize_keyboard
         this.one_time_keyboard = one_time_keyboard
+        this.input_field_placeholder = input_field_placeholder
+        this.selective = selective
     }
 }
 
@@ -965,12 +1046,12 @@ export class KeyboardButtonPollType implements Type {
 export class ReplyKeyboardRemove implements Type {
     /** Name of this interface as a string */
     objectName = 'ReplyKeyboardRemove'
-    /** Requests clients to remove the custom keyboard (user will not be able to summon this keyboard; if you want to hide the keyboard from sight but keep it accessible, use ) */
+    /** Requests clients to remove the custom keyboard (user will not be able to summon this keyboard; if you want to hide the keyboard from sight but keep it accessible, use one_time_keyboard in [ReplyKeyboardMarkup](https://core.telegram.org/bots/api#replykeyboardmarkup)) */
     remove_keyboard: boolean
-    /**  object; 2) if the bot&#39;s message is a reply (has reply_to_message_id), sender of the original message.Example: A user votes in a poll, bot returns confirmation message in reply to the vote and removes the keyboard for that user, while still showing the keyboard with poll options to users who haven&#39;t voted yet. */
-    selective: boolean
+    /** Use this parameter if you want to remove the keyboard for specific users only. Targets: 1) users that are @mentioned in the text of the [Message](https://core.telegram.org/bots/api#message) object; 2) if the bot&#39;s message is a reply (has reply_to_message_id), sender of the original message.Example: A user votes in a poll, bot returns confirmation message in reply to the vote and removes the keyboard for that user, while still showing the keyboard with poll options to users who haven&#39;t voted yet. */
+    selective?: boolean
 
-    constructor(remove_keyboard: boolean, selective: boolean) {
+    constructor(remove_keyboard: boolean, selective?: boolean) {
         this.remove_keyboard = remove_keyboard
         this.selective = selective
     }
@@ -996,28 +1077,28 @@ export class InlineKeyboardButton implements Type {
     text: string
     /** HTTP or tg:// url to be opened when button is pressed */
     url?: string
-    /** . */
-    login_url: LoginUrl
-    /**  to the bot when button is pressed, 1-64 bytes */
-    callback_data: string
-    /**  when they are currently in a private chat with it. Especially useful when combined with [<em>switch_pm…</em>](https://core.telegram.org/bots/api#answerinlinequery) actions – in this case the user will be automatically returned to the chat they switched from, skipping the chat selection screen. */
-    switch_inline_query: string
+    /** An HTTP URL used to automatically authorize the user. Can be used as a replacement for the [Telegram Login Widget](https://core.telegram.org/widgets/login). */
+    login_url?: LoginUrl
+    /** Data to be sent in a [callback query](https://core.telegram.org/bots/api#callbackquery) to the bot when button is pressed, 1-64 bytes */
+    callback_data?: string
+    /** If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot&#39;s username and the specified inline query in the input field. Can be empty, in which case just the bot&#39;s username will be inserted.Note: This offers an easy way for users to start using your bot in [inline mode](/bots/inline) when they are currently in a private chat with it. Especially useful when combined with [switch_pm…](https://core.telegram.org/bots/api#answerinlinequery) actions – in this case the user will be automatically returned to the chat they switched from, skipping the chat selection screen. */
+    switch_inline_query?: string
     /** If set, pressing the button will insert the bot&#39;s username and the specified inline query in the current chat&#39;s input field. Can be empty, in which case only the bot&#39;s username will be inserted.This offers a quick way for the user to open your bot in inline mode in the same chat – good for selecting something from multiple options. */
     switch_inline_query_current_chat?: string
     /** Description of the game that will be launched when the user presses the button.NOTE: This type of button must always be the first button in the first row. */
     callback_game?: CallbackGame
-    /** .NOTE: This type of button must always be the first button in the first row. */
-    pay: boolean
+    /** Specify True, to send a [Pay button](https://core.telegram.org/bots/api#payments).NOTE: This type of button must always be the first button in the first row. */
+    pay?: boolean
 
-    constructor(text: string, login_url: LoginUrl, callback_data: string, switch_inline_query: string, pay: boolean, url?: string, switch_inline_query_current_chat?: string, callback_game?: CallbackGame) {
+    constructor(text: string, url?: string, login_url?: LoginUrl, callback_data?: string, switch_inline_query?: string, switch_inline_query_current_chat?: string, callback_game?: CallbackGame, pay?: boolean) {
         this.text = text
+        this.url = url
         this.login_url = login_url
         this.callback_data = callback_data
         this.switch_inline_query = switch_inline_query
-        this.pay = pay
-        this.url = url
         this.switch_inline_query_current_chat = switch_inline_query_current_chat
         this.callback_game = callback_game
+        this.pay = pay
     }
 }
 
@@ -1025,24 +1106,24 @@ export class InlineKeyboardButton implements Type {
 export class LoginUrl implements Type {
     /** Name of this interface as a string */
     objectName = 'LoginUrl'
-    /** An HTTP URL to be opened with user authorization data added to the query string when the button is pressed. If the user refuses to provide authorization data, the original URL without information about the user will be opened. The data added is the same as described in [Receiving authorization data](https://core.telegram.org/widgets/login#receiving-authorization-data).. */
+    /** An HTTP URL to be opened with user authorization data added to the query string when the button is pressed. If the user refuses to provide authorization data, the original URL without information about the user will be opened. The data added is the same as described in [Receiving authorization data](https://core.telegram.org/widgets/login#receiving-authorization-data).NOTE: You must always check the hash of the received data to verify the authentication and the integrity of the data as described in [Checking authorization](https://core.telegram.org/widgets/login#checking-authorization). */
     url: string
     /** New text of the button in forwarded messages. */
     forward_text?: string
-    /**  for more details. If not specified, the current bot&#39;s username will be assumed. The  for more details. */
-    bot_username: string
+    /** Username of a bot, which will be used for user authorization. See [Setting up a bot](https://core.telegram.org/widgets/login#setting-up-a-bot) for more details. If not specified, the current bot&#39;s username will be assumed. The url&#39;s domain must be the same as the domain linked with the bot. See [Linking your domain to the bot](https://core.telegram.org/widgets/login#linking-your-domain-to-the-bot) for more details. */
+    bot_username?: string
     /** Pass True to request the permission for your bot to send messages to the user. */
     request_write_access?: boolean
 
-    constructor(url: string, bot_username: string, forward_text?: string, request_write_access?: boolean) {
+    constructor(url: string, forward_text?: string, bot_username?: string, request_write_access?: boolean) {
         this.url = url
-        this.bot_username = bot_username
         this.forward_text = forward_text
+        this.bot_username = bot_username
         this.request_write_access = request_write_access
     }
 }
 
-/** This object represents an incoming callback query from a callback button in an [inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating). If the button that originated the query was attached to a message sent by the bot, the field ), the field inline_message_id will be present. Exactly one of the fields data or game_short_name will be present. */
+/** This object represents an incoming callback query from a callback button in an [inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating). If the button that originated the query was attached to a message sent by the bot, the field message will be present. If the button was attached to a message sent via the bot (in [inline mode](https://core.telegram.org/bots/api#inline-mode)), the field inline_message_id will be present. Exactly one of the fields data or game_short_name will be present. */
 export class CallbackQuery implements Type {
     /** Name of this interface as a string */
     objectName = 'CallbackQuery'
@@ -1058,17 +1139,17 @@ export class CallbackQuery implements Type {
     chat_instance: string
     /** Data associated with the callback button. Be aware that a bad client can send arbitrary data in this field. */
     data?: string
-    /**  to be returned, serves as the unique identifier for the game */
-    game_short_name: string
+    /** Short name of a [Game](https://core.telegram.org/bots/api#games) to be returned, serves as the unique identifier for the game */
+    game_short_name?: string
 
-    constructor(id: string, from: User, chat_instance: string, game_short_name: string, message?: Message, inline_message_id?: string, data?: string) {
+    constructor(id: string, from: User, chat_instance: string, message?: Message, inline_message_id?: string, data?: string, game_short_name?: string) {
         this.id = id
         this.from = from
         this.chat_instance = chat_instance
-        this.game_short_name = game_short_name
         this.message = message
         this.inline_message_id = inline_message_id
         this.data = data
+        this.game_short_name = game_short_name
     }
 }
 
@@ -1078,11 +1159,14 @@ export class ForceReply implements Type {
     objectName = 'ForceReply'
     /** Shows reply interface to the user, as if they manually selected the bot&#39;s message and tapped &#39;Reply&#39; */
     force_reply: boolean
-    /**  object; 2) if the bot&#39;s message is a reply (has reply_to_message_id), sender of the original message. */
-    selective: boolean
+    /** The placeholder to be shown in the input field when the reply is active; 1-64 characters */
+    input_field_placeholder?: string
+    /** Use this parameter if you want to force reply from specific users only. Targets: 1) users that are @mentioned in the text of the [Message](https://core.telegram.org/bots/api#message) object; 2) if the bot&#39;s message is a reply (has reply_to_message_id), sender of the original message. */
+    selective?: boolean
 
-    constructor(force_reply: boolean, selective: boolean) {
+    constructor(force_reply: boolean, input_field_placeholder?: string, selective?: boolean) {
         this.force_reply = force_reply
+        this.input_field_placeholder = input_field_placeholder
         this.selective = selective
     }
 }
@@ -1108,72 +1192,228 @@ export class ChatPhoto implements Type {
     }
 }
 
-/** This object contains information about one member of a chat. */
-export class ChatMember implements Type {
+/** Represents an invite link for a chat. */
+export class ChatInviteLink implements Type {
     /** Name of this interface as a string */
-    objectName = 'ChatMember'
+    objectName = 'ChatInviteLink'
+    /** The invite link. If the link was created by another chat administrator, then the second part of the link will be replaced with “…”. */
+    invite_link: string
+    /** Creator of the link */
+    creator: User
+    /** True, if the link is primary */
+    is_primary: boolean
+    /** True, if the link is revoked */
+    is_revoked: boolean
+    /** Point in time (Unix timestamp) when the link will expire or has been expired */
+    expire_date?: number
+    /** Maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999 */
+    member_limit?: number
+
+    constructor(invite_link: string, creator: User, is_primary: boolean, is_revoked: boolean, expire_date?: number, member_limit?: number) {
+        this.invite_link = invite_link
+        this.creator = creator
+        this.is_primary = is_primary
+        this.is_revoked = is_revoked
+        this.expire_date = expire_date
+        this.member_limit = member_limit
+    }
+}
+
+/** This object contains information about one member of a chat. Currently, the following 6 types of chat members are supported: */
+export type ChatMember = ChatMemberOwner | ChatMemberAdministrator | ChatMemberMember | ChatMemberRestricted | ChatMemberLeft | ChatMemberBanned
+
+/** Represents a [chat member](https://core.telegram.org/bots/api#chatmember) that owns the chat and has all administrator privileges. */
+export class ChatMemberOwner implements Type {
+    /** Name of this interface as a string */
+    objectName = 'ChatMemberOwner'
+    /** The member&#39;s status in the chat, always “creator” */
+    status: string
     /** Information about the user */
     user: User
-    /** The member&#39;s status in the chat. Can be “creator”, “administrator”, “member”, “restricted”, “left” or “kicked” */
-    status: string
-    /** Owner and administrators only. Custom title for this user */
+    /** True, if the user&#39;s presence in the chat is hidden */
+    is_anonymous: boolean
+    /** Custom title for this user */
     custom_title?: string
-    /** Owner and administrators only. True, if the user&#39;s presence in the chat is hidden */
-    is_anonymous?: boolean
-    /** Administrators only. True, if the bot is allowed to edit administrator privileges of that user */
-    can_be_edited?: boolean
-    /** Administrators only. True, if the administrator can post in the channel; channels only */
-    can_post_messages?: boolean
-    /** Administrators only. True, if the administrator can edit messages of other users and can pin messages; channels only */
-    can_edit_messages?: boolean
-    /** Administrators only. True, if the administrator can delete messages of other users */
-    can_delete_messages?: boolean
-    /** Administrators only. True, if the administrator can restrict, ban or unban chat members */
-    can_restrict_members?: boolean
-    /** Administrators only. True, if the administrator can add new administrators with a subset of their own privileges or demote administrators that he has promoted, directly or indirectly (promoted by administrators that were appointed by the user) */
-    can_promote_members?: boolean
-    /** Administrators and restricted only. True, if the user is allowed to change the chat title, photo and other settings */
-    can_change_info?: boolean
-    /** Administrators and restricted only. True, if the user is allowed to invite new users to the chat */
-    can_invite_users?: boolean
-    /** Administrators and restricted only. True, if the user is allowed to pin messages; groups and supergroups only */
-    can_pin_messages?: boolean
-    /** Restricted only. True, if the user is a member of the chat at the moment of the request */
-    is_member?: boolean
-    /** Restricted only. True, if the user is allowed to send text messages, contacts, locations and venues */
-    can_send_messages?: boolean
-    /** Restricted only. True, if the user is allowed to send audios, documents, photos, videos, video notes and voice notes */
-    can_send_media_messages?: boolean
-    /** Restricted only. True, if the user is allowed to send polls */
-    can_send_polls?: boolean
-    /** Restricted only. True, if the user is allowed to send animations, games, stickers and use inline bots */
-    can_send_other_messages?: boolean
-    /** Restricted only. True, if the user is allowed to add web page previews to their messages */
-    can_add_web_page_previews?: boolean
-    /** Restricted and kicked only. Date when restrictions will be lifted for this user; unix time */
-    until_date?: number
 
-    constructor(user: User, status: string, custom_title?: string, is_anonymous?: boolean, can_be_edited?: boolean, can_post_messages?: boolean, can_edit_messages?: boolean, can_delete_messages?: boolean, can_restrict_members?: boolean, can_promote_members?: boolean, can_change_info?: boolean, can_invite_users?: boolean, can_pin_messages?: boolean, is_member?: boolean, can_send_messages?: boolean, can_send_media_messages?: boolean, can_send_polls?: boolean, can_send_other_messages?: boolean, can_add_web_page_previews?: boolean, until_date?: number) {
-        this.user = user
+    constructor(status: string, user: User, is_anonymous: boolean, custom_title?: string) {
         this.status = status
-        this.custom_title = custom_title
+        this.user = user
         this.is_anonymous = is_anonymous
+        this.custom_title = custom_title
+    }
+}
+
+/** Represents a [chat member](https://core.telegram.org/bots/api#chatmember) that has some additional privileges. */
+export class ChatMemberAdministrator implements Type {
+    /** Name of this interface as a string */
+    objectName = 'ChatMemberAdministrator'
+    /** The member&#39;s status in the chat, always “administrator” */
+    status: string
+    /** Information about the user */
+    user: User
+    /** True, if the bot is allowed to edit administrator privileges of that user */
+    can_be_edited: boolean
+    /** True, if the user&#39;s presence in the chat is hidden */
+    is_anonymous: boolean
+    /** True, if the administrator can access the chat event log, chat statistics, message statistics in channels, see channel members, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege */
+    can_manage_chat: boolean
+    /** True, if the administrator can delete messages of other users */
+    can_delete_messages: boolean
+    /** True, if the administrator can manage voice chats */
+    can_manage_voice_chats: boolean
+    /** True, if the administrator can restrict, ban or unban chat members */
+    can_restrict_members: boolean
+    /** True, if the administrator can add new administrators with a subset of their own privileges or demote administrators that he has promoted, directly or indirectly (promoted by administrators that were appointed by the user) */
+    can_promote_members: boolean
+    /** True, if the user is allowed to change the chat title, photo and other settings */
+    can_change_info: boolean
+    /** True, if the user is allowed to invite new users to the chat */
+    can_invite_users: boolean
+    /** True, if the administrator can post in the channel; channels only */
+    can_post_messages?: boolean
+    /** True, if the administrator can edit messages of other users and can pin messages; channels only */
+    can_edit_messages?: boolean
+    /** True, if the user is allowed to pin messages; groups and supergroups only */
+    can_pin_messages?: boolean
+    /** Custom title for this user */
+    custom_title?: string
+
+    constructor(status: string, user: User, can_be_edited: boolean, is_anonymous: boolean, can_manage_chat: boolean, can_delete_messages: boolean, can_manage_voice_chats: boolean, can_restrict_members: boolean, can_promote_members: boolean, can_change_info: boolean, can_invite_users: boolean, can_post_messages?: boolean, can_edit_messages?: boolean, can_pin_messages?: boolean, custom_title?: string) {
+        this.status = status
+        this.user = user
         this.can_be_edited = can_be_edited
-        this.can_post_messages = can_post_messages
-        this.can_edit_messages = can_edit_messages
+        this.is_anonymous = is_anonymous
+        this.can_manage_chat = can_manage_chat
         this.can_delete_messages = can_delete_messages
+        this.can_manage_voice_chats = can_manage_voice_chats
         this.can_restrict_members = can_restrict_members
         this.can_promote_members = can_promote_members
         this.can_change_info = can_change_info
         this.can_invite_users = can_invite_users
+        this.can_post_messages = can_post_messages
+        this.can_edit_messages = can_edit_messages
         this.can_pin_messages = can_pin_messages
+        this.custom_title = custom_title
+    }
+}
+
+/** Represents a [chat member](https://core.telegram.org/bots/api#chatmember) that has no additional privileges or restrictions. */
+export class ChatMemberMember implements Type {
+    /** Name of this interface as a string */
+    objectName = 'ChatMemberMember'
+    /** The member&#39;s status in the chat, always “member” */
+    status: string
+    /** Information about the user */
+    user: User
+
+    constructor(status: string, user: User) {
+        this.status = status
+        this.user = user
+    }
+}
+
+/** Represents a [chat member](https://core.telegram.org/bots/api#chatmember) that is under certain restrictions in the chat. Supergroups only. */
+export class ChatMemberRestricted implements Type {
+    /** Name of this interface as a string */
+    objectName = 'ChatMemberRestricted'
+    /** The member&#39;s status in the chat, always “restricted” */
+    status: string
+    /** Information about the user */
+    user: User
+    /** True, if the user is a member of the chat at the moment of the request */
+    is_member: boolean
+    /** True, if the user is allowed to change the chat title, photo and other settings */
+    can_change_info: boolean
+    /** True, if the user is allowed to invite new users to the chat */
+    can_invite_users: boolean
+    /** True, if the user is allowed to pin messages */
+    can_pin_messages: boolean
+    /** True, if the user is allowed to send text messages, contacts, locations and venues */
+    can_send_messages: boolean
+    /** True, if the user is allowed to send audios, documents, photos, videos, video notes and voice notes */
+    can_send_media_messages: boolean
+    /** True, if the user is allowed to send polls */
+    can_send_polls: boolean
+    /** True, if the user is allowed to send animations, games, stickers and use inline bots */
+    can_send_other_messages: boolean
+    /** True, if the user is allowed to add web page previews to their messages */
+    can_add_web_page_previews: boolean
+    /** Date when restrictions will be lifted for this user; unix time. If 0, then the user is restricted forever */
+    until_date: number
+
+    constructor(status: string, user: User, is_member: boolean, can_change_info: boolean, can_invite_users: boolean, can_pin_messages: boolean, can_send_messages: boolean, can_send_media_messages: boolean, can_send_polls: boolean, can_send_other_messages: boolean, can_add_web_page_previews: boolean, until_date: number) {
+        this.status = status
+        this.user = user
         this.is_member = is_member
+        this.can_change_info = can_change_info
+        this.can_invite_users = can_invite_users
+        this.can_pin_messages = can_pin_messages
         this.can_send_messages = can_send_messages
         this.can_send_media_messages = can_send_media_messages
         this.can_send_polls = can_send_polls
         this.can_send_other_messages = can_send_other_messages
         this.can_add_web_page_previews = can_add_web_page_previews
         this.until_date = until_date
+    }
+}
+
+/** Represents a [chat member](https://core.telegram.org/bots/api#chatmember) that isn&#39;t currently a member of the chat, but may join it themselves. */
+export class ChatMemberLeft implements Type {
+    /** Name of this interface as a string */
+    objectName = 'ChatMemberLeft'
+    /** The member&#39;s status in the chat, always “left” */
+    status: string
+    /** Information about the user */
+    user: User
+
+    constructor(status: string, user: User) {
+        this.status = status
+        this.user = user
+    }
+}
+
+/** Represents a [chat member](https://core.telegram.org/bots/api#chatmember) that was banned in the chat and can&#39;t return to the chat or view chat messages. */
+export class ChatMemberBanned implements Type {
+    /** Name of this interface as a string */
+    objectName = 'ChatMemberBanned'
+    /** The member&#39;s status in the chat, always “kicked” */
+    status: string
+    /** Information about the user */
+    user: User
+    /** Date when restrictions will be lifted for this user; unix time. If 0, then the user is banned forever */
+    until_date: number
+
+    constructor(status: string, user: User, until_date: number) {
+        this.status = status
+        this.user = user
+        this.until_date = until_date
+    }
+}
+
+/** This object represents changes in the status of a chat member. */
+export class ChatMemberUpdated implements Type {
+    /** Name of this interface as a string */
+    objectName = 'ChatMemberUpdated'
+    /** Chat the user belongs to */
+    chat: Chat
+    /** Performer of the action, which resulted in the change */
+    from: User
+    /** Date the change was done in Unix time */
+    date: number
+    /** Previous information about the chat member */
+    old_chat_member: ChatMember
+    /** New information about the chat member */
+    new_chat_member: ChatMember
+    /** Chat invite link, which was used by the user to join the chat; for joining by invite link events only. */
+    invite_link?: ChatInviteLink
+
+    constructor(chat: Chat, from: User, date: number, old_chat_member: ChatMember, new_chat_member: ChatMember, invite_link?: ChatInviteLink) {
+        this.chat = chat
+        this.from = from
+        this.date = date
+        this.old_chat_member = old_chat_member
+        this.new_chat_member = new_chat_member
+        this.invite_link = invite_link
     }
 }
 
@@ -1240,11 +1480,110 @@ export class BotCommand implements Type {
     }
 }
 
+/** This object represents the scope to which bot commands are applied. Currently, the following 7 scopes are supported: */
+export type BotCommandScope = BotCommandScopeDefault | BotCommandScopeAllPrivateChats | BotCommandScopeAllGroupChats | BotCommandScopeAllChatAdministrators | BotCommandScopeChat | BotCommandScopeChatAdministrators | BotCommandScopeChatMember
+
+/** Represents the default [scope](https://core.telegram.org/bots/api#botcommandscope) of bot commands. Default commands are used if no commands with a [narrower scope](https://core.telegram.org/bots/api#determining-list-of-commands) are specified for the user. */
+export class BotCommandScopeDefault implements Type {
+    /** Name of this interface as a string */
+    objectName = 'BotCommandScopeDefault'
+    /** Scope type, must be default */
+    type: string
+
+    constructor(type: string) {
+        this.type = type
+    }
+}
+
+/** Represents the [scope](https://core.telegram.org/bots/api#botcommandscope) of bot commands, covering all private chats. */
+export class BotCommandScopeAllPrivateChats implements Type {
+    /** Name of this interface as a string */
+    objectName = 'BotCommandScopeAllPrivateChats'
+    /** Scope type, must be all_private_chats */
+    type: string
+
+    constructor(type: string) {
+        this.type = type
+    }
+}
+
+/** Represents the [scope](https://core.telegram.org/bots/api#botcommandscope) of bot commands, covering all group and supergroup chats. */
+export class BotCommandScopeAllGroupChats implements Type {
+    /** Name of this interface as a string */
+    objectName = 'BotCommandScopeAllGroupChats'
+    /** Scope type, must be all_group_chats */
+    type: string
+
+    constructor(type: string) {
+        this.type = type
+    }
+}
+
+/** Represents the [scope](https://core.telegram.org/bots/api#botcommandscope) of bot commands, covering all group and supergroup chat administrators. */
+export class BotCommandScopeAllChatAdministrators implements Type {
+    /** Name of this interface as a string */
+    objectName = 'BotCommandScopeAllChatAdministrators'
+    /** Scope type, must be all_chat_administrators */
+    type: string
+
+    constructor(type: string) {
+        this.type = type
+    }
+}
+
+/** Represents the [scope](https://core.telegram.org/bots/api#botcommandscope) of bot commands, covering a specific chat. */
+export class BotCommandScopeChat implements Type {
+    /** Name of this interface as a string */
+    objectName = 'BotCommandScopeChat'
+    /** Scope type, must be chat */
+    type: string
+    /** Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername) */
+    chat_id: number|string
+
+    constructor(type: string, chat_id: number|string) {
+        this.type = type
+        this.chat_id = chat_id
+    }
+}
+
+/** Represents the [scope](https://core.telegram.org/bots/api#botcommandscope) of bot commands, covering all administrators of a specific group or supergroup chat. */
+export class BotCommandScopeChatAdministrators implements Type {
+    /** Name of this interface as a string */
+    objectName = 'BotCommandScopeChatAdministrators'
+    /** Scope type, must be chat_administrators */
+    type: string
+    /** Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername) */
+    chat_id: number|string
+
+    constructor(type: string, chat_id: number|string) {
+        this.type = type
+        this.chat_id = chat_id
+    }
+}
+
+/** Represents the [scope](https://core.telegram.org/bots/api#botcommandscope) of bot commands, covering a specific member of a group or supergroup chat. */
+export class BotCommandScopeChatMember implements Type {
+    /** Name of this interface as a string */
+    objectName = 'BotCommandScopeChatMember'
+    /** Scope type, must be chat_member */
+    type: string
+    /** Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername) */
+    chat_id: number|string
+    /** Unique identifier of the target user */
+    user_id: number
+
+    constructor(type: string, chat_id: number|string, user_id: number) {
+        this.type = type
+        this.chat_id = chat_id
+        this.user_id = user_id
+    }
+}
+
 /** Contains information about why a request was unsuccessful. */
 export class ResponseParameters implements Type {
     /** Name of this interface as a string */
     objectName = 'ResponseParameters'
-    /** The group has been migrated to a supergroup with the specified identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. */
+    /** The group has been migrated to a supergroup with the specified identifier. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this identifier. */
     migrate_to_chat_id?: number
     /** In case of exceeding flood control, the number of seconds left to wait before the request can be repeated */
     retry_after?: number
@@ -1268,16 +1607,16 @@ export class InputMediaPhoto implements Type {
     media: string
     /** Caption of the photo to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the photo caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
 
-    constructor(type: string, media: string, parse_mode: string, caption?: string, caption_entities?: Array<MessageEntity>) {
+    constructor(type: string, media: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>) {
         this.type = type
         this.media = media
-        this.parse_mode = parse_mode
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
     }
 }
@@ -1290,12 +1629,12 @@ export class InputMediaVideo implements Type {
     type: string
     /** File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. [More info on Sending Files »](https://core.telegram.org/bots/api#sending-files) */
     media: string
-    /**  */
-    thumb: InputFile|string
+    /** Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail&#39;s width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can&#39;t be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. [More info on Sending Files »](https://core.telegram.org/bots/api#sending-files) */
+    thumb?: InputFile|string
     /** Caption of the video to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the video caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Video width */
@@ -1307,12 +1646,12 @@ export class InputMediaVideo implements Type {
     /** Pass True, if the uploaded video is suitable for streaming */
     supports_streaming?: boolean
 
-    constructor(type: string, media: string, thumb: InputFile|string, parse_mode: string, caption?: string, caption_entities?: Array<MessageEntity>, width?: number, height?: number, duration?: number, supports_streaming?: boolean) {
+    constructor(type: string, media: string, thumb?: InputFile|string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, width?: number, height?: number, duration?: number, supports_streaming?: boolean) {
         this.type = type
         this.media = media
         this.thumb = thumb
-        this.parse_mode = parse_mode
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
         this.width = width
         this.height = height
@@ -1329,12 +1668,12 @@ export class InputMediaAnimation implements Type {
     type: string
     /** File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. [More info on Sending Files »](https://core.telegram.org/bots/api#sending-files) */
     media: string
-    /**  */
-    thumb: InputFile|string
+    /** Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail&#39;s width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can&#39;t be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. [More info on Sending Files »](https://core.telegram.org/bots/api#sending-files) */
+    thumb?: InputFile|string
     /** Caption of the animation to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the animation caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Animation width */
@@ -1344,12 +1683,12 @@ export class InputMediaAnimation implements Type {
     /** Animation duration */
     duration?: number
 
-    constructor(type: string, media: string, thumb: InputFile|string, parse_mode: string, caption?: string, caption_entities?: Array<MessageEntity>, width?: number, height?: number, duration?: number) {
+    constructor(type: string, media: string, thumb?: InputFile|string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, width?: number, height?: number, duration?: number) {
         this.type = type
         this.media = media
         this.thumb = thumb
-        this.parse_mode = parse_mode
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
         this.width = width
         this.height = height
@@ -1365,12 +1704,12 @@ export class InputMediaAudio implements Type {
     type: string
     /** File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. [More info on Sending Files »](https://core.telegram.org/bots/api#sending-files) */
     media: string
-    /**  */
-    thumb: InputFile|string
+    /** Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail&#39;s width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can&#39;t be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. [More info on Sending Files »](https://core.telegram.org/bots/api#sending-files) */
+    thumb?: InputFile|string
     /** Caption of the audio to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the audio caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Duration of the audio in seconds */
@@ -1380,12 +1719,12 @@ export class InputMediaAudio implements Type {
     /** Title of the audio */
     title?: string
 
-    constructor(type: string, media: string, thumb: InputFile|string, parse_mode: string, caption?: string, caption_entities?: Array<MessageEntity>, duration?: number, performer?: string, title?: string) {
+    constructor(type: string, media: string, thumb?: InputFile|string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, duration?: number, performer?: string, title?: string) {
         this.type = type
         this.media = media
         this.thumb = thumb
-        this.parse_mode = parse_mode
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
         this.duration = duration
         this.performer = performer
@@ -1401,23 +1740,23 @@ export class InputMediaDocument implements Type {
     type: string
     /** File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. [More info on Sending Files »](https://core.telegram.org/bots/api#sending-files) */
     media: string
-    /**  */
-    thumb: InputFile|string
+    /** Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail&#39;s width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can&#39;t be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. [More info on Sending Files »](https://core.telegram.org/bots/api#sending-files) */
+    thumb?: InputFile|string
     /** Caption of the document to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the document caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Disables automatic server-side content type detection for files uploaded using multipart/form-data. Always true, if the document is sent as part of an album. */
     disable_content_type_detection?: boolean
 
-    constructor(type: string, media: string, thumb: InputFile|string, parse_mode: string, caption?: string, caption_entities?: Array<MessageEntity>, disable_content_type_detection?: boolean) {
+    constructor(type: string, media: string, thumb?: InputFile|string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, disable_content_type_detection?: boolean) {
         this.type = type
         this.media = media
         this.thumb = thumb
-        this.parse_mode = parse_mode
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
         this.disable_content_type_detection = disable_content_type_detection
     }
@@ -1480,7 +1819,7 @@ export class sendMessage implements Method {
     }
 }
 
-/** Use this method to forward messages of any kind. On success, the sent [Message](https://core.telegram.org/bots/api#message) is returned. */
+/** Use this method to forward messages of any kind. Service messages can&#39;t be forwarded. On success, the sent [Message](https://core.telegram.org/bots/api#message) is returned. */
 export class forwardMessage implements Method {
     /** Name of this interface as a string */
     objectName = 'forwardMessage'
@@ -1501,7 +1840,7 @@ export class forwardMessage implements Method {
     }
 }
 
-/** Use this method to copy messages of any kind. The method is analogous to the method [forwardMessages](https://core.telegram.org/bots/api#forwardmessages), but the copied message doesn&#39;t have a link to the original message. Returns the [MessageId](https://core.telegram.org/bots/api#messageid) of the sent message on success. */
+/** Use this method to copy messages of any kind. Service messages and invoice messages can&#39;t be copied. The method is analogous to the method [forwardMessage](https://core.telegram.org/bots/api#forwardmessage), but the copied message doesn&#39;t have a link to the original message. Returns the [MessageId](https://core.telegram.org/bots/api#messageid) of the sent message on success. */
 export class copyMessage implements Method {
     /** Name of this interface as a string */
     objectName = 'copyMessage'
@@ -1906,7 +2245,7 @@ export class sendLocation implements Method {
     }
 }
 
-/** Use this method to edit live location messages. A location can be edited until its . On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned. */
+/** Use this method to edit live location messages. A location can be edited until its live_period expires or editing is explicitly disabled by a call to [stopMessageLiveLocation](https://core.telegram.org/bots/api#stopmessagelivelocation). On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned. */
 export class editMessageLiveLocation implements Method {
     /** Name of this interface as a string */
     objectName = 'editMessageLiveLocation'
@@ -1942,7 +2281,7 @@ export class editMessageLiveLocation implements Method {
     }
 }
 
-/** Use this method to stop updating a live location message before  is returned, otherwise True is returned. */
+/** Use this method to stop updating a live location message before live_period expires. On success, if the message is not an inline message, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned. */
 export class stopMessageLiveLocation implements Method {
     /** Name of this interface as a string */
     objectName = 'stopMessageLiveLocation'
@@ -2113,7 +2452,7 @@ export class sendDice implements Method {
     objectName = 'sendDice'
     /** Unique identifier for the target chat or username of the target channel (in the format @channelusername) */
     chat_id: number|string
-    /** Emoji on which the dice throw animation is based. Currently, must be one of “”, “”, “”, “”, or “”. Dice can have values 1-6 for “” and “”, values 1-5 for “” and “”, and values 1-64 for “”. Defaults to “” */
+    /** Emoji on which the dice throw animation is based. Currently, must be one of “”, “”, “”, “”, “”, or “”. Dice can have values 1-6 for “”, “” and “”, values 1-5 for “” and “”, and values 1-64 for “”. Defaults to “” */
     emoji?: string
     /** Sends the message silently. Users will receive a notification with no sound. */
     disable_notification?: boolean
@@ -2167,7 +2506,7 @@ export class getUserProfilePhotos implements Method {
     }
 }
 
-/** Use this method to get basic info about a file and prepare it for downloading. For the moment, bots can download files of up to 20MB in size. On success, a [File](https://core.telegram.org/bots/api#file) object is returned. The file can then be downloaded via the link  again. */
+/** Use this method to get basic info about a file and prepare it for downloading. For the moment, bots can download files of up to 20MB in size. On success, a [File](https://core.telegram.org/bots/api#file) object is returned. The file can then be downloaded via the link https://api.telegram.org/file/bot&lt;token&gt;/&lt;file_path&gt;, where &lt;file_path&gt; is taken from the response. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling [getFile](https://core.telegram.org/bots/api#getfile) again. */
 export class getFile implements Method {
     /** Name of this interface as a string */
     objectName = 'getFile'
@@ -2179,25 +2518,28 @@ export class getFile implements Method {
     }
 }
 
-/** Use this method to kick a user from a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless [unbanned](https://core.telegram.org/bots/api#unbanchatmember) first. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
-export class kickChatMember implements Method {
+/** Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless [unbanned](https://core.telegram.org/bots/api#unbanchatmember) first. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
+export class banChatMember implements Method {
     /** Name of this interface as a string */
-    objectName = 'kickChatMember'
+    objectName = 'banChatMember'
     /** Unique identifier for the target group or username of the target supergroup or channel (in the format @channelusername) */
     chat_id: number|string
     /** Unique identifier of the target user */
     user_id: number
     /** Date when the user will be unbanned, unix time. If user is banned for more than 366 days or less than 30 seconds from the current time they are considered to be banned forever. Applied for supergroups and channels only. */
     until_date?: number
+    /** Pass True to delete all messages from the chat for the user that is being removed. If False, the user will be able to see messages in the group that were sent before the user was removed. Always True for supergroups and channels. */
+    revoke_messages?: boolean
 
-    constructor(chat_id: number|string, user_id: number, until_date?: number) {
+    constructor(chat_id: number|string, user_id: number, until_date?: number, revoke_messages?: boolean) {
         this.chat_id = chat_id
         this.user_id = user_id
         this.until_date = until_date
+        this.revoke_messages = revoke_messages
     }
 }
 
-/** Use this method to unban a previously kicked user in a supergroup or channel. The user will not return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be removed from the chat. If you don&#39;t want this, use the parameter only_if_banned. Returns True on success. */
+/** Use this method to unban a previously banned user in a supergroup or channel. The user will not return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be removed from the chat. If you don&#39;t want this, use the parameter only_if_banned. Returns True on success. */
 export class unbanChatMember implements Method {
     /** Name of this interface as a string */
     objectName = 'unbanChatMember'
@@ -2246,35 +2588,41 @@ export class promoteChatMember implements Method {
     user_id: number
     /** Pass True, if the administrator's presence in the chat is hidden */
     is_anonymous?: boolean
-    /** Pass True, if the administrator can change chat title, photo and other settings */
-    can_change_info?: boolean
+    /** Pass True, if the administrator can access the chat event log, chat statistics, message statistics in channels, see channel members, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege */
+    can_manage_chat?: boolean
     /** Pass True, if the administrator can create channel posts, channels only */
     can_post_messages?: boolean
     /** Pass True, if the administrator can edit messages of other users and can pin messages, channels only */
     can_edit_messages?: boolean
     /** Pass True, if the administrator can delete messages of other users */
     can_delete_messages?: boolean
-    /** Pass True, if the administrator can invite new users to the chat */
-    can_invite_users?: boolean
+    /** Pass True, if the administrator can manage voice chats */
+    can_manage_voice_chats?: boolean
     /** Pass True, if the administrator can restrict, ban or unban chat members */
     can_restrict_members?: boolean
-    /** Pass True, if the administrator can pin messages, supergroups only */
-    can_pin_messages?: boolean
     /** Pass True, if the administrator can add new administrators with a subset of their own privileges or demote administrators that he has promoted, directly or indirectly (promoted by administrators that were appointed by him) */
     can_promote_members?: boolean
+    /** Pass True, if the administrator can change chat title, photo and other settings */
+    can_change_info?: boolean
+    /** Pass True, if the administrator can invite new users to the chat */
+    can_invite_users?: boolean
+    /** Pass True, if the administrator can pin messages, supergroups only */
+    can_pin_messages?: boolean
 
-    constructor(chat_id: number|string, user_id: number, is_anonymous?: boolean, can_change_info?: boolean, can_post_messages?: boolean, can_edit_messages?: boolean, can_delete_messages?: boolean, can_invite_users?: boolean, can_restrict_members?: boolean, can_pin_messages?: boolean, can_promote_members?: boolean) {
+    constructor(chat_id: number|string, user_id: number, is_anonymous?: boolean, can_manage_chat?: boolean, can_post_messages?: boolean, can_edit_messages?: boolean, can_delete_messages?: boolean, can_manage_voice_chats?: boolean, can_restrict_members?: boolean, can_promote_members?: boolean, can_change_info?: boolean, can_invite_users?: boolean, can_pin_messages?: boolean) {
         this.chat_id = chat_id
         this.user_id = user_id
         this.is_anonymous = is_anonymous
-        this.can_change_info = can_change_info
+        this.can_manage_chat = can_manage_chat
         this.can_post_messages = can_post_messages
         this.can_edit_messages = can_edit_messages
         this.can_delete_messages = can_delete_messages
-        this.can_invite_users = can_invite_users
+        this.can_manage_voice_chats = can_manage_voice_chats
         this.can_restrict_members = can_restrict_members
-        this.can_pin_messages = can_pin_messages
         this.can_promote_members = can_promote_members
+        this.can_change_info = can_change_info
+        this.can_invite_users = can_invite_users
+        this.can_pin_messages = can_pin_messages
     }
 }
 
@@ -2311,7 +2659,7 @@ export class setChatPermissions implements Method {
     }
 }
 
-/** Use this method to generate a new invite link for a chat; any previously generated link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the new invite link as String on success. */
+/** Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the new invite link as String on success. */
 export class exportChatInviteLink implements Method {
     /** Name of this interface as a string */
     objectName = 'exportChatInviteLink'
@@ -2320,6 +2668,60 @@ export class exportChatInviteLink implements Method {
 
     constructor(chat_id: number|string) {
         this.chat_id = chat_id
+    }
+}
+
+/** Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. The link can be revoked using the method [revokeChatInviteLink](https://core.telegram.org/bots/api#revokechatinvitelink). Returns the new invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
+export class createChatInviteLink implements Method {
+    /** Name of this interface as a string */
+    objectName = 'createChatInviteLink'
+    /** Unique identifier for the target chat or username of the target channel (in the format @channelusername) */
+    chat_id: number|string
+    /** Point in time (Unix timestamp) when the link will expire */
+    expire_date?: number
+    /** Maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999 */
+    member_limit?: number
+
+    constructor(chat_id: number|string, expire_date?: number, member_limit?: number) {
+        this.chat_id = chat_id
+        this.expire_date = expire_date
+        this.member_limit = member_limit
+    }
+}
+
+/** Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the edited invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
+export class editChatInviteLink implements Method {
+    /** Name of this interface as a string */
+    objectName = 'editChatInviteLink'
+    /** Unique identifier for the target chat or username of the target channel (in the format @channelusername) */
+    chat_id: number|string
+    /** The invite link to edit */
+    invite_link: string
+    /** Point in time (Unix timestamp) when the link will expire */
+    expire_date?: number
+    /** Maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999 */
+    member_limit?: number
+
+    constructor(chat_id: number|string, invite_link: string, expire_date?: number, member_limit?: number) {
+        this.chat_id = chat_id
+        this.invite_link = invite_link
+        this.expire_date = expire_date
+        this.member_limit = member_limit
+    }
+}
+
+/** Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the revoked invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
+export class revokeChatInviteLink implements Method {
+    /** Name of this interface as a string */
+    objectName = 'revokeChatInviteLink'
+    /** Unique identifier of the target chat or username of the target channel (in the format @channelusername) */
+    chat_id: number|string
+    /** The invite link to revoke */
+    invite_link: string
+
+    constructor(chat_id: number|string, invite_link: string) {
+        this.chat_id = chat_id
+        this.invite_link = invite_link
     }
 }
 
@@ -2462,9 +2864,9 @@ export class getChatAdministrators implements Method {
 }
 
 /** Use this method to get the number of members in a chat. Returns Int on success. */
-export class getChatMembersCount implements Method {
+export class getChatMemberCount implements Method {
     /** Name of this interface as a string */
-    objectName = 'getChatMembersCount'
+    objectName = 'getChatMemberCount'
     /** Unique identifier for the target chat or username of the target supergroup or channel (in the format @channelusername) */
     chat_id: number|string
 
@@ -2488,7 +2890,7 @@ export class getChatMember implements Method {
     }
 }
 
-/** Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Use the field  requests to check if the bot can use this method. Returns True on success. */
+/** Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Use the field can_set_sticker_set optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method. Returns True on success. */
 export class setChatStickerSet implements Method {
     /** Name of this interface as a string */
     objectName = 'setChatStickerSet'
@@ -2503,7 +2905,7 @@ export class setChatStickerSet implements Method {
     }
 }
 
-/** Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Use the field  requests to check if the bot can use this method. Returns True on success. */
+/** Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Use the field can_set_sticker_set optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method. Returns True on success. */
 export class deleteChatStickerSet implements Method {
     /** Name of this interface as a string */
     objectName = 'deleteChatStickerSet'
@@ -2539,22 +2941,52 @@ export class answerCallbackQuery implements Method {
     }
 }
 
-/** Use this method to change the list of the bot&#39;s commands. Returns True on success. */
+/** Use this method to change the list of the bot&#39;s commands. See [https://core.telegram.org/bots#commands](https://core.telegram.org/bots#commands) for more details about bot commands. Returns True on success. */
 export class setMyCommands implements Method {
     /** Name of this interface as a string */
     objectName = 'setMyCommands'
     /** A JSON-serialized list of bot commands to be set as the list of the bot's commands. At most 100 commands can be specified. */
     commands: Array<BotCommand>
+    /** A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to BotCommandScopeDefault. */
+    scope?: BotCommandScope
+    /** A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands */
+    language_code?: string
 
-    constructor(commands: Array<BotCommand>) {
+    constructor(commands: Array<BotCommand>, scope?: BotCommandScope, language_code?: string) {
         this.commands = commands
+        this.scope = scope
+        this.language_code = language_code
     }
 }
 
-/** Use this method to get the current list of the bot&#39;s commands. Requires no parameters. Returns Array of [BotCommand](https://core.telegram.org/bots/api#botcommand) on success. */
+/** Use this method to delete the list of the bot&#39;s commands for the given scope and user language. After deletion, [higher level commands](https://core.telegram.org/bots/api#determining-list-of-commands) will be shown to affected users. Returns True on success. */
+export class deleteMyCommands implements Method {
+    /** Name of this interface as a string */
+    objectName = 'deleteMyCommands'
+    /** A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to BotCommandScopeDefault. */
+    scope?: BotCommandScope
+    /** A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands */
+    language_code?: string
+
+    constructor(scope?: BotCommandScope, language_code?: string) {
+        this.scope = scope
+        this.language_code = language_code
+    }
+}
+
+/** Use this method to get the current list of the bot&#39;s commands for the given scope and user language. Returns Array of [BotCommand](https://core.telegram.org/bots/api#botcommand) on success. If commands aren&#39;t set, an empty list is returned. */
 export class getMyCommands implements Method {
     /** Name of this interface as a string */
     objectName = 'getMyCommands'
+    /** A JSON-serialized object, describing scope of users. Defaults to BotCommandScopeDefault. */
+    scope?: BotCommandScope
+    /** A two-letter ISO 639-1 language code or an empty string */
+    language_code?: string
+
+    constructor(scope?: BotCommandScope, language_code?: string) {
+        this.scope = scope
+        this.language_code = language_code
+    }
 }
 
 /** Use this method to edit text and [game](https://core.telegram.org/bots/api#games) messages. On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned. */
@@ -2620,7 +3052,7 @@ export class editMessageCaption implements Method {
     }
 }
 
-/** Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can&#39;t be uploaded. Use a previously uploaded file via its file_id or specify a URL. On success, if the edited message was sent by the bot, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned. */
+/** Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can&#39;t be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned. */
 export class editMessageMedia implements Method {
     /** Name of this interface as a string */
     objectName = 'editMessageMedia'
@@ -2665,7 +3097,7 @@ export class editMessageReplyMarkup implements Method {
     }
 }
 
-/** Use this method to stop a poll which was sent by the bot. On success, the stopped [Poll](https://core.telegram.org/bots/api#poll) with the final results is returned. */
+/** Use this method to stop a poll which was sent by the bot. On success, the stopped [Poll](https://core.telegram.org/bots/api#poll) is returned. */
 export class stopPoll implements Method {
     /** Name of this interface as a string */
     objectName = 'stopPoll'
@@ -2710,7 +3142,7 @@ export class Sticker implements Type {
     width: number
     /** Sticker height */
     height: number
-    /**  */
+    /** True, if the sticker is [animated](https://telegram.org/blog/animated-stickers) */
     is_animated: boolean
     /** Sticker thumbnail in the .WEBP or .JPG format */
     thumb?: PhotoSize
@@ -2745,7 +3177,7 @@ export class StickerSet implements Type {
     name: string
     /** Sticker set title */
     title: string
-    /**  */
+    /** True, if the sticker set contains [animated stickers](https://telegram.org/blog/animated-stickers) */
     is_animated: boolean
     /** True, if the sticker set contains masks */
     contains_masks: boolean
@@ -2824,7 +3256,7 @@ export class getStickerSet implements Method {
     }
 }
 
-/** Use this method to upload a .PNG file with a sticker for later use in  on success. */
+/** Use this method to upload a .PNG file with a sticker for later use in createNewStickerSet and addStickerToSet methods (can be used multiple times). Returns the uploaded [File](https://core.telegram.org/bots/api#file) on success. */
 export class uploadStickerFile implements Method {
     /** Name of this interface as a string */
     objectName = 'uploadStickerFile'
@@ -2952,18 +3384,21 @@ export class InlineQuery implements Type {
     id: string
     /** Sender */
     from: User
-    /** Sender location, only for bots that request user location */
-    location?: Location
     /** Text of the query (up to 256 characters) */
     query: string
     /** Offset of the results to be returned, can be controlled by the bot */
     offset: string
+    /** Type of the chat, from which the inline query was sent. Can be either “sender” for a private chat with the inline query sender, “private”, “group”, “supergroup”, or “channel”. The chat type should be always known for requests sent from official clients and most third-party clients, unless the request was sent from a secret chat */
+    chat_type?: string
+    /** Sender location, only for bots that request user location */
+    location?: Location
 
-    constructor(id: string, from: User, query: string, offset: string, location?: Location) {
+    constructor(id: string, from: User, query: string, offset: string, chat_type?: string, location?: Location) {
         this.id = id
         this.from = from
         this.query = query
         this.offset = offset
+        this.chat_type = chat_type
         this.location = location
     }
 }
@@ -3013,8 +3448,8 @@ export class InlineQueryResultArticle implements Type {
     title: string
     /** Content of the message to be sent */
     input_message_content: InputMessageContent
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** URL of the result */
     url?: string
     /** Pass True, if you don&#39;t want the URL to be shown in the message */
@@ -3028,7 +3463,7 @@ export class InlineQueryResultArticle implements Type {
     /** Thumbnail height */
     thumb_height?: number
 
-    constructor(type: string, id: string, title: string, input_message_content: InputMessageContent, reply_markup: InlineKeyboardMarkup, url?: string, hide_url?: boolean, description?: string, thumb_url?: string, thumb_width?: number, thumb_height?: number) {
+    constructor(type: string, id: string, title: string, input_message_content: InputMessageContent, reply_markup?: InlineKeyboardMarkup, url?: string, hide_url?: boolean, description?: string, thumb_url?: string, thumb_width?: number, thumb_height?: number) {
         this.type = type
         this.id = id
         this.title = title
@@ -3065,28 +3500,28 @@ export class InlineQueryResultPhoto implements Type {
     description?: string
     /** Caption of the photo to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the photo caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the photo */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, photo_url: string, thumb_url: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, photo_width?: number, photo_height?: number, title?: string, description?: string, caption?: string, caption_entities?: Array<MessageEntity>, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, photo_url: string, thumb_url: string, photo_width?: number, photo_height?: number, title?: string, description?: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.photo_url = photo_url
         this.thumb_url = thumb_url
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.photo_width = photo_width
         this.photo_height = photo_height
         this.title = title
         this.description = description
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3115,29 +3550,29 @@ export class InlineQueryResultGif implements Type {
     title?: string
     /** Caption of the GIF file to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the GIF animation */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, gif_url: string, thumb_url: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, gif_width?: number, gif_height?: number, gif_duration?: number, thumb_mime_type?: string, title?: string, caption?: string, caption_entities?: Array<MessageEntity>, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, gif_url: string, thumb_url: string, gif_width?: number, gif_height?: number, gif_duration?: number, thumb_mime_type?: string, title?: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.gif_url = gif_url
         this.thumb_url = thumb_url
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.gif_width = gif_width
         this.gif_height = gif_height
         this.gif_duration = gif_duration
         this.thumb_mime_type = thumb_mime_type
         this.title = title
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3166,29 +3601,29 @@ export class InlineQueryResultMpeg4Gif implements Type {
     title?: string
     /** Caption of the MPEG-4 file to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the video animation */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, mpeg4_url: string, thumb_url: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, mpeg4_width?: number, mpeg4_height?: number, mpeg4_duration?: number, thumb_mime_type?: string, title?: string, caption?: string, caption_entities?: Array<MessageEntity>, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, mpeg4_url: string, thumb_url: string, mpeg4_width?: number, mpeg4_height?: number, mpeg4_duration?: number, thumb_mime_type?: string, title?: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.mpeg4_url = mpeg4_url
         this.thumb_url = thumb_url
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.mpeg4_width = mpeg4_width
         this.mpeg4_height = mpeg4_height
         this.mpeg4_duration = mpeg4_duration
         this.thumb_mime_type = thumb_mime_type
         this.title = title
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3211,8 +3646,8 @@ export class InlineQueryResultVideo implements Type {
     title: string
     /** Caption of the video to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the video caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Video width */
@@ -3223,26 +3658,26 @@ export class InlineQueryResultVideo implements Type {
     video_duration?: number
     /** Short description of the result */
     description?: string
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the video. This field is required if InlineQueryResultVideo is used to send an HTML-page as a result (e.g., a YouTube video). */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, video_url: string, mime_type: string, thumb_url: string, title: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, caption?: string, caption_entities?: Array<MessageEntity>, video_width?: number, video_height?: number, video_duration?: number, description?: string, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, video_url: string, mime_type: string, thumb_url: string, title: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, video_width?: number, video_height?: number, video_duration?: number, description?: string, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.video_url = video_url
         this.mime_type = mime_type
         this.thumb_url = thumb_url
         this.title = title
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
         this.video_width = video_width
         this.video_height = video_height
         this.video_duration = video_duration
         this.description = description
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3261,30 +3696,30 @@ export class InlineQueryResultAudio implements Type {
     title: string
     /** Caption, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the audio caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Performer */
     performer?: string
     /** Audio duration in seconds */
     audio_duration?: number
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the audio */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, audio_url: string, title: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, caption?: string, caption_entities?: Array<MessageEntity>, performer?: string, audio_duration?: number, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, audio_url: string, title: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, performer?: string, audio_duration?: number, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.audio_url = audio_url
         this.title = title
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
         this.performer = performer
         this.audio_duration = audio_duration
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3303,27 +3738,27 @@ export class InlineQueryResultVoice implements Type {
     title: string
     /** Caption, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the voice message caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Recording duration in seconds */
     voice_duration?: number
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the voice recording */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, voice_url: string, title: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, caption?: string, caption_entities?: Array<MessageEntity>, voice_duration?: number, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, voice_url: string, title: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, voice_duration?: number, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.voice_url = voice_url
         this.title = title
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
         this.voice_duration = voice_duration
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3340,8 +3775,8 @@ export class InlineQueryResultDocument implements Type {
     title: string
     /** Caption of the document to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the document caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** A valid URL for the file */
@@ -3361,14 +3796,14 @@ export class InlineQueryResultDocument implements Type {
     /** Thumbnail height */
     thumb_height?: number
 
-    constructor(type: string, id: string, title: string, parse_mode: string, document_url: string, mime_type: string, caption?: string, caption_entities?: Array<MessageEntity>, description?: string, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent, thumb_url?: string, thumb_width?: number, thumb_height?: number) {
+    constructor(type: string, id: string, title: string, document_url: string, mime_type: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, description?: string, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent, thumb_url?: string, thumb_width?: number, thumb_height?: number) {
         this.type = type
         this.id = id
         this.title = title
-        this.parse_mode = parse_mode
         this.document_url = document_url
         this.mime_type = mime_type
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
         this.description = description
         this.reply_markup = reply_markup
@@ -3401,8 +3836,8 @@ export class InlineQueryResultLocation implements Type {
     heading?: number
     /** For live locations, a maximum distance for proximity alerts about approaching another chat member, in meters. Must be between 1 and 100000 if specified. */
     proximity_alert_radius?: number
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the location */
     input_message_content?: InputMessageContent
     /** Url of the thumbnail for the result */
@@ -3412,17 +3847,17 @@ export class InlineQueryResultLocation implements Type {
     /** Thumbnail height */
     thumb_height?: number
 
-    constructor(type: string, id: string, latitude: number, longitude: number, title: string, reply_markup: InlineKeyboardMarkup, horizontal_accuracy?: number, live_period?: number, heading?: number, proximity_alert_radius?: number, input_message_content?: InputMessageContent, thumb_url?: string, thumb_width?: number, thumb_height?: number) {
+    constructor(type: string, id: string, latitude: number, longitude: number, title: string, horizontal_accuracy?: number, live_period?: number, heading?: number, proximity_alert_radius?: number, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent, thumb_url?: string, thumb_width?: number, thumb_height?: number) {
         this.type = type
         this.id = id
         this.latitude = latitude
         this.longitude = longitude
         this.title = title
-        this.reply_markup = reply_markup
         this.horizontal_accuracy = horizontal_accuracy
         this.live_period = live_period
         this.heading = heading
         this.proximity_alert_radius = proximity_alert_radius
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
         this.thumb_url = thumb_url
         this.thumb_width = thumb_width
@@ -3452,10 +3887,10 @@ export class InlineQueryResultVenue implements Type {
     foursquare_type?: string
     /** Google Places identifier of the venue */
     google_place_id?: string
-    /** .) */
-    google_place_type: string
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** Google Places type of the venue. (See [supported types](https://developers.google.com/places/web-service/supported_types).) */
+    google_place_type?: string
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the venue */
     input_message_content?: InputMessageContent
     /** Url of the thumbnail for the result */
@@ -3465,18 +3900,18 @@ export class InlineQueryResultVenue implements Type {
     /** Thumbnail height */
     thumb_height?: number
 
-    constructor(type: string, id: string, latitude: number, longitude: number, title: string, address: string, google_place_type: string, reply_markup: InlineKeyboardMarkup, foursquare_id?: string, foursquare_type?: string, google_place_id?: string, input_message_content?: InputMessageContent, thumb_url?: string, thumb_width?: number, thumb_height?: number) {
+    constructor(type: string, id: string, latitude: number, longitude: number, title: string, address: string, foursquare_id?: string, foursquare_type?: string, google_place_id?: string, google_place_type?: string, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent, thumb_url?: string, thumb_width?: number, thumb_height?: number) {
         this.type = type
         this.id = id
         this.latitude = latitude
         this.longitude = longitude
         this.title = title
         this.address = address
-        this.google_place_type = google_place_type
-        this.reply_markup = reply_markup
         this.foursquare_id = foursquare_id
         this.foursquare_type = foursquare_type
         this.google_place_id = google_place_id
+        this.google_place_type = google_place_type
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
         this.thumb_url = thumb_url
         this.thumb_width = thumb_width
@@ -3498,10 +3933,10 @@ export class InlineQueryResultContact implements Type {
     first_name: string
     /** Contact&#39;s last name */
     last_name?: string
-    /** , 0-2048 bytes */
-    vcard: string
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** Additional data about the contact in the form of a [vCard](https://en.wikipedia.org/wiki/VCard), 0-2048 bytes */
+    vcard?: string
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the contact */
     input_message_content?: InputMessageContent
     /** Url of the thumbnail for the result */
@@ -3511,14 +3946,14 @@ export class InlineQueryResultContact implements Type {
     /** Thumbnail height */
     thumb_height?: number
 
-    constructor(type: string, id: string, phone_number: string, first_name: string, vcard: string, reply_markup: InlineKeyboardMarkup, last_name?: string, input_message_content?: InputMessageContent, thumb_url?: string, thumb_width?: number, thumb_height?: number) {
+    constructor(type: string, id: string, phone_number: string, first_name: string, last_name?: string, vcard?: string, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent, thumb_url?: string, thumb_width?: number, thumb_height?: number) {
         this.type = type
         this.id = id
         this.phone_number = phone_number
         this.first_name = first_name
+        this.last_name = last_name
         this.vcard = vcard
         this.reply_markup = reply_markup
-        this.last_name = last_name
         this.input_message_content = input_message_content
         this.thumb_url = thumb_url
         this.thumb_width = thumb_width
@@ -3536,10 +3971,10 @@ export class InlineQueryResultGame implements Type {
     id: string
     /** Short name of the game */
     game_short_name: string
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
 
-    constructor(type: string, id: string, game_short_name: string, reply_markup: InlineKeyboardMarkup) {
+    constructor(type: string, id: string, game_short_name: string, reply_markup?: InlineKeyboardMarkup) {
         this.type = type
         this.id = id
         this.game_short_name = game_short_name
@@ -3563,25 +3998,25 @@ export class InlineQueryResultCachedPhoto implements Type {
     description?: string
     /** Caption of the photo to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the photo caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the photo */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, photo_file_id: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, title?: string, description?: string, caption?: string, caption_entities?: Array<MessageEntity>, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, photo_file_id: string, title?: string, description?: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.photo_file_id = photo_file_id
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.title = title
         this.description = description
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3600,24 +4035,24 @@ export class InlineQueryResultCachedGif implements Type {
     title?: string
     /** Caption of the GIF file to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the GIF animation */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, gif_file_id: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, title?: string, caption?: string, caption_entities?: Array<MessageEntity>, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, gif_file_id: string, title?: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.gif_file_id = gif_file_id
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.title = title
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3636,24 +4071,24 @@ export class InlineQueryResultCachedMpeg4Gif implements Type {
     title?: string
     /** Caption of the MPEG-4 file to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the video animation */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, mpeg4_file_id: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, title?: string, caption?: string, caption_entities?: Array<MessageEntity>, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, mpeg4_file_id: string, title?: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.mpeg4_file_id = mpeg4_file_id
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.title = title
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3668,12 +4103,12 @@ export class InlineQueryResultCachedSticker implements Type {
     id: string
     /** A valid file identifier of the sticker */
     sticker_file_id: string
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the sticker */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, sticker_file_id: string, reply_markup: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, sticker_file_id: string, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.sticker_file_id = sticker_file_id
@@ -3698,25 +4133,25 @@ export class InlineQueryResultCachedDocument implements Type {
     description?: string
     /** Caption of the document to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the document caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the file */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, title: string, document_file_id: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, description?: string, caption?: string, caption_entities?: Array<MessageEntity>, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, title: string, document_file_id: string, description?: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.title = title
         this.document_file_id = document_file_id
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.description = description
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3737,25 +4172,25 @@ export class InlineQueryResultCachedVideo implements Type {
     description?: string
     /** Caption of the video to be sent, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the video caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the video */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, video_file_id: string, title: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, description?: string, caption?: string, caption_entities?: Array<MessageEntity>, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, video_file_id: string, title: string, description?: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.video_file_id = video_file_id
         this.title = title
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.description = description
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3774,24 +4209,24 @@ export class InlineQueryResultCachedVoice implements Type {
     title: string
     /** Caption, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the voice message caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the voice message */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, voice_file_id: string, title: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, caption?: string, caption_entities?: Array<MessageEntity>, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, voice_file_id: string, title: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.voice_file_id = voice_file_id
         this.title = title
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
@@ -3808,29 +4243,29 @@ export class InlineQueryResultCachedAudio implements Type {
     audio_file_id: string
     /** Caption, 0-1024 characters after entities parsing */
     caption?: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the audio caption. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
-    /**  attached to the message */
-    reply_markup: InlineKeyboardMarkup
+    /** [Inline keyboard](/bots#inline-keyboards-and-on-the-fly-updating) attached to the message */
+    reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the audio */
     input_message_content?: InputMessageContent
 
-    constructor(type: string, id: string, audio_file_id: string, parse_mode: string, reply_markup: InlineKeyboardMarkup, caption?: string, caption_entities?: Array<MessageEntity>, input_message_content?: InputMessageContent) {
+    constructor(type: string, id: string, audio_file_id: string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, reply_markup?: InlineKeyboardMarkup, input_message_content?: InputMessageContent) {
         this.type = type
         this.id = id
         this.audio_file_id = audio_file_id
-        this.parse_mode = parse_mode
-        this.reply_markup = reply_markup
         this.caption = caption
+        this.parse_mode = parse_mode
         this.caption_entities = caption_entities
+        this.reply_markup = reply_markup
         this.input_message_content = input_message_content
     }
 }
 
-/** This object represents the content of a message to be sent as a result of an inline query. Telegram clients currently support the following 4 types: */
-export type InputMessageContent = InputTextMessageContent | InputLocationMessageContent | InputVenueMessageContent | InputContactMessageContent
+/** This object represents the content of a message to be sent as a result of an inline query. Telegram clients currently support the following 5 types: */
+export type InputMessageContent = InputTextMessageContent | InputLocationMessageContent | InputVenueMessageContent | InputContactMessageContent | InputInvoiceMessageContent
 
 /** Represents the [content](https://core.telegram.org/bots/api#inputmessagecontent) of a text message to be sent as the result of an inline query. */
 export class InputTextMessageContent implements Type {
@@ -3838,14 +4273,14 @@ export class InputTextMessageContent implements Type {
     objectName = 'InputTextMessageContent'
     /** Text of the message to be sent, 1-4096 characters */
     message_text: string
-    /**  for more details. */
-    parse_mode: string
+    /** Mode for parsing entities in the message text. See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details. */
+    parse_mode?: string
     /** List of special entities that appear in message text, which can be specified instead of parse_mode */
     entities?: Array<MessageEntity>
     /** Disables link previews for links in the sent message */
     disable_web_page_preview?: boolean
 
-    constructor(message_text: string, parse_mode: string, entities?: Array<MessageEntity>, disable_web_page_preview?: boolean) {
+    constructor(message_text: string, parse_mode?: string, entities?: Array<MessageEntity>, disable_web_page_preview?: boolean) {
         this.message_text = message_text
         this.parse_mode = parse_mode
         this.entities = entities
@@ -3898,18 +4333,18 @@ export class InputVenueMessageContent implements Type {
     foursquare_type?: string
     /** Google Places identifier of the venue */
     google_place_id?: string
-    /** .) */
-    google_place_type: string
+    /** Google Places type of the venue. (See [supported types](https://developers.google.com/places/web-service/supported_types).) */
+    google_place_type?: string
 
-    constructor(latitude: number, longitude: number, title: string, address: string, google_place_type: string, foursquare_id?: string, foursquare_type?: string, google_place_id?: string) {
+    constructor(latitude: number, longitude: number, title: string, address: string, foursquare_id?: string, foursquare_type?: string, google_place_id?: string, google_place_type?: string) {
         this.latitude = latitude
         this.longitude = longitude
         this.title = title
         this.address = address
-        this.google_place_type = google_place_type
         this.foursquare_id = foursquare_id
         this.foursquare_type = foursquare_type
         this.google_place_id = google_place_id
+        this.google_place_type = google_place_type
     }
 }
 
@@ -3923,14 +4358,83 @@ export class InputContactMessageContent implements Type {
     first_name: string
     /** Contact&#39;s last name */
     last_name?: string
-    /** , 0-2048 bytes */
-    vcard: string
+    /** Additional data about the contact in the form of a [vCard](https://en.wikipedia.org/wiki/VCard), 0-2048 bytes */
+    vcard?: string
 
-    constructor(phone_number: string, first_name: string, vcard: string, last_name?: string) {
+    constructor(phone_number: string, first_name: string, last_name?: string, vcard?: string) {
         this.phone_number = phone_number
         this.first_name = first_name
-        this.vcard = vcard
         this.last_name = last_name
+        this.vcard = vcard
+    }
+}
+
+/** Represents the [content](https://core.telegram.org/bots/api#inputmessagecontent) of an invoice message to be sent as the result of an inline query. */
+export class InputInvoiceMessageContent implements Type {
+    /** Name of this interface as a string */
+    objectName = 'InputInvoiceMessageContent'
+    /** Product name, 1-32 characters */
+    title: string
+    /** Product description, 1-255 characters */
+    description: string
+    /** Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes. */
+    payload: string
+    /** Payment provider token, obtained via [Botfather](https://t.me/botfather) */
+    provider_token: string
+    /** Three-letter ISO 4217 currency code, see [more on currencies](/bots/payments#supported-currencies) */
+    currency: string
+    /** Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.) */
+    prices: Array<LabeledPrice>
+    /** The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double). For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in [currencies.json](https://core.telegram.org/bots/payments/currencies.json), it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0 */
+    max_tip_amount?: number
+    /** A JSON-serialized array of suggested amounts of tip in the smallest units of the currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount. */
+    suggested_tip_amounts?: Array<number>
+    /** A JSON-serialized object for data about the invoice, which will be shared with the payment provider. A detailed description of the required fields should be provided by the payment provider. */
+    provider_data?: string
+    /** URL of the product photo for the invoice. Can be a photo of the goods or a marketing image for a service. People like it better when they see what they are paying for. */
+    photo_url?: string
+    /** Photo size */
+    photo_size?: number
+    /** Photo width */
+    photo_width?: number
+    /** Photo height */
+    photo_height?: number
+    /** Pass True, if you require the user&#39;s full name to complete the order */
+    need_name?: boolean
+    /** Pass True, if you require the user&#39;s phone number to complete the order */
+    need_phone_number?: boolean
+    /** Pass True, if you require the user&#39;s email address to complete the order */
+    need_email?: boolean
+    /** Pass True, if you require the user&#39;s shipping address to complete the order */
+    need_shipping_address?: boolean
+    /** Pass True, if user&#39;s phone number should be sent to provider */
+    send_phone_number_to_provider?: boolean
+    /** Pass True, if user&#39;s email address should be sent to provider */
+    send_email_to_provider?: boolean
+    /** Pass True, if the final price depends on the shipping method */
+    is_flexible?: boolean
+
+    constructor(title: string, description: string, payload: string, provider_token: string, currency: string, prices: Array<LabeledPrice>, max_tip_amount?: number, suggested_tip_amounts?: Array<number>, provider_data?: string, photo_url?: string, photo_size?: number, photo_width?: number, photo_height?: number, need_name?: boolean, need_phone_number?: boolean, need_email?: boolean, need_shipping_address?: boolean, send_phone_number_to_provider?: boolean, send_email_to_provider?: boolean, is_flexible?: boolean) {
+        this.title = title
+        this.description = description
+        this.payload = payload
+        this.provider_token = provider_token
+        this.currency = currency
+        this.prices = prices
+        this.max_tip_amount = max_tip_amount
+        this.suggested_tip_amounts = suggested_tip_amounts
+        this.provider_data = provider_data
+        this.photo_url = photo_url
+        this.photo_size = photo_size
+        this.photo_width = photo_width
+        this.photo_height = photo_height
+        this.need_name = need_name
+        this.need_phone_number = need_phone_number
+        this.need_email = need_email
+        this.need_shipping_address = need_shipping_address
+        this.send_phone_number_to_provider = send_phone_number_to_provider
+        this.send_email_to_provider = send_email_to_provider
+        this.is_flexible = is_flexible
     }
 }
 
@@ -3944,17 +4448,17 @@ export class ChosenInlineResult implements Type {
     from: User
     /** Sender location, only for bots that require user location */
     location?: Location
-    /**  attached to the message. Will be also received in [callback queries](https://core.telegram.org/bots/api#callbackquery) and can be used to [edit](https://core.telegram.org/bots/api#updating-messages) the message. */
-    inline_message_id: string
+    /** Identifier of the sent inline message. Available only if there is an [inline keyboard](https://core.telegram.org/bots/api#inlinekeyboardmarkup) attached to the message. Will be also received in [callback queries](https://core.telegram.org/bots/api#callbackquery) and can be used to [edit](https://core.telegram.org/bots/api#updating-messages) the message. */
+    inline_message_id?: string
     /** The query that was used to obtain the result */
     query: string
 
-    constructor(result_id: string, from: User, inline_message_id: string, query: string, location?: Location) {
+    constructor(result_id: string, from: User, query: string, location?: Location, inline_message_id?: string) {
         this.result_id = result_id
         this.from = from
-        this.inline_message_id = inline_message_id
         this.query = query
         this.location = location
+        this.inline_message_id = inline_message_id
     }
 }
 
@@ -3962,8 +4466,8 @@ export class ChosenInlineResult implements Type {
 export class sendInvoice implements Method {
     /** Name of this interface as a string */
     objectName = 'sendInvoice'
-    /** Unique identifier for the target private chat */
-    chat_id: number
+    /** Unique identifier for the target chat or username of the target channel (in the format @channelusername) */
+    chat_id: number|string
     /** Product name, 1-32 characters */
     title: string
     /** Product description, 1-255 characters */
@@ -3972,12 +4476,16 @@ export class sendInvoice implements Method {
     payload: string
     /** Payments provider token, obtained via Botfather */
     provider_token: string
-    /** Unique deep-linking parameter that can be used to generate this invoice when used as a start parameter */
-    start_parameter: string
     /** Three-letter ISO 4217 currency code, see more on currencies */
     currency: string
     /** Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.) */
     prices: Array<LabeledPrice>
+    /** The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double). For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in currencies.json, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0 */
+    max_tip_amount?: number
+    /** A JSON-serialized array of suggested amounts of tips in the smallest units of the currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount. */
+    suggested_tip_amounts?: Array<number>
+    /** Unique deep-linking parameter. If left empty, forwarded copies of the sent message will have a Pay button, allowing multiple users to pay directly from the forwarded message, using the same invoice. If non-empty, forwarded copies of the sent message will have a URL button with a deep link to the bot (instead of a Pay button), with the value used as the start parameter */
+    start_parameter?: string
     /** A JSON-serialized data about the invoice, which will be shared with the payment provider. A detailed description of required fields should be provided by the payment provider. */
     provider_data?: string
     /** URL of the product photo for the invoice. Can be a photo of the goods or a marketing image for a service. People like it better when they see what they are paying for. */
@@ -4011,15 +4519,17 @@ export class sendInvoice implements Method {
     /** A JSON-serialized object for an inline keyboard. If empty, one 'Pay total price' button will be shown. If not empty, the first button must be a Pay button. */
     reply_markup?: InlineKeyboardMarkup
 
-    constructor(chat_id: number, title: string, description: string, payload: string, provider_token: string, start_parameter: string, currency: string, prices: Array<LabeledPrice>, provider_data?: string, photo_url?: string, photo_size?: number, photo_width?: number, photo_height?: number, need_name?: boolean, need_phone_number?: boolean, need_email?: boolean, need_shipping_address?: boolean, send_phone_number_to_provider?: boolean, send_email_to_provider?: boolean, is_flexible?: boolean, disable_notification?: boolean, reply_to_message_id?: number, allow_sending_without_reply?: boolean, reply_markup?: InlineKeyboardMarkup) {
+    constructor(chat_id: number|string, title: string, description: string, payload: string, provider_token: string, currency: string, prices: Array<LabeledPrice>, max_tip_amount?: number, suggested_tip_amounts?: Array<number>, start_parameter?: string, provider_data?: string, photo_url?: string, photo_size?: number, photo_width?: number, photo_height?: number, need_name?: boolean, need_phone_number?: boolean, need_email?: boolean, need_shipping_address?: boolean, send_phone_number_to_provider?: boolean, send_email_to_provider?: boolean, is_flexible?: boolean, disable_notification?: boolean, reply_to_message_id?: number, allow_sending_without_reply?: boolean, reply_markup?: InlineKeyboardMarkup) {
         this.chat_id = chat_id
         this.title = title
         this.description = description
         this.payload = payload
         this.provider_token = provider_token
-        this.start_parameter = start_parameter
         this.currency = currency
         this.prices = prices
+        this.max_tip_amount = max_tip_amount
+        this.suggested_tip_amounts = suggested_tip_amounts
+        this.start_parameter = start_parameter
         this.provider_data = provider_data
         this.photo_url = photo_url
         this.photo_size = photo_size
@@ -4039,7 +4549,7 @@ export class sendInvoice implements Method {
     }
 }
 
-/** If you sent an invoice requesting a shipping address and the parameter  with a shipping_query field to the bot. Use this method to reply to shipping queries. On success, True is returned. */
+/** If you sent an invoice requesting a shipping address and the parameter is_flexible was specified, the Bot API will send an [Update](https://core.telegram.org/bots/api#update) with a shipping_query field to the bot. Use this method to reply to shipping queries. On success, True is returned. */
 export class answerShippingQuery implements Method {
     /** Name of this interface as a string */
     objectName = 'answerShippingQuery'
@@ -4084,7 +4594,7 @@ export class LabeledPrice implements Type {
     objectName = 'LabeledPrice'
     /** Portion label */
     label: string
-    /** Price of the product in the  (integer, , it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). */
+    /** Price of the product in the smallest units of the [currency](/bots/payments#supported-currencies) (integer, not float/double). For example, for a price of US$ 1.45 pass amount = 145. See the exp parameter in [currencies.json](https://core.telegram.org/bots/payments/currencies.json), it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). */
     amount: number
 
     constructor(label: string, amount: number) {
@@ -4105,7 +4615,7 @@ export class Invoice implements Type {
     start_parameter: string
     /** Three-letter ISO 4217 [currency](/bots/payments#supported-currencies) code */
     currency: string
-    /** Total price in the , it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). */
+    /** Total price in the smallest units of the currency (integer, not float/double). For example, for a price of US$ 1.45 pass amount = 145. See the exp parameter in [currencies.json](https://core.telegram.org/bots/payments/currencies.json), it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). */
     total_amount: number
 
     constructor(title: string, description: string, start_parameter: string, currency: string, total_amount: number) {
@@ -4189,7 +4699,7 @@ export class SuccessfulPayment implements Type {
     objectName = 'SuccessfulPayment'
     /** Three-letter ISO 4217 [currency](/bots/payments#supported-currencies) code */
     currency: string
-    /** Total price in the , it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). */
+    /** Total price in the smallest units of the currency (integer, not float/double). For example, for a price of US$ 1.45 pass amount = 145. See the exp parameter in [currencies.json](https://core.telegram.org/bots/payments/currencies.json), it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). */
     total_amount: number
     /** Bot specified invoice payload */
     invoice_payload: string
@@ -4244,7 +4754,7 @@ export class PreCheckoutQuery implements Type {
     from: User
     /** Three-letter ISO 4217 [currency](/bots/payments#supported-currencies) code */
     currency: string
-    /** Total price in the , it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). */
+    /** Total price in the smallest units of the currency (integer, not float/double). For example, for a price of US$ 1.45 pass amount = 145. See the exp parameter in [currencies.json](https://core.telegram.org/bots/payments/currencies.json), it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). */
     total_amount: number
     /** Bot specified invoice payload */
     invoice_payload: string
@@ -4306,36 +4816,36 @@ export class EncryptedPassportElement implements Type {
     objectName = 'EncryptedPassportElement'
     /** Element type. One of “personal_details”, “passport”, “driver_license”, “identity_card”, “internal_passport”, “address”, “utility_bill”, “bank_statement”, “rental_agreement”, “passport_registration”, “temporary_registration”, “phone_number”, “email”. */
     type: string
-    /** . */
-    data: string
+    /** Base64-encoded encrypted Telegram Passport element data provided by the user, available for “personal_details”, “passport”, “driver_license”, “identity_card”, “internal_passport” and “address” types. Can be decrypted and verified using the accompanying [EncryptedCredentials](https://core.telegram.org/bots/api#encryptedcredentials). */
+    data?: string
     /** User&#39;s verified phone number, available only for “phone_number” type */
     phone_number?: string
     /** User&#39;s verified email address, available only for “email” type */
     email?: string
-    /** . */
-    files: Array<PassportFile>
-    /** . */
-    front_side: PassportFile
-    /** . */
-    reverse_side: PassportFile
-    /** . */
-    selfie: PassportFile
-    /** . */
-    translation: Array<PassportFile>
+    /** Array of encrypted files with documents provided by the user, available for “utility_bill”, “bank_statement”, “rental_agreement”, “passport_registration” and “temporary_registration” types. Files can be decrypted and verified using the accompanying [EncryptedCredentials](https://core.telegram.org/bots/api#encryptedcredentials). */
+    files?: Array<PassportFile>
+    /** Encrypted file with the front side of the document, provided by the user. Available for “passport”, “driver_license”, “identity_card” and “internal_passport”. The file can be decrypted and verified using the accompanying [EncryptedCredentials](https://core.telegram.org/bots/api#encryptedcredentials). */
+    front_side?: PassportFile
+    /** Encrypted file with the reverse side of the document, provided by the user. Available for “driver_license” and “identity_card”. The file can be decrypted and verified using the accompanying [EncryptedCredentials](https://core.telegram.org/bots/api#encryptedcredentials). */
+    reverse_side?: PassportFile
+    /** Encrypted file with the selfie of the user holding a document, provided by the user; available for “passport”, “driver_license”, “identity_card” and “internal_passport”. The file can be decrypted and verified using the accompanying [EncryptedCredentials](https://core.telegram.org/bots/api#encryptedcredentials). */
+    selfie?: PassportFile
+    /** Array of encrypted files with translated versions of documents provided by the user. Available if requested for “passport”, “driver_license”, “identity_card”, “internal_passport”, “utility_bill”, “bank_statement”, “rental_agreement”, “passport_registration” and “temporary_registration” types. Files can be decrypted and verified using the accompanying [EncryptedCredentials](https://core.telegram.org/bots/api#encryptedcredentials). */
+    translation?: Array<PassportFile>
     /** Base64-encoded element hash for using in [PassportElementErrorUnspecified](https://core.telegram.org/bots/api#passportelementerrorunspecified) */
     hash: string
 
-    constructor(type: string, data: string, files: Array<PassportFile>, front_side: PassportFile, reverse_side: PassportFile, selfie: PassportFile, translation: Array<PassportFile>, hash: string, phone_number?: string, email?: string) {
+    constructor(type: string, hash: string, data?: string, phone_number?: string, email?: string, files?: Array<PassportFile>, front_side?: PassportFile, reverse_side?: PassportFile, selfie?: PassportFile, translation?: Array<PassportFile>) {
         this.type = type
+        this.hash = hash
         this.data = data
+        this.phone_number = phone_number
+        this.email = email
         this.files = files
         this.front_side = front_side
         this.reverse_side = reverse_side
         this.selfie = selfie
         this.translation = translation
-        this.hash = hash
-        this.phone_number = phone_number
-        this.email = email
     }
 }
 
@@ -4604,20 +5114,20 @@ export class Game implements Type {
     description: string
     /** Photo that will be displayed in the game message in chats. */
     photo: Array<PhotoSize>
-    /** , or manually edited using [editMessageText](https://core.telegram.org/bots/api#editmessagetext). 0-4096 characters. */
-    text: string
+    /** Brief description of the game or high scores included in the game message. Can be automatically edited to include current high scores for the game when the bot calls [setGameScore](https://core.telegram.org/bots/api#setgamescore), or manually edited using [editMessageText](https://core.telegram.org/bots/api#editmessagetext). 0-4096 characters. */
+    text?: string
     /** Special entities that appear in text, such as usernames, URLs, bot commands, etc. */
     text_entities?: Array<MessageEntity>
-    /**  */
-    animation: Animation
+    /** Animation that will be displayed in the game message in chats. Upload via [BotFather](https://t.me/botfather) */
+    animation?: Animation
 
-    constructor(title: string, description: string, photo: Array<PhotoSize>, text: string, animation: Animation, text_entities?: Array<MessageEntity>) {
+    constructor(title: string, description: string, photo: Array<PhotoSize>, text?: string, text_entities?: Array<MessageEntity>, animation?: Animation) {
         this.title = title
         this.description = description
         this.photo = photo
         this.text = text
-        this.animation = animation
         this.text_entities = text_entities
+        this.animation = animation
     }
 }
 
@@ -4627,7 +5137,7 @@ export class CallbackGame implements Type {
     objectName = 'CallbackGame'
 }
 
-/** Use this method to set the score of the specified user in a game. On success, if the message was sent by the bot, returns the edited [Message](https://core.telegram.org/bots/api#message), otherwise returns True. Returns an error, if the new score is not greater than the user&#39;s current score in the chat and force is False. */
+/** Use this method to set the score of the specified user in a game message. On success, if the message is not an inline message, the [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned. Returns an error, if the new score is not greater than the user&#39;s current score in the chat and force is False. */
 export class setGameScore implements Method {
     /** Name of this interface as a string */
     objectName = 'setGameScore'
@@ -4657,7 +5167,7 @@ export class setGameScore implements Method {
     }
 }
 
-/** Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. On success, returns an  objects. */
+/** Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. On success, returns an Array of [GameHighScore](https://core.telegram.org/bots/api#gamehighscore) objects. */
 export class getGameHighScores implements Method {
     /** Name of this interface as a string */
     objectName = 'getGameHighScores'
