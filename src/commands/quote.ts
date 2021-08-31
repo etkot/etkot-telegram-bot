@@ -163,6 +163,7 @@ export default (commander: Commander): void => {
                     parse_mode: 'HTML',
                     reply_markup: genQuoteStatsReplyMarkup(page, pageCount),
                 })
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
                 .catch((err) => {})
         },
     })
