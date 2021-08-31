@@ -24,8 +24,13 @@ commands()
         process.exit(1)
     })
 
-telegram.on(TGEvent.update, (/* update */) => {
-    //console.log(update);
+telegram.on(TGEvent.update, (update) => {
+    if (update.callback_query) {
+        const args = update.callback_query.data?.split(' ') || []
+        const cmd = args.shift() || ''
+
+        commander.onCallbackQuery(cmd, args, update.callback_query, telegram)
+    }
 })
 
 telegram.on(TGEvent.message, (message) => {

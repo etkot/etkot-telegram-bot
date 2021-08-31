@@ -6,6 +6,7 @@ import * as TG from '../types/telegram'
 type Initializer = (telegram: Telegram) => void
 type CommandFunction = (args: string[], message: TG.Message, telegram: Telegram) => void
 type TriggerFunction = (message: TG.Message, telegram: Telegram) => void
+type CallbackQueryFunction = (args: string[], query: TG.CallbackQuery, telegram: Telegram) => void
 
 interface Command {
     commands: string[]
@@ -18,16 +19,22 @@ interface Trigger {
     ids: string[]
     func: TriggerFunction
 }
+interface CallbackQuery {
+    command: string
+    func: CallbackQueryFunction
+}
 
 export class Commander {
     initializers: Array<Initializer>
     commands: { [key: string]: Command }
     triggers: { [key: string]: Trigger }
+    callbackQueries: { [key: string]: CallbackQuery }
 
     constructor() {
         this.initializers = []
         this.commands = {}
         this.triggers = {}
+        this.callbackQueries = {}
     }
 
     addInitializer(func: Initializer): void {
@@ -54,6 +61,14 @@ export class Commander {
 
             this.triggers[id] = data
         }
+    }
+
+    addCallbackQuery(data: CallbackQuery): void {
+        if (this.callbackQueries[data.command] !== undefined) {
+            throw `Cannot create callback query "${data.command}": Already exists`
+        }
+
+        this.callbackQueries[data.command] = data
     }
 
     onInitialize(telegram: Telegram): void {
@@ -87,6 +102,17 @@ export class Commander {
         }
 
         this.triggers[id].func(message, telegram)
+        return true
+    }
+
+    onCallbackQuery(cmd: string, args: string[], query: TG.CallbackQuery, telegram: Telegram): boolean {
+        if (this.callbackQueries[cmd] === undefined) {
+            return false
+        }
+
+        const command = this.callbackQueries[cmd]
+
+        command.func(args, query, telegram)
         return true
     }
 }
