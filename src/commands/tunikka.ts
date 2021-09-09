@@ -11,6 +11,22 @@ export default (commander: Commander): void => {
     commander.addCommand({
         commands: ['tunikka'],
         arguments: [],
+        help: 'Lähettää tunikan sijainnin',
+
+        func: async (args, message, telegram) => {
+            const res = await axios.get<any>('http://data.itsfactory.fi/journeys/api/1/vehicle-activity')
+
+            const v = res.data.body.find((v: any) => v.monitoredVehicleJourney.vehicleRef === '56920_5')
+            const loc = v.monitoredVehicleJourney.vehicleLocation
+
+            telegram.sendLocation(message.chat.id, loc.latitude, loc.longitude, { disable_notification: true })
+        },
+    })
+
+    /*
+    commander.addCommand({
+        commands: ['tunikka'],
+        arguments: [],
         help: 'Lisää tunikka löydön Duon tai Wäinölöiden edessä',
 
         func: async (args, message, telegram) => {
@@ -49,4 +65,5 @@ export default (commander: Commander): void => {
                 })
         },
     })
+    */
 }
