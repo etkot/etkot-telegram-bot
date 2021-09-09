@@ -1,25 +1,88 @@
 import axios from 'axios'
 import { Commander } from '.'
 import { getCollection } from '../mongoUtil'
+import { Telegram } from '../telegram'
+import { Message } from '../types/telegram'
 
 interface TunikkaDocument {
     msg: number[]
     res: any
 }
 
+let lastTunikka: any
+
+const getTunikka = async (allowLast: boolean) => {
+    const res = await axios.get<any>('http://data.itsfactory.fi/journeys/api/1/vehicle-activity')
+
+    let v = res.data.body.find((v: any) => v.monitoredVehicleJourney.vehicleRef === '56920_5')
+
+    if (!v) {
+        if (allowLast && lastTunikka) {
+            v = lastTunikka
+        } else {
+            throw new Error('Tunikka not found')
+        }
+    }
+
+    const loc = v.monitoredVehicleJourney.vehicleLocation
+    const bearing = v.monitoredVehicleJourney.bearing
+
+    lastTunikka = v
+
+    return {
+        loc,
+        bearing,
+    }
+}
+
+let liveLocationMessage: Message
+
 export default (commander: Commander): void => {
+    commander.addInitializer((telegram) => {
+        setInterval(async () => {
+            if (liveLocationMessage) {
+                try {
+                    const tunikka = await getTunikka(true)
+
+                    telegram.editMessageLiveLocation(tunikka.loc.latitude, tunikka.loc.longitude, {
+                        chat_id: liveLocationMessage.chat.id,
+                        message_id: liveLocationMessage.message_id,
+                        heading: tunikka.bearing,
+                    })
+                } catch (error) {
+                    return
+                }
+            }
+        }, 5000)
+    })
+
     commander.addCommand({
         commands: ['tunikka'],
         arguments: [],
         help: 'Lähettää tunikan sijainnin',
 
         func: async (args, message, telegram) => {
-            const res = await axios.get<any>('http://data.itsfactory.fi/journeys/api/1/vehicle-activity')
+            try {
+                const tunikka = await getTunikka(false)
 
-            const v = res.data.body.find((v: any) => v.monitoredVehicleJourney.vehicleRef === '56920_5')
-            const loc = v.monitoredVehicleJourney.vehicleLocation
+                if (liveLocationMessage)
+                    telegram.stopMessageLiveLocation({
+                        chat_id: liveLocationMessage.chat.id,
+                        message_id: liveLocationMessage.message_id,
+                    })
 
-            telegram.sendLocation(message.chat.id, loc.latitude, loc.longitude, { disable_notification: true })
+                const msg = telegram
+                    .sendLocation(message.chat.id, tunikka.loc.latitude, tunikka.loc.longitude, {
+                        heading: tunikka.bearing,
+                        live_period: 86400,
+                        disable_notification: true,
+                    })
+                    .then((msg) => {
+                        liveLocationMessage = msg
+                    })
+            } catch (error) {
+                telegram.sendMessage(message.chat.id, '404 Tunikka not found', { disable_notification: true })
+            }
         },
     })
 

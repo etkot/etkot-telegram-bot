@@ -17,6 +17,8 @@ commands()
         commander = cmdr
         console.log('Commands loaded')
 
+        commander.onInitialize(telegram)
+
         telegram.StartPolling()
     })
     .catch((err) => {
