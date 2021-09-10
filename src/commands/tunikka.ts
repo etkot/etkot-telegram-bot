@@ -50,7 +50,8 @@ export default (commander: Commander): void => {
                             message_id: liveLocationMessage.message_id,
                             heading: tunikka.bearing,
                         })
-                        .catch(() => {
+                        .catch((err) => {
+                            console.error(err)
                             liveLocationMessage = undefined
                         })
                 } catch (error) {
