@@ -36,6 +36,7 @@ const getTunikka = async (allowLast: boolean) => {
 }
 
 let liveLocationMessage: Message | undefined
+let lastLiveLocation: { latitude: number, longitude: number };
 
 export default (commander: Commander): void => {
     commander.addInitializer((telegram) => {
@@ -43,6 +44,13 @@ export default (commander: Commander): void => {
             if (liveLocationMessage) {
                 try {
                     const tunikka = await getTunikka(true)
+
+                    if (tunikka.loc.latitude === lastLiveLocation.latitude &&
+                        tunikka.loc.longitude === lastLiveLocation.longitude) {
+                        return;
+                    }
+
+                    lastLiveLocation = tunikka.loc;
 
                     telegram
                         .editMessageLiveLocation(tunikka.loc.latitude, tunikka.loc.longitude, {
@@ -69,6 +77,8 @@ export default (commander: Commander): void => {
         func: async (args, message, telegram) => {
             try {
                 const tunikka = await getTunikka(false)
+
+                lastLiveLocation = tunikka.loc
 
                 if (liveLocationMessage)
                     telegram.stopMessageLiveLocation({
