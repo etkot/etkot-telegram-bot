@@ -36,7 +36,8 @@ const getTunikka = async (allowLast: boolean) => {
 }
 
 let liveLocationMessage: Message | undefined
-let lastLiveLocation: { latitude: number, longitude: number };
+let lastLiveLocation: { latitude: number; longitude: number }
+let liveTimeout: NodeJS.Timeout
 
 export default (commander: Commander): void => {
     commander.addInitializer((telegram) => {
@@ -45,23 +46,20 @@ export default (commander: Commander): void => {
                 try {
                     const tunikka = await getTunikka(true)
 
-                    if (tunikka.loc.latitude === lastLiveLocation.latitude &&
-                        tunikka.loc.longitude === lastLiveLocation.longitude) {
-                        return;
+                    if (
+                        tunikka.loc.latitude === lastLiveLocation.latitude &&
+                        tunikka.loc.longitude === lastLiveLocation.longitude
+                    ) {
+                        return
                     }
 
-                    lastLiveLocation = tunikka.loc;
+                    lastLiveLocation = tunikka.loc
 
-                    telegram
-                        .editMessageLiveLocation(tunikka.loc.latitude, tunikka.loc.longitude, {
-                            chat_id: liveLocationMessage.chat.id,
-                            message_id: liveLocationMessage.message_id,
-                            heading: tunikka.bearing,
-                        })
-                        .catch((err) => {
-                            console.error(err)
-                            liveLocationMessage = undefined
-                        })
+                    telegram.editMessageLiveLocation(tunikka.loc.latitude, tunikka.loc.longitude, {
+                        chat_id: liveLocationMessage.chat.id,
+                        message_id: liveLocationMessage.message_id,
+                        heading: tunikka.bearing,
+                    })
                 } catch (error) {
                     return
                 }
@@ -86,14 +84,25 @@ export default (commander: Commander): void => {
                         message_id: liveLocationMessage.message_id,
                     })
 
+                const livePeriod = 1 * 60 * 60 // 1 hour
+
                 const msg = telegram
                     .sendLocation(message.chat.id, tunikka.loc.latitude, tunikka.loc.longitude, {
                         heading: tunikka.bearing,
-                        live_period: 86400,
+                        live_period: livePeriod,
                         disable_notification: true,
                     })
                     .then((msg) => {
                         liveLocationMessage = msg
+
+                        clearTimeout(liveTimeout)
+                        liveTimeout = setTimeout(() => {
+                            if (liveLocationMessage)
+                                telegram.stopMessageLiveLocation({
+                                    chat_id: liveLocationMessage.chat.id,
+                                    message_id: liveLocationMessage.message_id,
+                                })
+                        }, livePeriod * 1000)
                     })
             } catch (error) {
                 telegram.sendMessage(message.chat.id, '404 Tunikka not found', { disable_notification: true })
