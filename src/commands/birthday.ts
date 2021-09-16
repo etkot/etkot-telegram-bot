@@ -53,7 +53,7 @@ export default (commander: Commander): void => {
                     if (!process.env.TG_CHAT) throw Error('No Telegram chat id')
 
                     for (const bdd of docs) {
-                        telegram.sendMessage(process.env.TG_CHAT, `/onnea@${bdd.username}`)
+                        telegram.sendMessage(process.env.TG_CHAT, `/onnee@${bdd.username}`)
                     }
                 })
         }).start()
