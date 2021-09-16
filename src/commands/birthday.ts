@@ -103,7 +103,7 @@ export default (commander: Commander): void => {
 
                     let msg = '<b>Syntymäpäivät:</b>\n'
                     for (const obj of result) {
-                        msg += `  ${obj.username}: ${obj.date.toLocaleDateString('fi-FI', {
+                        msg += `  <b>${obj.username}</b>: ${obj.date.toLocaleDateString('fi-FI', {
                             weekday: 'long',
                             month: 'numeric',
                             day: 'numeric',
