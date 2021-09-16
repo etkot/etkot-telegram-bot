@@ -55,7 +55,7 @@ export default (commander: Commander): void => {
 
                     lastLiveLocation = tunikka.loc
 
-                    telegram.editMessageLiveLocation(tunikka.loc.latitude, tunikka.loc.longitude, {
+                    await telegram.editMessageLiveLocation(tunikka.loc.latitude, tunikka.loc.longitude, {
                         chat_id: liveLocationMessage.chat.id,
                         message_id: liveLocationMessage.message_id,
                         heading: tunikka.bearing,
