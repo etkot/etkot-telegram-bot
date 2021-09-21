@@ -19,9 +19,9 @@ const parseDateTime = (date: string, time: string) => {
     const dateSplit = date.split(/[.:\-_]/g)
     const timeSplit = time.split(/[.:\-_]/g)
 
-    let day = Number(dateSplit[0]),
-        month = Number(dateSplit[1]),
-        year = Number(dateSplit[2]),
+    let year = Number(dateSplit[2]),
+        month = Number(dateSplit[1])
+    const day = Number(dateSplit[0]),
         hours = Number(timeSplit[0]) || 0,
         minutes = Number(timeSplit[1]) || 0,
         seconds = Number(timeSplit[2]) || 0

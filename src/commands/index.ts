@@ -92,7 +92,7 @@ export class Commander {
             return false
         }
 
-        let res = command.func(args, message, telegram)
+        const res = command.func(args, message, telegram)
         if (res === false) {
             this.commands['usage'].func([cmd], message, telegram)
             return false
