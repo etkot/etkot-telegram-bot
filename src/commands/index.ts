@@ -4,7 +4,7 @@ import { Telegram } from '../telegram'
 import * as TG from '../types/telegram'
 
 type Initializer = (telegram: Telegram) => void
-type CommandFunction = (args: string[], message: TG.Message, telegram: Telegram) => void
+type CommandFunction = (args: string[], message: TG.Message, telegram: Telegram) => void | boolean | Promise<void>
 type TriggerFunction = (message: TG.Message, telegram: Telegram) => void
 type CallbackQueryFunction = (args: string[], query: TG.CallbackQuery, telegram: Telegram) => void
 
@@ -92,7 +92,12 @@ export class Commander {
             return false
         }
 
-        command.func(args, message, telegram)
+        let res = command.func(args, message, telegram)
+        if (res === false) {
+            this.commands['usage'].func([cmd], message, telegram)
+            return false
+        }
+
         return true
     }
 

@@ -3,9 +3,9 @@ import { getCollection } from '../mongoUtil'
 import dayjs from 'dayjs'
 import { Commander } from '.'
 
-import customParseFormat from 'dayjs/plugin/customParseFormat'
+import arraySupport from 'dayjs/plugin/arraySupport'
 import { ObjectId } from 'mongodb'
-dayjs.extend(customParseFormat)
+dayjs.extend(arraySupport)
 
 interface EventDocument {
     _id?: ObjectId
@@ -16,50 +16,43 @@ interface EventDocument {
 const parseDateTime = (date: string, time: string) => {
     const now = dayjs()
 
-    let yearFromat = 'YYYY'
+    const dateSplit = date.split(/[.:\-_]/g)
+    const timeSplit = time.split(/[.:\-_]/g)
 
-    const dateSplit = date.split('.')
-    if (dateSplit.length === 1) {
-        // date: 1
-        date += `.${now.month()}.${now.year()}`
-    } else if (dateSplit.length === 2) {
-        if (dateSplit[1] === '') {
-            // date: 1.
-            date += `${now.month()}.${now.year()}`
+    let day = Number(dateSplit[0]),
+        month = Number(dateSplit[1]),
+        year = Number(dateSplit[2]),
+        hours = Number(timeSplit[0]) || 0,
+        minutes = Number(timeSplit[1]) || 0,
+        seconds = Number(timeSplit[2]) || 0
+
+    if (!year && !month && !day) {
+        return undefined
+    }
+
+    if (!year && !month) {
+        if (day && Number(day) < now.date()) {
+            month = now.month() + 2
+            if (month === 13) month = 1
         } else {
-            // date: 1.1
-            date += `.${now.year()}`
+            month = now.month() + 1
         }
-    } else if (dateSplit.length === 3) {
-        if (dateSplit[2] === '') {
-            // date: 1.1.
-            date += `${now.year()}`
+    }
+    month -= 1
+
+    if (!year) {
+        if (month && Number(month) < now.month()) {
+            year = now.year() + 1
         } else {
-            if (dateSplit[2].length == 2) {
-                // date: 1.1.20
-                yearFromat = 'YY'
-            }
-            // else date: 1.1.2020
+            year = now.year()
         }
     }
 
-    const timeSplit = time.split('.')
-    if (timeSplit.length === 1) {
-        // time: 1
-        const h = timeSplit[0].length == 1 ? `0${timeSplit[0]}` : timeSplit[0]
-        time = `${h}.00.00`
-    } else if (timeSplit.length === 2) {
-        const h = timeSplit[0].length == 1 ? `0${timeSplit[0]}` : timeSplit[0]
-        const m = timeSplit[1].length == 1 ? `0${timeSplit[1]}` : timeSplit[1]
-        time = `${h}.${m}.00`
-    } else if (timeSplit.length === 3) {
-        const h = timeSplit[0].length == 1 ? `0${timeSplit[0]}` : timeSplit[0]
-        const m = timeSplit[1].length == 1 ? `0${timeSplit[1]}` : timeSplit[1]
-        const s = timeSplit[2].length == 1 ? `0${timeSplit[2]}` : timeSplit[2]
-        time = `${h}.${m}.${s}`
+    if (year < 100) {
+        year += 2000
     }
 
-    const dateTime = dayjs(`${date} ${time}`, `D.M.${yearFromat} HH.mm.ss`)
+    const dateTime = dayjs([year, month, day, hours, minutes, seconds])
     return dateTime.format()
 }
 
@@ -102,8 +95,18 @@ export default (commander: Commander): void => {
 
             const dateTime = parseDateTime(date, time)
 
-            getCollection<EventDocument>('calendar').insertOne({ dateTime: new Date(dateTime), description })
-            telegram.sendMessage(message.chat.id, `Tapahtuma lisätty`, { disable_notification: true })
+            if (!dateTime) {
+                return false
+            }
+
+            getCollection<EventDocument>('calendar')
+                .insertOne({ dateTime: new Date(dateTime), description })
+                .then((result) => {
+                    const msg = `Tapahtuma lisätty\n${dayjs(new Date(dateTime)).format(
+                        'DD.MM.YYYY HH.mm'
+                    )} - ${description}`
+                    telegram.sendMessage(message.chat.id, msg, { disable_notification: true, parse_mode: 'HTML' })
+                })
         },
     })
 
