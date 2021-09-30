@@ -58,7 +58,7 @@ const parseDateTime = (date: string, time: string) => {
 
 export default (commander: Commander): void => {
     commander.addCommand({
-        commands: ['calendar', 'cal', 'kalenteri', 'events'],
+        commands: ['calendar', 'cal', 'kalenteri', 'events', 'calender'],
         arguments: [],
         help: 'Lähettää kaikki tulevat tapahtumat',
 
@@ -111,7 +111,7 @@ export default (commander: Commander): void => {
     })
 
     commander.addCommand({
-        commands: ['removeevent', 'removee', 're'],
+        commands: ['removeevent', 'removee', 're', 'deleteevent', 'deletee', 'de'],
         arguments: ['<id>'],
         help: 'Poistaa tapahtuman kalenterista',
 
