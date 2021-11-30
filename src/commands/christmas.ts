@@ -63,7 +63,7 @@ export default (commander: Commander): void => {
 
             try {
                 const fileEnding = fileFormatsToCheck.filter((format) =>
-                    syncFs.existsSync(`${imageLocation}/${1}.${format}`)
+                    syncFs.existsSync(`${imageLocation}/${today.get('date')}.${format}`)
                 )[0]
 
                 if (!fileEnding) {
