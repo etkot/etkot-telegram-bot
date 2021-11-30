@@ -57,8 +57,10 @@ export class Update implements Type {
     my_chat_member?: ChatMemberUpdated
     /** A chat member&#39;s status was updated in a chat. The bot must be an administrator in the chat and must explicitly specify “chat_member” in the list of allowed_updates to receive these updates. */
     chat_member?: ChatMemberUpdated
+    /** A request to join the chat has been sent. The bot must have the can_invite_users administrator right in the chat to receive these updates. */
+    chat_join_request?: ChatJoinRequest
 
-    constructor(update_id: number, message?: Message, edited_message?: Message, channel_post?: Message, edited_channel_post?: Message, inline_query?: InlineQuery, chosen_inline_result?: ChosenInlineResult, callback_query?: CallbackQuery, shipping_query?: ShippingQuery, pre_checkout_query?: PreCheckoutQuery, poll?: Poll, poll_answer?: PollAnswer, my_chat_member?: ChatMemberUpdated, chat_member?: ChatMemberUpdated) {
+    constructor(update_id: number, message?: Message, edited_message?: Message, channel_post?: Message, edited_channel_post?: Message, inline_query?: InlineQuery, chosen_inline_result?: ChosenInlineResult, callback_query?: CallbackQuery, shipping_query?: ShippingQuery, pre_checkout_query?: PreCheckoutQuery, poll?: Poll, poll_answer?: PollAnswer, my_chat_member?: ChatMemberUpdated, chat_member?: ChatMemberUpdated, chat_join_request?: ChatJoinRequest) {
         this.update_id = update_id
         this.message = message
         this.edited_message = edited_message
@@ -73,6 +75,7 @@ export class Update implements Type {
         this.poll_answer = poll_answer
         this.my_chat_member = my_chat_member
         this.chat_member = chat_member
+        this.chat_join_request = chat_join_request
     }
 }
 
@@ -239,7 +242,7 @@ export class Chat implements Type {
     pinned_message?: Message
     /** Default chat member permissions, for groups and supergroups. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
     permissions?: ChatPermissions
-    /** For supergroups, the minimum allowed delay between consecutive messages sent by each unpriviledged user. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
+    /** For supergroups, the minimum allowed delay between consecutive messages sent by each unpriviledged user; in seconds. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
     slow_mode_delay?: number
     /** The time after which all messages sent to the chat will be automatically deleted; in seconds. Returned only in [getChat](https://core.telegram.org/bots/api#getchat). */
     message_auto_delete_time?: number
@@ -502,7 +505,7 @@ export class PhotoSize implements Type {
     width: number
     /** Photo height */
     height: number
-    /** File size */
+    /** File size in bytes */
     file_size?: number
 
     constructor(file_id: string, file_unique_id: string, width: number, height: number, file_size?: number) {
@@ -534,7 +537,7 @@ export class Animation implements Type {
     file_name?: string
     /** MIME type of the file as defined by sender */
     mime_type?: string
-    /** File size */
+    /** File size in bytes */
     file_size?: number
 
     constructor(file_id: string, file_unique_id: string, width: number, height: number, duration: number, thumb?: PhotoSize, file_name?: string, mime_type?: string, file_size?: number) {
@@ -568,7 +571,7 @@ export class Audio implements Type {
     file_name?: string
     /** MIME type of the file as defined by sender */
     mime_type?: string
-    /** File size */
+    /** File size in bytes */
     file_size?: number
     /** Thumbnail of the album cover to which the music file belongs */
     thumb?: PhotoSize
@@ -600,7 +603,7 @@ export class Document implements Type {
     file_name?: string
     /** MIME type of the file as defined by sender */
     mime_type?: string
-    /** File size */
+    /** File size in bytes */
     file_size?: number
 
     constructor(file_id: string, file_unique_id: string, thumb?: PhotoSize, file_name?: string, mime_type?: string, file_size?: number) {
@@ -633,7 +636,7 @@ export class Video implements Type {
     file_name?: string
     /** Mime type of a file as defined by sender */
     mime_type?: string
-    /** File size */
+    /** File size in bytes */
     file_size?: number
 
     constructor(file_id: string, file_unique_id: string, width: number, height: number, duration: number, thumb?: PhotoSize, file_name?: string, mime_type?: string, file_size?: number) {
@@ -663,7 +666,7 @@ export class VideoNote implements Type {
     duration: number
     /** Video thumbnail */
     thumb?: PhotoSize
-    /** File size */
+    /** File size in bytes */
     file_size?: number
 
     constructor(file_id: string, file_unique_id: string, length: number, duration: number, thumb?: PhotoSize, file_size?: number) {
@@ -688,7 +691,7 @@ export class Voice implements Type {
     duration: number
     /** MIME type of the file as defined by sender */
     mime_type?: string
-    /** File size */
+    /** File size in bytes */
     file_size?: number
 
     constructor(file_id: string, file_unique_id: string, duration: number, mime_type?: string, file_size?: number) {
@@ -830,7 +833,7 @@ export class Location implements Type {
     latitude: number
     /** The radius of uncertainty for the location, measured in meters; 0-1500 */
     horizontal_accuracy?: number
-    /** Time relative to the message sending date, during which the location can be updated, in seconds. For active live locations only. */
+    /** Time relative to the message sending date, during which the location can be updated; in seconds. For active live locations only. */
     live_period?: number
     /** The direction in which user is moving, in degrees; 1-360. For active live locations only. */
     heading?: number
@@ -899,7 +902,7 @@ export class ProximityAlertTriggered implements Type {
 export class MessageAutoDeleteTimerChanged implements Type {
     /** Name of this interface as a string */
     objectName = 'MessageAutoDeleteTimerChanged'
-    /** New auto-delete time for messages in the chat */
+    /** New auto-delete time for messages in the chat; in seconds */
     message_auto_delete_time: number
 
     constructor(message_auto_delete_time: number) {
@@ -929,7 +932,7 @@ export class VoiceChatStarted implements Type {
 export class VoiceChatEnded implements Type {
     /** Name of this interface as a string */
     objectName = 'VoiceChatEnded'
-    /** Voice chat duration; in seconds */
+    /** Voice chat duration in seconds */
     duration: number
 
     constructor(duration: number) {
@@ -972,7 +975,7 @@ export class File implements Type {
     file_id: string
     /** Unique identifier for this file, which is supposed to be the same over time and for different bots. Can&#39;t be used to download or reuse the file. */
     file_unique_id: string
-    /** File size, if known */
+    /** File size in bytes, if known */
     file_size?: number
     /** File path. Use https://api.telegram.org/file/bot&lt;token&gt;/&lt;file_path&gt; to get the file. */
     file_path?: string
@@ -1200,22 +1203,31 @@ export class ChatInviteLink implements Type {
     invite_link: string
     /** Creator of the link */
     creator: User
+    /** True, if users joining the chat via the link need to be approved by chat administrators */
+    creates_join_request: boolean
     /** True, if the link is primary */
     is_primary: boolean
     /** True, if the link is revoked */
     is_revoked: boolean
+    /** Invite link name */
+    name?: string
     /** Point in time (Unix timestamp) when the link will expire or has been expired */
     expire_date?: number
     /** Maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999 */
     member_limit?: number
+    /** Number of pending join requests created using this link */
+    pending_join_request_count?: number
 
-    constructor(invite_link: string, creator: User, is_primary: boolean, is_revoked: boolean, expire_date?: number, member_limit?: number) {
+    constructor(invite_link: string, creator: User, creates_join_request: boolean, is_primary: boolean, is_revoked: boolean, name?: string, expire_date?: number, member_limit?: number, pending_join_request_count?: number) {
         this.invite_link = invite_link
         this.creator = creator
+        this.creates_join_request = creates_join_request
         this.is_primary = is_primary
         this.is_revoked = is_revoked
+        this.name = name
         this.expire_date = expire_date
         this.member_limit = member_limit
+        this.pending_join_request_count = pending_join_request_count
     }
 }
 
@@ -1413,6 +1425,30 @@ export class ChatMemberUpdated implements Type {
         this.date = date
         this.old_chat_member = old_chat_member
         this.new_chat_member = new_chat_member
+        this.invite_link = invite_link
+    }
+}
+
+/** Represents a join request sent to a chat. */
+export class ChatJoinRequest implements Type {
+    /** Name of this interface as a string */
+    objectName = 'ChatJoinRequest'
+    /** Chat to which the request was sent */
+    chat: Chat
+    /** User that sent the join request */
+    from: User
+    /** Date the request was sent in Unix time */
+    date: number
+    /** Bio of the user. */
+    bio?: string
+    /** Chat invite link that was used by the user to send the join request */
+    invite_link?: ChatInviteLink
+
+    constructor(chat: Chat, from: User, date: number, bio?: string, invite_link?: ChatInviteLink) {
+        this.chat = chat
+        this.from = from
+        this.date = date
+        this.bio = bio
         this.invite_link = invite_link
     }
 }
@@ -1641,7 +1677,7 @@ export class InputMediaVideo implements Type {
     width?: number
     /** Video height */
     height?: number
-    /** Video duration */
+    /** Video duration in seconds */
     duration?: number
     /** Pass True, if the uploaded video is suitable for streaming */
     supports_streaming?: boolean
@@ -1680,7 +1716,7 @@ export class InputMediaAnimation implements Type {
     width?: number
     /** Animation height */
     height?: number
-    /** Animation duration */
+    /** Animation duration in seconds */
     duration?: number
 
     constructor(type: string, media: string, thumb?: InputFile|string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, width?: number, height?: number, duration?: number) {
@@ -1748,7 +1784,7 @@ export class InputMediaDocument implements Type {
     parse_mode?: string
     /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
-    /** Disables automatic server-side content type detection for files uploaded using multipart/form-data. Always true, if the document is sent as part of an album. */
+    /** Disables automatic server-side content type detection for files uploaded using multipart/form-data. Always True, if the document is sent as part of an album. */
     disable_content_type_detection?: boolean
 
     constructor(type: string, media: string, thumb?: InputFile|string, caption?: string, parse_mode?: string, caption_entities?: Array<MessageEntity>, disable_content_type_detection?: boolean) {
@@ -1765,7 +1801,7 @@ export class InputMediaDocument implements Type {
 /** This object represents a file. Can be file_id, URL or multipart/form-data post of the file. More info on https://core.telegram.org/bots/api#inputfile */
 export type InputFile = string
 
-/** A simple method for testing your bot&#39;s auth token. Requires no parameters. Returns basic information about the bot in form of a [User](https://core.telegram.org/bots/api#user) object. */
+/** A simple method for testing your bot&#39;s authentication token. Requires no parameters. Returns basic information about the bot in form of a [User](https://core.telegram.org/bots/api#user) object. */
 export class getMe implements Method {
     /** Name of this interface as a string */
     objectName = 'getMe'
@@ -1793,7 +1829,7 @@ export class sendMessage implements Method {
     text: string
     /** Mode for parsing entities in the message text. See formatting options for more details. */
     parse_mode?: string
-    /** List of special entities that appear in message text, which can be specified instead of parse_mode */
+    /** A JSON-serialized list of special entities that appear in message text, which can be specified instead of parse_mode */
     entities?: Array<MessageEntity>
     /** Disables link previews for links in this message */
     disable_web_page_preview?: boolean
@@ -1854,7 +1890,7 @@ export class copyMessage implements Method {
     caption?: string
     /** Mode for parsing entities in the new caption. See formatting options for more details. */
     parse_mode?: string
-    /** List of special entities that appear in the new caption, which can be specified instead of parse_mode */
+    /** A JSON-serialized list of special entities that appear in the new caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Sends the message silently. Users will receive a notification with no sound. */
     disable_notification?: boolean
@@ -1891,7 +1927,7 @@ export class sendPhoto implements Method {
     caption?: string
     /** Mode for parsing entities in the photo caption. See formatting options for more details. */
     parse_mode?: string
-    /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
+    /** A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Sends the message silently. Users will receive a notification with no sound. */
     disable_notification?: boolean
@@ -1927,7 +1963,7 @@ export class sendAudio implements Method {
     caption?: string
     /** Mode for parsing entities in the audio caption. See formatting options for more details. */
     parse_mode?: string
-    /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
+    /** A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Duration of the audio in seconds */
     duration?: number
@@ -1977,7 +2013,7 @@ export class sendDocument implements Method {
     caption?: string
     /** Mode for parsing entities in the document caption. See formatting options for more details. */
     parse_mode?: string
-    /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
+    /** A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Disables automatic server-side content type detection for files uploaded using multipart/form-data */
     disable_content_type_detection?: boolean
@@ -2025,7 +2061,7 @@ export class sendVideo implements Method {
     caption?: string
     /** Mode for parsing entities in the video caption. See formatting options for more details. */
     parse_mode?: string
-    /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
+    /** A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Pass True, if the uploaded video is suitable for streaming */
     supports_streaming?: boolean
@@ -2076,7 +2112,7 @@ export class sendAnimation implements Method {
     caption?: string
     /** Mode for parsing entities in the animation caption. See formatting options for more details. */
     parse_mode?: string
-    /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
+    /** A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Sends the message silently. Users will receive a notification with no sound. */
     disable_notification?: boolean
@@ -2116,7 +2152,7 @@ export class sendVoice implements Method {
     caption?: string
     /** Mode for parsing entities in the voice message caption. See formatting options for more details. */
     parse_mode?: string
-    /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
+    /** A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** Duration of the voice message in seconds */
     duration?: number
@@ -2408,7 +2444,7 @@ export class sendPoll implements Method {
     explanation?: string
     /** Mode for parsing entities in the explanation. See formatting options for more details. */
     explanation_parse_mode?: string
-    /** List of special entities that appear in the poll explanation, which can be specified instead of parse_mode */
+    /** A JSON-serialized list of special entities that appear in the poll explanation, which can be specified instead of parse_mode */
     explanation_entities?: Array<MessageEntity>
     /** Amount of time in seconds the poll will be active after creation, 5-600. Can't be used together with close_date. */
     open_period?: number
@@ -2479,7 +2515,7 @@ export class sendChatAction implements Method {
     objectName = 'sendChatAction'
     /** Unique identifier for the target chat or username of the target channel (in the format @channelusername) */
     chat_id: number|string
-    /** Type of action to broadcast. Choose one, depending on what the user is about to receive: typing for text messages, upload_photo for photos, record_video or upload_video for videos, record_voice or upload_voice for voice notes, upload_document for general files, find_location for location data, record_video_note or upload_video_note for video notes. */
+    /** Type of action to broadcast. Choose one, depending on what the user is about to receive: typing for text messages, upload_photo for photos, record_video or upload_video for videos, record_voice or upload_voice for voice notes, upload_document for general files, choose_sticker for stickers, find_location for location data, record_video_note or upload_video_note for video notes. */
     action: string
 
     constructor(chat_id: number|string, action: string) {
@@ -2518,7 +2554,7 @@ export class getFile implements Method {
     }
 }
 
-/** Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless [unbanned](https://core.telegram.org/bots/api#unbanchatmember) first. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
+/** Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless [unbanned](https://core.telegram.org/bots/api#unbanchatmember) first. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success. */
 export class banChatMember implements Method {
     /** Name of this interface as a string */
     objectName = 'banChatMember'
@@ -2557,7 +2593,7 @@ export class unbanChatMember implements Method {
     }
 }
 
-/** Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work and must have the appropriate admin rights. Pass True for all permissions to lift restrictions from a user. Returns True on success. */
+/** Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work and must have the appropriate administrator rights. Pass True for all permissions to lift restrictions from a user. Returns True on success. */
 export class restrictChatMember implements Method {
     /** Name of this interface as a string */
     objectName = 'restrictChatMember'
@@ -2578,7 +2614,7 @@ export class restrictChatMember implements Method {
     }
 }
 
-/** Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Pass False for all boolean parameters to demote a user. Returns True on success. */
+/** Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass False for all boolean parameters to demote a user. Returns True on success. */
 export class promoteChatMember implements Method {
     /** Name of this interface as a string */
     objectName = 'promoteChatMember'
@@ -2644,13 +2680,13 @@ export class setChatAdministratorCustomTitle implements Method {
     }
 }
 
-/** Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the can_restrict_members admin rights. Returns True on success. */
+/** Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the can_restrict_members administrator rights. Returns True on success. */
 export class setChatPermissions implements Method {
     /** Name of this interface as a string */
     objectName = 'setChatPermissions'
     /** Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername) */
     chat_id: number|string
-    /** New default chat permissions */
+    /** A JSON-serialized object for new default chat permissions */
     permissions: ChatPermissions
 
     constructor(chat_id: number|string, permissions: ChatPermissions) {
@@ -2659,7 +2695,7 @@ export class setChatPermissions implements Method {
     }
 }
 
-/** Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the new invite link as String on success. */
+/** Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the new invite link as String on success. */
 export class exportChatInviteLink implements Method {
     /** Name of this interface as a string */
     objectName = 'exportChatInviteLink'
@@ -2671,25 +2707,31 @@ export class exportChatInviteLink implements Method {
     }
 }
 
-/** Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. The link can be revoked using the method [revokeChatInviteLink](https://core.telegram.org/bots/api#revokechatinvitelink). Returns the new invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
+/** Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. The link can be revoked using the method [revokeChatInviteLink](https://core.telegram.org/bots/api#revokechatinvitelink). Returns the new invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
 export class createChatInviteLink implements Method {
     /** Name of this interface as a string */
     objectName = 'createChatInviteLink'
     /** Unique identifier for the target chat or username of the target channel (in the format @channelusername) */
     chat_id: number|string
+    /** Invite link name; 0-32 characters */
+    name?: string
     /** Point in time (Unix timestamp) when the link will expire */
     expire_date?: number
     /** Maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999 */
     member_limit?: number
+    /** True, if users joining the chat via the link need to be approved by chat administrators. If True, member_limit can't be specified */
+    creates_join_request?: boolean
 
-    constructor(chat_id: number|string, expire_date?: number, member_limit?: number) {
+    constructor(chat_id: number|string, name?: string, expire_date?: number, member_limit?: number, creates_join_request?: boolean) {
         this.chat_id = chat_id
+        this.name = name
         this.expire_date = expire_date
         this.member_limit = member_limit
+        this.creates_join_request = creates_join_request
     }
 }
 
-/** Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the edited invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
+/** Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the edited invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
 export class editChatInviteLink implements Method {
     /** Name of this interface as a string */
     objectName = 'editChatInviteLink'
@@ -2697,20 +2739,26 @@ export class editChatInviteLink implements Method {
     chat_id: number|string
     /** The invite link to edit */
     invite_link: string
+    /** Invite link name; 0-32 characters */
+    name?: string
     /** Point in time (Unix timestamp) when the link will expire */
     expire_date?: number
     /** Maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999 */
     member_limit?: number
+    /** True, if users joining the chat via the link need to be approved by chat administrators. If True, member_limit can't be specified */
+    creates_join_request?: boolean
 
-    constructor(chat_id: number|string, invite_link: string, expire_date?: number, member_limit?: number) {
+    constructor(chat_id: number|string, invite_link: string, name?: string, expire_date?: number, member_limit?: number, creates_join_request?: boolean) {
         this.chat_id = chat_id
         this.invite_link = invite_link
+        this.name = name
         this.expire_date = expire_date
         this.member_limit = member_limit
+        this.creates_join_request = creates_join_request
     }
 }
 
-/** Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the revoked invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
+/** Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the revoked invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
 export class revokeChatInviteLink implements Method {
     /** Name of this interface as a string */
     objectName = 'revokeChatInviteLink'
@@ -2725,7 +2773,37 @@ export class revokeChatInviteLink implements Method {
     }
 }
 
-/** Use this method to set a new profile photo for the chat. Photos can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
+/** Use this method to approve a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success. */
+export class approveChatJoinRequest implements Method {
+    /** Name of this interface as a string */
+    objectName = 'approveChatJoinRequest'
+    /** Unique identifier for the target chat or username of the target channel (in the format @channelusername) */
+    chat_id: number|string
+    /** Unique identifier of the target user */
+    user_id: number
+
+    constructor(chat_id: number|string, user_id: number) {
+        this.chat_id = chat_id
+        this.user_id = user_id
+    }
+}
+
+/** Use this method to decline a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success. */
+export class declineChatJoinRequest implements Method {
+    /** Name of this interface as a string */
+    objectName = 'declineChatJoinRequest'
+    /** Unique identifier for the target chat or username of the target channel (in the format @channelusername) */
+    chat_id: number|string
+    /** Unique identifier of the target user */
+    user_id: number
+
+    constructor(chat_id: number|string, user_id: number) {
+        this.chat_id = chat_id
+        this.user_id = user_id
+    }
+}
+
+/** Use this method to set a new profile photo for the chat. Photos can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success. */
 export class setChatPhoto implements Method {
     /** Name of this interface as a string */
     objectName = 'setChatPhoto'
@@ -2740,7 +2818,7 @@ export class setChatPhoto implements Method {
     }
 }
 
-/** Use this method to delete a chat photo. Photos can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
+/** Use this method to delete a chat photo. Photos can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success. */
 export class deleteChatPhoto implements Method {
     /** Name of this interface as a string */
     objectName = 'deleteChatPhoto'
@@ -2752,7 +2830,7 @@ export class deleteChatPhoto implements Method {
     }
 }
 
-/** Use this method to change the title of a chat. Titles can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
+/** Use this method to change the title of a chat. Titles can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success. */
 export class setChatTitle implements Method {
     /** Name of this interface as a string */
     objectName = 'setChatTitle'
@@ -2767,7 +2845,7 @@ export class setChatTitle implements Method {
     }
 }
 
-/** Use this method to change the description of a group, a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
+/** Use this method to change the description of a group, a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success. */
 export class setChatDescription implements Method {
     /** Name of this interface as a string */
     objectName = 'setChatDescription'
@@ -2782,7 +2860,7 @@ export class setChatDescription implements Method {
     }
 }
 
-/** Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; admin right in a supergroup or &#39;can_edit_messages&#39; admin right in a channel. Returns True on success. */
+/** Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; administrator right in a supergroup or &#39;can_edit_messages&#39; administrator right in a channel. Returns True on success. */
 export class pinChatMessage implements Method {
     /** Name of this interface as a string */
     objectName = 'pinChatMessage'
@@ -2800,7 +2878,7 @@ export class pinChatMessage implements Method {
     }
 }
 
-/** Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; admin right in a supergroup or &#39;can_edit_messages&#39; admin right in a channel. Returns True on success. */
+/** Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; administrator right in a supergroup or &#39;can_edit_messages&#39; administrator right in a channel. Returns True on success. */
 export class unpinChatMessage implements Method {
     /** Name of this interface as a string */
     objectName = 'unpinChatMessage'
@@ -2815,7 +2893,7 @@ export class unpinChatMessage implements Method {
     }
 }
 
-/** Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; admin right in a supergroup or &#39;can_edit_messages&#39; admin right in a channel. Returns True on success. */
+/** Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; administrator right in a supergroup or &#39;can_edit_messages&#39; administrator right in a channel. Returns True on success. */
 export class unpinAllChatMessages implements Method {
     /** Name of this interface as a string */
     objectName = 'unpinAllChatMessages'
@@ -2890,7 +2968,7 @@ export class getChatMember implements Method {
     }
 }
 
-/** Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Use the field can_set_sticker_set optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method. Returns True on success. */
+/** Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method. Returns True on success. */
 export class setChatStickerSet implements Method {
     /** Name of this interface as a string */
     objectName = 'setChatStickerSet'
@@ -2905,7 +2983,7 @@ export class setChatStickerSet implements Method {
     }
 }
 
-/** Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Use the field can_set_sticker_set optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method. Returns True on success. */
+/** Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method. Returns True on success. */
 export class deleteChatStickerSet implements Method {
     /** Name of this interface as a string */
     objectName = 'deleteChatStickerSet'
@@ -2925,7 +3003,7 @@ export class answerCallbackQuery implements Method {
     callback_query_id: string
     /** Text of the notification. If not specified, nothing will be shown to the user, 0-200 characters */
     text?: string
-    /** If true, an alert will be shown by the client instead of a notification at the top of the chat screen. Defaults to false. */
+    /** If True, an alert will be shown by the client instead of a notification at the top of the chat screen. Defaults to false. */
     show_alert?: boolean
     /** URL that will be opened by the user's client. If you have created a Game and accepted the conditions via @Botfather, specify the URL that opens your game — note that this will only work if the query comes from a callback_game button.Otherwise, you may use links like t.me/your_bot?start=XXXX that open your bot with a parameter. */
     url?: string
@@ -3003,7 +3081,7 @@ export class editMessageText implements Method {
     text: string
     /** Mode for parsing entities in the message text. See formatting options for more details. */
     parse_mode?: string
-    /** List of special entities that appear in message text, which can be specified instead of parse_mode */
+    /** A JSON-serialized list of special entities that appear in message text, which can be specified instead of parse_mode */
     entities?: Array<MessageEntity>
     /** Disables link previews for links in this message */
     disable_web_page_preview?: boolean
@@ -3036,7 +3114,7 @@ export class editMessageCaption implements Method {
     caption?: string
     /** Mode for parsing entities in the message caption. See formatting options for more details. */
     parse_mode?: string
-    /** List of special entities that appear in the caption, which can be specified instead of parse_mode */
+    /** A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode */
     caption_entities?: Array<MessageEntity>
     /** A JSON-serialized object for an inline keyboard. */
     reply_markup?: InlineKeyboardMarkup
@@ -3152,7 +3230,7 @@ export class Sticker implements Type {
     set_name?: string
     /** For mask stickers, the position where the mask should be placed */
     mask_position?: MaskPosition
-    /** File size */
+    /** File size in bytes */
     file_size?: number
 
     constructor(file_id: string, file_unique_id: string, width: number, height: number, is_animated: boolean, thumb?: PhotoSize, emoji?: string, set_name?: string, mask_position?: MaskPosition, file_size?: number) {
@@ -3419,7 +3497,7 @@ export class answerInlineQuery implements Method {
     next_offset?: string
     /** If passed, clients will display a button with specified text that switches the user to a private chat with the bot and sends the bot a start message with the parameter switch_pm_parameter */
     switch_pm_text?: string
-    /** Deep-linking parameter for the /start message sent to the bot when user presses the switch button. 1-64 characters, only A-Z, a-z, 0-9, _ and - are allowed.Example: An inline bot that sends YouTube videos can ask the user to connect the bot to their YouTube account to adapt search results accordingly. To do this, it displays a 'Connect your YouTube account' button above the results, or even before showing any. The user presses the button, switches to a private chat with the bot and, in doing so, passes a start parameter that instructs the bot to return an oauth link. Once done, the bot can offer a switch_inline button so that the user can easily return to the chat where they wanted to use the bot's inline capabilities. */
+    /** Deep-linking parameter for the /start message sent to the bot when user presses the switch button. 1-64 characters, only A-Z, a-z, 0-9, _ and - are allowed.Example: An inline bot that sends YouTube videos can ask the user to connect the bot to their YouTube account to adapt search results accordingly. To do this, it displays a 'Connect your YouTube account' button above the results, or even before showing any. The user presses the button, switches to a private chat with the bot and, in doing so, passes a start parameter that instructs the bot to return an OAuth link. Once done, the bot can offer a switch_inline button so that the user can easily return to the chat where they wanted to use the bot's inline capabilities. */
     switch_pm_parameter?: string
 
     constructor(inline_query_id: string, results: Array<InlineQueryResult>, cache_time?: number, is_personal?: boolean, next_offset?: string, switch_pm_text?: string, switch_pm_parameter?: string) {
@@ -3486,7 +3564,7 @@ export class InlineQueryResultPhoto implements Type {
     type: string
     /** Unique identifier for this result, 1-64 bytes */
     id: string
-    /** A valid URL of the photo. Photo must be in jpeg format. Photo size must not exceed 5MB */
+    /** A valid URL of the photo. Photo must be in JPEG format. Photo size must not exceed 5MB */
     photo_url: string
     /** URL of the thumbnail for the photo */
     thumb_url: string
@@ -3540,7 +3618,7 @@ export class InlineQueryResultGif implements Type {
     gif_width?: number
     /** Height of the GIF */
     gif_height?: number
-    /** Duration of the GIF */
+    /** Duration of the GIF in seconds */
     gif_duration?: number
     /** URL of the static (JPEG or GIF) or animated (MPEG4) thumbnail for the result */
     thumb_url: string
@@ -3591,7 +3669,7 @@ export class InlineQueryResultMpeg4Gif implements Type {
     mpeg4_width?: number
     /** Video height */
     mpeg4_height?: number
-    /** Video duration */
+    /** Video duration in seconds */
     mpeg4_duration?: number
     /** URL of the static (JPEG or GIF) or animated (MPEG4) thumbnail for the result */
     thumb_url: string
@@ -3640,7 +3718,7 @@ export class InlineQueryResultVideo implements Type {
     video_url: string
     /** Mime type of the content of video url, “text/html” or “video/mp4” */
     mime_type: string
-    /** URL of the thumbnail (jpeg only) for the video */
+    /** URL of the thumbnail (JPEG only) for the video */
     thumb_url: string
     /** Title for the result */
     title: string
@@ -3789,7 +3867,7 @@ export class InlineQueryResultDocument implements Type {
     reply_markup?: InlineKeyboardMarkup
     /** Content of the message to be sent instead of the file */
     input_message_content?: InputMessageContent
-    /** URL of the thumbnail (jpeg only) for the file */
+    /** URL of the thumbnail (JPEG only) for the file */
     thumb_url?: string
     /** Thumbnail width */
     thumb_width?: number
@@ -4797,7 +4875,7 @@ export class PassportFile implements Type {
     file_id: string
     /** Unique identifier for this file, which is supposed to be the same over time and for different bots. Can&#39;t be used to download or reuse the file. */
     file_unique_id: string
-    /** File size */
+    /** File size in bytes */
     file_size: number
     /** Unix time when the file was uploaded */
     file_date: number

@@ -57,7 +57,7 @@ export abstract class TelegramMethods {
         return this.sendMethod(new TG.getWebhookInfo()) as Promise<TG.WebhookInfo>
     }
 
-    /** A simple method for testing your bot&#39;s auth token. Requires no parameters. Returns basic information about the bot in form of a [User](https://core.telegram.org/bots/api#user) object. */
+    /** A simple method for testing your bot&#39;s authentication token. Requires no parameters. Returns basic information about the bot in form of a [User](https://core.telegram.org/bots/api#user) object. */
     getMe(): Promise<TG.User> {
         return this.sendMethod(new TG.getMe()) as Promise<TG.User>
     }
@@ -177,7 +177,7 @@ export abstract class TelegramMethods {
         return this.sendMethod(new TG.getFile(file_id)) as Promise<TG.File>
     }
 
-    /** Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless [unbanned](https://core.telegram.org/bots/api#unbanchatmember) first. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
+    /** Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless [unbanned](https://core.telegram.org/bots/api#unbanchatmember) first. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success. */
     banChatMember(chat_id: number|string, user_id: number, optional?: { until_date?: number, revoke_messages?: boolean }): Promise<boolean> {
         return this.sendMethod(new TG.banChatMember(chat_id, user_id, optional?.until_date, optional?.revoke_messages)) as Promise<boolean>
     }
@@ -187,12 +187,12 @@ export abstract class TelegramMethods {
         return this.sendMethod(new TG.unbanChatMember(chat_id, user_id, optional?.only_if_banned)) as Promise<boolean>
     }
 
-    /** Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work and must have the appropriate admin rights. Pass True for all permissions to lift restrictions from a user. Returns True on success. */
+    /** Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work and must have the appropriate administrator rights. Pass True for all permissions to lift restrictions from a user. Returns True on success. */
     restrictChatMember(chat_id: number|string, user_id: number, permissions: TG.ChatPermissions, optional?: { until_date?: number }): Promise<boolean> {
         return this.sendMethod(new TG.restrictChatMember(chat_id, user_id, permissions, optional?.until_date)) as Promise<boolean>
     }
 
-    /** Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Pass False for all boolean parameters to demote a user. Returns True on success. */
+    /** Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass False for all boolean parameters to demote a user. Returns True on success. */
     promoteChatMember(chat_id: number|string, user_id: number, optional?: { is_anonymous?: boolean, can_manage_chat?: boolean, can_post_messages?: boolean, can_edit_messages?: boolean, can_delete_messages?: boolean, can_manage_voice_chats?: boolean, can_restrict_members?: boolean, can_promote_members?: boolean, can_change_info?: boolean, can_invite_users?: boolean, can_pin_messages?: boolean }): Promise<boolean> {
         return this.sendMethod(new TG.promoteChatMember(chat_id, user_id, optional?.is_anonymous, optional?.can_manage_chat, optional?.can_post_messages, optional?.can_edit_messages, optional?.can_delete_messages, optional?.can_manage_voice_chats, optional?.can_restrict_members, optional?.can_promote_members, optional?.can_change_info, optional?.can_invite_users, optional?.can_pin_messages)) as Promise<boolean>
     }
@@ -202,62 +202,72 @@ export abstract class TelegramMethods {
         return this.sendMethod(new TG.setChatAdministratorCustomTitle(chat_id, user_id, custom_title)) as Promise<boolean>
     }
 
-    /** Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the can_restrict_members admin rights. Returns True on success. */
+    /** Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the can_restrict_members administrator rights. Returns True on success. */
     setChatPermissions(chat_id: number|string, permissions: TG.ChatPermissions): Promise<boolean> {
         return this.sendMethod(new TG.setChatPermissions(chat_id, permissions)) as Promise<boolean>
     }
 
-    /** Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the new invite link as String on success. */
+    /** Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the new invite link as String on success. */
     exportChatInviteLink(chat_id: number|string): Promise<string> {
         return this.sendMethod(new TG.exportChatInviteLink(chat_id)) as Promise<string>
     }
 
-    /** Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. The link can be revoked using the method [revokeChatInviteLink](https://core.telegram.org/bots/api#revokechatinvitelink). Returns the new invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
-    createChatInviteLink(chat_id: number|string, optional?: { expire_date?: number, member_limit?: number }): Promise<TG.ChatInviteLink> {
-        return this.sendMethod(new TG.createChatInviteLink(chat_id, optional?.expire_date, optional?.member_limit)) as Promise<TG.ChatInviteLink>
+    /** Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. The link can be revoked using the method [revokeChatInviteLink](https://core.telegram.org/bots/api#revokechatinvitelink). Returns the new invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
+    createChatInviteLink(chat_id: number|string, optional?: { name?: string, expire_date?: number, member_limit?: number, creates_join_request?: boolean }): Promise<TG.ChatInviteLink> {
+        return this.sendMethod(new TG.createChatInviteLink(chat_id, optional?.name, optional?.expire_date, optional?.member_limit, optional?.creates_join_request)) as Promise<TG.ChatInviteLink>
     }
 
-    /** Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the edited invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
-    editChatInviteLink(chat_id: number|string, invite_link: string, optional?: { expire_date?: number, member_limit?: number }): Promise<TG.ChatInviteLink> {
-        return this.sendMethod(new TG.editChatInviteLink(chat_id, invite_link, optional?.expire_date, optional?.member_limit)) as Promise<TG.ChatInviteLink>
+    /** Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the edited invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
+    editChatInviteLink(chat_id: number|string, invite_link: string, optional?: { name?: string, expire_date?: number, member_limit?: number, creates_join_request?: boolean }): Promise<TG.ChatInviteLink> {
+        return this.sendMethod(new TG.editChatInviteLink(chat_id, invite_link, optional?.name, optional?.expire_date, optional?.member_limit, optional?.creates_join_request)) as Promise<TG.ChatInviteLink>
     }
 
-    /** Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the revoked invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
+    /** Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the revoked invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object. */
     revokeChatInviteLink(chat_id: number|string, invite_link: string): Promise<TG.ChatInviteLink> {
         return this.sendMethod(new TG.revokeChatInviteLink(chat_id, invite_link)) as Promise<TG.ChatInviteLink>
     }
 
-    /** Use this method to set a new profile photo for the chat. Photos can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
+    /** Use this method to approve a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success. */
+    approveChatJoinRequest(chat_id: number|string, user_id: number): Promise<boolean> {
+        return this.sendMethod(new TG.approveChatJoinRequest(chat_id, user_id)) as Promise<boolean>
+    }
+
+    /** Use this method to decline a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success. */
+    declineChatJoinRequest(chat_id: number|string, user_id: number): Promise<boolean> {
+        return this.sendMethod(new TG.declineChatJoinRequest(chat_id, user_id)) as Promise<boolean>
+    }
+
+    /** Use this method to set a new profile photo for the chat. Photos can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success. */
     setChatPhoto(chat_id: number|string, photo: TG.InputFile): Promise<boolean> {
         return this.sendMethod(new TG.setChatPhoto(chat_id, photo)) as Promise<boolean>
     }
 
-    /** Use this method to delete a chat photo. Photos can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
+    /** Use this method to delete a chat photo. Photos can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success. */
     deleteChatPhoto(chat_id: number|string): Promise<boolean> {
         return this.sendMethod(new TG.deleteChatPhoto(chat_id)) as Promise<boolean>
     }
 
-    /** Use this method to change the title of a chat. Titles can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
+    /** Use this method to change the title of a chat. Titles can&#39;t be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success. */
     setChatTitle(chat_id: number|string, title: string): Promise<boolean> {
         return this.sendMethod(new TG.setChatTitle(chat_id, title)) as Promise<boolean>
     }
 
-    /** Use this method to change the description of a group, a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success. */
+    /** Use this method to change the description of a group, a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success. */
     setChatDescription(chat_id: number|string, optional?: { description?: string }): Promise<boolean> {
         return this.sendMethod(new TG.setChatDescription(chat_id, optional?.description)) as Promise<boolean>
     }
 
-    /** Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; admin right in a supergroup or &#39;can_edit_messages&#39; admin right in a channel. Returns True on success. */
+    /** Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; administrator right in a supergroup or &#39;can_edit_messages&#39; administrator right in a channel. Returns True on success. */
     pinChatMessage(chat_id: number|string, message_id: number, optional?: { disable_notification?: boolean }): Promise<boolean> {
         return this.sendMethod(new TG.pinChatMessage(chat_id, message_id, optional?.disable_notification)) as Promise<boolean>
     }
 
-    /** Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; admin right in a supergroup or &#39;can_edit_messages&#39; admin right in a channel. Returns True on success. */
+    /** Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; administrator right in a supergroup or &#39;can_edit_messages&#39; administrator right in a channel. Returns True on success. */
     unpinChatMessage(chat_id: number|string, optional?: { message_id?: number }): Promise<boolean> {
         return this.sendMethod(new TG.unpinChatMessage(chat_id, optional?.message_id)) as Promise<boolean>
     }
 
-    /** Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; admin right in a supergroup or &#39;can_edit_messages&#39; admin right in a channel. Returns True on success. */
+    /** Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the &#39;can_pin_messages&#39; administrator right in a supergroup or &#39;can_edit_messages&#39; administrator right in a channel. Returns True on success. */
     unpinAllChatMessages(chat_id: number|string): Promise<boolean> {
         return this.sendMethod(new TG.unpinAllChatMessages(chat_id)) as Promise<boolean>
     }
@@ -287,12 +297,12 @@ export abstract class TelegramMethods {
         return this.sendMethod(new TG.getChatMember(chat_id, user_id)) as Promise<TG.ChatMember>
     }
 
-    /** Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Use the field can_set_sticker_set optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method. Returns True on success. */
+    /** Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method. Returns True on success. */
     setChatStickerSet(chat_id: number|string, sticker_set_name: string): Promise<boolean> {
         return this.sendMethod(new TG.setChatStickerSet(chat_id, sticker_set_name)) as Promise<boolean>
     }
 
-    /** Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Use the field can_set_sticker_set optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method. Returns True on success. */
+    /** Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method. Returns True on success. */
     deleteChatStickerSet(chat_id: number|string): Promise<boolean> {
         return this.sendMethod(new TG.deleteChatStickerSet(chat_id)) as Promise<boolean>
     }
