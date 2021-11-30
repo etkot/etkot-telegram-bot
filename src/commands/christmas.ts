@@ -1,40 +1,31 @@
+import axios from 'axios'
 import dayjs from 'dayjs'
+import isToday from 'dayjs/plugin/isToday'
+import FormData from 'form-data'
+import syncFs from 'fs'
+import fs from 'fs/promises'
 import { Commander } from '.'
-import _ from 'lodash'
+import { Message, Response } from '../types/telegram'
 
-const base = '../images/joulukalenteri'
-const endings = [
-    'nyssetulee.png', //1
-    'tontutseuraa.png', //2
-    'leRacoon.png', //3
-    'joulusetä.png', //4
-    'pussyass.png', //5
-    'rosolli.png', //6
-    'meetöihin.png', //7
-    'booli.png', //8
-    'joulius.png', //9
-    'ilmapallo.png', //10
-    'viinanmäärä.png', //11
-    'sima.png', //12
-    'eijoulua.png', //13
-    'jokoonjoulu.png', //14
-    'credit.png', //15
-    'glog.png', //16
-    'mayhem.png', //17
-    'jallu.png', //18
-    'ryys.png', //19
-    'rentoutumisluukku.jpg', //20
-    'grandtheft.png', //21
-    'lahjaostos.png', //22
-    'widepukki.png', //23
-    'hyvääjoulua.png', //24
-]
-const images = _.range(24).map((num) => `${base}/${endings[num]}`)
+dayjs.extend(isToday)
 
-// NOTE: This will prevent the same image from being pinned multiple times
-//       but will be reset if the bot is restarted (e.g. crashes or is updated).
-//       Too lazy to save it somewhere on disk so this will work for now
-let lastDate: number
+const base = `${__dirname}/../../images/joulukalenteri`
+const imageLocation = `${base}/${dayjs().format('YYYY')}`
+const lastPinnedId = `${base}/lastpinned.txt`
+const fileFormatsToCheck = ['jpg', 'jpeg', 'png', 'gif']
+
+const getLastPinned = async () => {
+    try {
+        const lastPinned = await fs.readFile(lastPinnedId, 'utf8')
+        return lastPinned
+    } catch (e) {
+        return '0'
+    }
+}
+
+const setLastPinned = async (id: string | number) => {
+    await fs.writeFile(lastPinnedId, id.toString())
+}
 
 export default (commander: Commander): void => {
     commander.addCommand({
@@ -42,49 +33,85 @@ export default (commander: Commander): void => {
         arguments: [],
         help: 'Avaa päivän joulukalenteriluukun',
 
-        func: (args, message, telegram) => {
+        func: async (args, message, telegram) => {
             const today = dayjs()
-            const christmasDay = dayjs('2020-12-25')
+            const christmas = dayjs().set('month', 11).set('date', 25)
 
-            if (today.get('month') !== 11) {
+            if (dayjs().get('month') !== 11) {
                 telegram.sendMessage(message.chat.id, 'Ei nyt ole joulukuu!')
-            } else if (today.format() === christmasDay.format()) {
-                telegram.sendMessage(message.chat.id, 'Hyvää joulua!', {
-                    disable_notification: true,
-                    parse_mode: 'html',
-                })
-            } else if (today.format() > christmasDay.format()) {
+                return
+            }
+
+            if (today.isAfter(christmas)) {
                 telegram.sendMessage(message.chat.id, 'Joulu meni jo :D', {
                     disable_notification: true,
                     parse_mode: 'html',
                 })
-            } else {
-                let message_id: number
-
-                telegram.sendMessage(message.chat.id, 'Avataan luukkua!!').then((res) => (message_id = res.message_id))
-
-                /*
-        // Sending local photos is currently not supported
-        telegram
-          .sendLocalPhoto(update.chat, images[today.get('date') - 1], `Luukku ${today.get('date')}`, {
-            disable_notification: true,
-            parse_mode: 'html',
-          })
-          .then(res => {
-            if (message_id) {
-              telegram.deleteMessage(update.chat.id, message_id)
+                return
             }
 
-            if (lastDate !== today.date()) {
-              telegram.pinChatMessage(update.chat.id, res.result.message_id, { disable_notification: true })
+            if (christmas.isToday()) {
+                telegram.sendMessage(message.chat.id, 'Hyvää joulua!', {
+                    disable_notification: true,
+                    parse_mode: 'html',
+                })
+                return
             }
-            lastDate = today.date()
-          })
-          .catch(reason => {
-            console.log('Failed to send image')
-          })
-        */
+
+            const pre_res = await telegram.sendMessage(message.chat.id, 'Avataan luukkua!!')
+            const message_id = pre_res.message_id
+
+            try {
+                const fileEnding = fileFormatsToCheck.filter((format) =>
+                    syncFs.existsSync(`${imageLocation}/${1}.${format}`)
+                )[0]
+
+                if (!fileEnding) {
+                    throw new Error('No image found')
+                }
+
+                const file = `${imageLocation}/${today.get('date')}.${fileEnding}`
+
+                const form = new FormData()
+                form.append('chat_id', message.chat.id.toString())
+                form.append('caption', `Luukku ${today.get('date')}`)
+                form.append('photo', syncFs.createReadStream(file), {
+                    filename: `${today.get('date')}.png`,
+                })
+                form.append('disable_notification', 'true')
+
+                const res = await axios.post<Response & { result: Message }>(`${telegram.getBotUrl()}sendPhoto`, form, {
+                    headers: form.getHeaders(),
+                })
+                if (!res.data.ok) {
+                    throw new Error(res.data.description)
+                }
+
+                const lastPinned = await getLastPinned()
+
+                if (lastPinned !== today.get('date').toString()) {
+                    telegram.pinChatMessage(message.chat.id, res.data.result.message_id)
+                    await setLastPinned(today.get('date').toString())
+                }
+            } catch (error: any) {
+                if (error.data) {
+                    console.error(`Telegram error (${error.data.error_code}): ${error.data.description}`)
+                } else if (error.response) {
+                    console.error(error.response.data)
+                    console.error(error.response.status)
+                    console.error(error.response.headers)
+                } else if (error.request) {
+                    console.error(`Axios request not sent:`)
+                    console.error(error.request)
+                } else if (error.message) {
+                    console.error(error.message)
+                } else {
+                    console.error(error)
+                }
+                telegram.sendMessage(message.chat.id, 'Luukkupuuttuutaionrikki pls hjäp T: Tontut :/')
             }
+
+            telegram.deleteMessage(message.chat.id, message_id)
         },
     })
 }
