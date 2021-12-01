@@ -1,6 +1,6 @@
 import { Collection, Db, MongoClient } from 'mongodb'
 
-const addr = process.env.DB_ADDR || 'localhost'
+const addr = process.env.DB_ADDR || '127.0.0.1'
 const port = process.env.DB_PORT || '27017'
 const url = `mongodb://${addr}:${port}`
 
@@ -10,6 +10,8 @@ const collectionCache = new Map<string, Collection<any>>()
 
 export const connectToServer = (database: string): void => {
     MongoClient.connect(url, { useUnifiedTopology: true }, (err, client) => {
+        if (err) throw err
+
         _db = client.db(database)
         console.log('Connected to MongoDB')
     })

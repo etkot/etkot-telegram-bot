@@ -26,5 +26,6 @@ RUN npm install --quiet --only=production
 
 ## We just need the build to execute the command
 COPY --from=builder /usr/src/app/dist ./dist
+COPY ./images ./images
 
 CMD ["npm", "run", "production"]
