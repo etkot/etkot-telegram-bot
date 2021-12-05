@@ -80,7 +80,8 @@ export default (commander: Commander): void => {
                 })
                 form.append('disable_notification', 'true')
 
-                const res = await axios.post<Response & { result: Message }>(`${telegram.getBotUrl()}sendPhoto`, form, {
+                const methodUrl = fileEnding === "gif" ? "sendAnimation" : "sendPhoto"
+                const res = await axios.post<Response & { result: Message }>(`${telegram.getBotUrl()}${methodUrl}`, form, {
                     headers: form.getHeaders(),
                 })
                 if (!res.data.ok) {
