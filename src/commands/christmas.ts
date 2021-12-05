@@ -71,19 +71,23 @@ export default (commander: Commander): void => {
                 }
 
                 const file = `${imageLocation}/${today.get('date')}.${fileEnding}`
-
+                const methodUrl = fileEnding === 'gif' ? 'sendAnimation' : 'sendPhoto'
+                const fieldId = fileEnding === 'gif' ? 'animation' : 'photo'
                 const form = new FormData()
                 form.append('chat_id', message.chat.id.toString())
                 form.append('caption', `Luukku ${today.get('date')}`)
-                form.append('photo', syncFs.createReadStream(file), {
-                    filename: `${today.get('date')}.png`,
+                form.append(fieldId, syncFs.createReadStream(file), {
+                    filename: `${today.get('date')}.${fileEnding}`,
                 })
                 form.append('disable_notification', 'true')
 
-                const methodUrl = fileEnding === "gif" ? "sendAnimation" : "sendPhoto"
-                const res = await axios.post<Response & { result: Message }>(`${telegram.getBotUrl()}${methodUrl}`, form, {
-                    headers: form.getHeaders(),
-                })
+                const res = await axios.post<Response & { result: Message }>(
+                    `${telegram.getBotUrl()}${methodUrl}`,
+                    form,
+                    {
+                        headers: form.getHeaders(),
+                    }
+                )
                 if (!res.data.ok) {
                     throw new Error(res.data.description)
                 }
