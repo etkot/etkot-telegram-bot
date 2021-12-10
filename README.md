@@ -21,6 +21,9 @@ Before starting you will need to create a file called `.env` with the following 
 TG_TOKEN=[Your telegram bot token]
 TG_CHAT=[Your telegram chat id]
 
+# Open AI (optional)
+OAI_API_KEY=[API Key for openai]
+
 # MongoDB
 DB_NAME=[Name of your MongoDB database]
 DB_ADDR=[Address of DB default: 'localhost']

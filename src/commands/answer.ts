@@ -9,7 +9,7 @@ export default (commander: Commander): void => {
         help: 'Vastaa kysymykseen tai kysymyksenkaltaiseen',
 
         func: (args, message, telegram) => {
-            let question = args.join('')
+            let question = args.join(' ')
             let reply = undefined
 
             if (message.reply_to_message) {
@@ -27,14 +27,10 @@ export default (commander: Commander): void => {
             oaiUtils
                 .answer(question)
                 .then((generatedAnswer) =>
-                    telegram.sendMessage(
-                        message.chat.id,
-                        `${generatedAnswer.length ? generatedAnswer : 'Ei vastausta'}`,
-                        {
-                            disable_notification: true,
-                            reply_to_message_id: message.message_id,
-                        }
-                    )
+                    telegram.sendMessage(message.chat.id, `${generatedAnswer || 'Ei vastausta'}`, {
+                        disable_notification: true,
+                        reply_to_message_id: message.message_id,
+                    })
                 )
                 .catch((res) => {
                     console.error('Could not generate answer:', res.response.status, res.response.statusText)
