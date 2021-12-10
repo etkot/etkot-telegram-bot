@@ -8,7 +8,7 @@ const openai: OpenAI = new OpenAI(OAI_API_KEY)
 const generate = async (randomizedQuotes: Array<QuoteDocument>): Promise<string> => {
     const input = randomizedQuotes.map((doc) => `${doc.quote}`).join('\n')
 
-    // If only 1 quote, stop merkki has to be '.' with newline, it would just return nothing for some reason
+    // If only 1 quote, stop mark has to be '.' with newline, it would just return nothing for some reason
     const stop = randomizedQuotes.length === 1 ? '.' : '\n'
 
     const response: Completion = await openai.complete({
@@ -25,25 +25,30 @@ const generate = async (randomizedQuotes: Array<QuoteDocument>): Promise<string>
         stop: [stop],
     })
 
-    return response.data.choices[0].text.split('\n').join('')
+    return response.data.choices[0].text.split('\n').join(' ')
 }
 
+// Replace all question marks with '' in prompt
+const basePrompGenerator = (prompt: string) => `
+Q: Does hertsi have good food?
+A: Absolutely fricking no
+
+Q: ${prompt.replace(/\?/g, '')}?
+A:`
+
 const answer = async (question: string): Promise<string> => {
-    const response: Completion = await openai.complete({
+    const { data }: Completion = await openai.complete({
         engine: 'davinci',
-        prompt: `Q: ${question + (question[question.length - 1] == '?' ? '' : '?\nA:')}`,
-        maxTokens: 128,
-        temperature: 0.6, // randomness
+        prompt: basePrompGenerator(question),
+        temperature: 0.6,
+        maxTokens: 100,
         topP: 1,
-        presencePenalty: 0.0,
-        frequencyPenalty: 0.0,
-        bestOf: 1,
-        n: 1,
-        stream: false,
-        stop: ['Q:', 'A:'],
+        frequencyPenalty: 0.2,
+        presencePenalty: 0.2,
+        stop: ['\n'],
     })
 
-    return response.data.choices[0].text.split('\n').join(' ')
+    return data.choices[0].text
 }
 
 const oaiUtils = { generate, answer }
