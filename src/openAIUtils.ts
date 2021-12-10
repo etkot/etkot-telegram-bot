@@ -40,11 +40,11 @@ const answer = async (question: string): Promise<string> => {
     const { data }: Completion = await openai.complete({
         engine: 'davinci',
         prompt: basePrompGenerator(question),
-        temperature: 0.6,
+        temperature: 0.27,
         maxTokens: 100,
         topP: 1,
-        frequencyPenalty: 0.2,
-        presencePenalty: 0.2,
+        frequencyPenalty: 1.68,
+        presencePenalty: 1.62,
         stop: ['\n'],
     })
 
