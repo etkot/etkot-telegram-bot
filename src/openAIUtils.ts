@@ -29,9 +29,18 @@ const generate = async (randomizedQuotes: Array<QuoteDocument>): Promise<string>
 }
 
 // Replace all question marks with '' in prompt
-const basePrompGenerator = (prompt: string) => `
-Q: Does hertsi have good food?
-A: Absolutely fricking no
+const basePrompGenerator = (prompt: string) =>
+    `Q: Does hertsi have good food?
+A: Absolutely fricking no.
+
+Q: What is the meaning of life?
+A: Being happy :).
+
+Q: Mikä on mangolassin resepti?
+A: Mangolassin resepti sisältää mangoja ja meemejä.
+
+Q: Onko huomenna hyvä päivä?
+A: Kyllä on!
 
 Q: ${prompt.replace(/\?/g, '')}?
 A:`
