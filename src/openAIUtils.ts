@@ -25,7 +25,7 @@ const generate = async (randomizedQuotes: Array<QuoteDocument>): Promise<string>
         stop: [stop],
     })
 
-    return response.data.choices[0].text.split('\n').join(' ')
+    return response.data.choices[0].text.replace(/([.]*[\n]+)/g, ". ")
 }
 
 // Replace all question marks with '' in prompt
