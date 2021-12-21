@@ -56,6 +56,11 @@ const parseDateTime = (date: string, time: string) => {
     return dateTime.format()
 }
 
+const isTimeString = (str: string) => {
+    const nums = str.split(/[.:]/g)
+    return nums.length === 2 && nums.every((num: string) => !!num && !isNaN(Number(num)))
+}
+
 export default (commander: Commander): void => {
     commander.addCommand({
         commands: ['calendar', 'cal', 'kalenteri', 'events', 'calender'],
@@ -90,7 +95,7 @@ export default (commander: Commander): void => {
 
         func: (args, message, telegram) => {
             const date = args.shift() as string
-            const time = args.shift() as string
+            const time = isTimeString(args[0]) ? args.shift() as string : '00.00'
             const description = args.join(' ')
 
             const dateTime = parseDateTime(date, time)
