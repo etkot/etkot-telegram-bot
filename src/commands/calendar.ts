@@ -90,7 +90,7 @@ export default (commander: Commander): void => {
 
     commander.addCommand({
         commands: ['addevent', 'adde', 'ae'],
-        arguments: ['<date>', '<time>', '<description>'],
+        arguments: ['<date (and time)>', '<description>'],
         help: 'Lisää uuden tapahtuman kalenteriin',
 
         func: (args, message, telegram) => {
