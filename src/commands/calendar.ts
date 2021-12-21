@@ -116,7 +116,7 @@ export default (commander: Commander): void => {
     })
 
     commander.addCommand({
-        commands: ['removeevent', 'removee', 're', 'deleteevent', 'deletee', 'de'],
+        commands: ['removeevent', 'removee', 'reevent', 're', 'deleteevent', 'deletee', 'delevent', 'de'],
         arguments: ['<id>'],
         help: 'Poistaa tapahtuman kalenterista',
 
