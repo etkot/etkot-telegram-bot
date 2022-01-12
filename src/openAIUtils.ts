@@ -2,7 +2,6 @@ import OpenAI, { Completion } from 'openai-api'
 import { QuoteDocument } from './commands/quote'
 
 const OAI_API_KEY: string = process.env.OAI_API_KEY || ''
-
 const openai: OpenAI = new OpenAI(OAI_API_KEY)
 
 const generate = async (randomizedQuotes: Array<QuoteDocument>): Promise<string> => {
@@ -25,11 +24,11 @@ const generate = async (randomizedQuotes: Array<QuoteDocument>): Promise<string>
         stop: [stop],
     })
 
-    return response.data.choices[0].text.replace(/([.]*[\n]+)/g, ". ")
+    return response.data.choices[0].text.replace(/([.]*[\n]+)/g, '. ')
 }
 
 // Replace all question marks with '' in prompt
-const basePrompGenerator = (prompt: string) =>
+const answerBasePromptGen = (prompt: string) =>
     `Q: Does hertsi have good food?
 A: Absolutely fricking no.
 
@@ -48,7 +47,7 @@ A:`
 const answer = async (question: string): Promise<string> => {
     const { data }: Completion = await openai.complete({
         engine: 'davinci',
-        prompt: basePrompGenerator(question),
+        prompt: answerBasePromptGen(question),
         temperature: 0.27,
         maxTokens: 100,
         topP: 1,
@@ -60,5 +59,33 @@ const answer = async (question: string): Promise<string> => {
     return data.choices[0].text
 }
 
-const oaiUtils = { generate, answer }
+const mondayQuoteBasePromptGen = (topic: string) => `
+Topic: Dreams
+Motivational quote: All our dreams can come true—if we have the courage to pursue them.
+
+Topic: Success
+Motivational quote: Today is your day for success! Just do it!
+
+Topic: ${topic}
+Motivational quote:`
+
+const topics = ['Monday', 'Happiness', 'Failure', 'Motivation']
+
+const mondayQuote = async (topic?: string): Promise<string> => {
+    const randomTopic = topics[Math.floor(Math.random() * topics.length)]
+    const { data }: Completion = await openai.complete({
+        engine: 'davinci',
+        prompt: mondayQuoteBasePromptGen(topic || randomTopic),
+        temperature: 0.55,
+        maxTokens: 60,
+        topP: 0.9,
+        frequencyPenalty: 0.5,
+        presencePenalty: 0.2,
+        stop: ['\n'],
+    })
+
+    return data.choices[0].text
+}
+
+const oaiUtils = { generate, answer, mondayQuote }
 export default oaiUtils
