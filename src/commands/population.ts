@@ -15,8 +15,6 @@ export default (commander: Commander): void => {
                 },
             })
 
-            // example data: <p><span><em>Suomen</em> väkiluku</span> 5 559 548</p>
-            // Find the number with regex
             const number = data.match(/\d+/g)
             if (number?.length) {
                 const numberString = number.join(' ')
