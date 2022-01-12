@@ -1,32 +1,5 @@
 import axios from 'axios'
 import { Commander } from '.'
-import { Telegram } from '../telegram'
-import * as TG from '../types/telegram'
-
-const SendSubredditImage = (subreddit: string, message: TG.Message, telegram: Telegram) => {
-    axios({
-        method: 'GET',
-        url: `https://www.reddit.com/r/${subreddit}/top/.json`,
-    })
-        .then((response) => {
-            const { data } = response
-
-            const index = Math.floor(Math.random() * 25)
-
-            console.log(data.data.children[index].data.url)
-            telegram
-                .sendPhoto(message.chat.id, data.data.children[index].data.url, {
-                    caption: `${data.data.children[index].data.title}`,
-                    disable_notification: true,
-                })
-                .catch(() => {
-                    console.log('Failed to send meme')
-                })
-        })
-        .catch(() => {
-            console.log('No reddit image recieved')
-        })
-}
 
 export default (commander: Commander): void => {
     commander.addCommand({
