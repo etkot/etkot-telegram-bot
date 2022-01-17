@@ -132,10 +132,16 @@ export default (): Promise<Commander> => {
         const findFilesInDirectory = (dir: string) => {
             return new Promise((resolve, reject) => {
                 fs.readdir(dir, (err, files) => {
+                    if (err) throw err
+
                     files.forEach(async (file) => {
-                        const Absolute = path.join(dir, file)
-                        if (fs.statSync(Absolute).isDirectory()) return await findFilesInDirectory(Absolute)
-                        else return files.push(Absolute)
+                        const abs = path.join(dir, file)
+                        fs.stat(abs, async (err, stats) => {
+                            if (err) throw err
+
+                            if (stats.isDirectory()) return await findFilesInDirectory(abs)
+                            else files.push(abs)
+                        })
                     })
                 })
             })
