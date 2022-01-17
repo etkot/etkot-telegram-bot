@@ -194,17 +194,17 @@ export default (commander: Commander): void => {
 
                         oaiUtils
                             .generate(randomizedQuotes)
-                            .then((generatedQuote) =>
-                                telegram.sendMessage(
-                                    message.chat.id,
-                                    `"${generatedQuote.length ? generatedQuote : 'error: returned empty :('}" - AI-${
-                                        docs[0].name
-                                    }`,
-                                    {
+                            .then((generatedQuote) => {
+                                if (generatedQuote.length) {
+                                    telegram.sendMessage(message.chat.id, `"${generatedQuote}" - AI-${docs[0].name}`, {
                                         disable_notification: true,
-                                    }
-                                )
-                            )
+                                    })
+                                } else {
+                                    telegram.sendMessage(message.chat.id, 'error: returned empty :(', {
+                                        disable_notification: true,
+                                    })
+                                }
+                            })
                             .catch((res) => {
                                 console.error('Could not generate quote:', res.response.status, res.response.statusText)
                             })
