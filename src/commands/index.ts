@@ -122,35 +122,31 @@ export class Commander {
     }
 }
 
-const readdir = (dir: string): Promise<string[]> => {
-    return new Promise((resolve, reject) => {
-        fs.readdir(dir, (err, files) => {
-            if (err) reject(err)
-            resolve(files)
-        })
-    })
-}
-
 export default (): Promise<Commander> => {
     return new Promise((resolve, reject) => {
         const commander = new Commander()
 
         // Load commands
-        readdir(path.join(__dirname))
-            .then((files) => {
-                for (const file of files) {
-                    if (file !== 'index.js') {
-                        try {
-                            // eslint-disable-next-line @typescript-eslint/no-var-requires
-                            require(`./${file}`).default(commander)
-                        } catch (err) {
-                            reject(err)
-                        }
-                    }
-                }
+        const files: string[] = []
 
-                resolve(commander)
+        const findFilesInDirectory = (dir: string) => {
+            fs.readdirSync(dir).forEach((file) => {
+                const Absolute = path.join(dir, file)
+                if (fs.statSync(Absolute).isDirectory()) return findFilesInDirectory(Absolute)
+                else return files.push(Absolute)
             })
-            .catch(reject)
+        }
+        findFilesInDirectory(__dirname)
+
+        for (const file of files) {
+            if (file !== __filename) {
+                try {
+                    // eslint-disable-next-line @typescript-eslint/no-var-requires
+                    require(`${file}`).default(commander)
+                } catch (err) {
+                    reject(err)
+                }
+            }
+        }
     })
 }
