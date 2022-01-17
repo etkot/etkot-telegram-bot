@@ -56,6 +56,11 @@ const parseDateTime = (date: string, time: string) => {
     return dateTime.format()
 }
 
+const isTimeString = (str: string) => {
+    const nums = str.split(/[.:]/g)
+    return nums.length === 2 && nums.every((num: string) => !!num && !isNaN(Number(num)))
+}
+
 export default (commander: Commander): void => {
     commander.addCommand({
         commands: ['calendar', 'cal', 'kalenteri', 'events', 'calender'],
@@ -85,12 +90,12 @@ export default (commander: Commander): void => {
 
     commander.addCommand({
         commands: ['addevent', 'adde', 'ae'],
-        arguments: ['<date>', '<time>', '<description>'],
+        arguments: ['<date (and time)>', '<description>'],
         help: 'Lisää uuden tapahtuman kalenteriin',
 
         func: (args, message, telegram) => {
             const date = args.shift() as string
-            const time = args.shift() as string
+            const time = isTimeString(args[0]) ? args.shift() as string : '00.00'
             const description = args.join(' ')
 
             const dateTime = parseDateTime(date, time)
@@ -111,7 +116,7 @@ export default (commander: Commander): void => {
     })
 
     commander.addCommand({
-        commands: ['removeevent', 'removee', 're', 'deleteevent', 'deletee', 'de'],
+        commands: ['removeevent', 'removee', 'reevent', 're', 'deleteevent', 'deletee', 'delevent', 'de'],
         arguments: ['<id>'],
         help: 'Poistaa tapahtuman kalenterista',
 
