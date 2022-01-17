@@ -130,23 +130,30 @@ export default (): Promise<Commander> => {
         const files: string[] = []
 
         const findFilesInDirectory = (dir: string) => {
-            fs.readdirSync(dir).forEach((file) => {
-                const Absolute = path.join(dir, file)
-                if (fs.statSync(Absolute).isDirectory()) return findFilesInDirectory(Absolute)
-                else return files.push(Absolute)
+            return new Promise((resolve, reject) => {
+                fs.readdir(dir, (err, files) => {
+                    files.forEach(async (file) => {
+                        const Absolute = path.join(dir, file)
+                        if (fs.statSync(Absolute).isDirectory()) return await findFilesInDirectory(Absolute)
+                        else return files.push(Absolute)
+                    })
+                })
             })
         }
-        findFilesInDirectory(__dirname)
 
-        for (const file of files) {
-            if (file !== __filename) {
-                try {
-                    // eslint-disable-next-line @typescript-eslint/no-var-requires
-                    require(`${file}`).default(commander)
-                } catch (err) {
-                    reject(err)
+        findFilesInDirectory(__dirname).then(() => {
+            for (const file of files) {
+                if (file !== __filename) {
+                    try {
+                        // eslint-disable-next-line @typescript-eslint/no-var-requires
+                        require(`${file}`).default(commander)
+                    } catch (err) {
+                        reject(err)
+                    }
                 }
             }
-        }
+
+            resolve(commander)
+        })
     })
 }
