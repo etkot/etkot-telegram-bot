@@ -5,8 +5,11 @@ import { Telegram } from '../telegram'
 const neppiUrl = process.env.LOMMI_NEPPI_URL || ''
 
 const SendNeppiImage = (message: TG.Message, telegram: Telegram) => {
+    let unixTime = Math.round(new Date().getTime() / 1000);
+    let urlWithTime = `${ neppiUrl }/${ unixTime }`;
+
     telegram
-        .sendPhoto(message.chat.id, neppiUrl, {
+        .sendPhoto(message.chat.id, urlWithTime, {
             disable_notification: true,
         })
         .catch(() => {
