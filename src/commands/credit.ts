@@ -7,14 +7,14 @@ interface Credit {
     msg: number
     date: number
 }
-interface CreditDocument {
+export interface CreditDocument {
     _id: ObjectId
     username: string
     plus_credits?: Array<Credit>
     minus_credits?: Array<Credit>
 }
 
-const addCredit = (from: string, to: string, msg_id: number, date: number) => {
+export const addCredit = (from: string, to: string, msg_id: number, date: number) => {
     const credit: Credit = {
         from,
         msg: msg_id,
@@ -30,7 +30,7 @@ const addCredit = (from: string, to: string, msg_id: number, date: number) => {
         })
 }
 
-const removeCredit = (from: string, to: string, msg_id: number, date: number) => {
+export const removeCredit = (from: string, to: string, msg_id: number, date: number) => {
     const credit: Credit = {
         from,
         msg: msg_id,
