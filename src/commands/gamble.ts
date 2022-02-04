@@ -3,7 +3,7 @@ import { addCredit, removeCredit, CreditDocument } from './credit'
 import { getCollection } from '../mongoUtil'
 
 
-const slotWinValues = [11, 22, 43, 64]
+const slotWinValues = [1, 22, 43, 64]
 
 export default (commander: Commander): void => {
     commander.addCommand({
@@ -24,7 +24,7 @@ export default (commander: Commander): void => {
                 userSc -= doc.minus_credits?.length || 0
             }
 
-            if (userSc < 20) {
+            if (userSc < 1) {
                 telegram.sendMessage(
                     message.chat.id,
                     'You can contribute to this project at https://github.com/etkot/etkot-telegram-bot',
