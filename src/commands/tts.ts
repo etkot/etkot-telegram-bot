@@ -33,20 +33,25 @@ en-US, en-US, en-US, en-US, en-US, en-US, en-US, en-US, en-US, ca-ES, es-ES, es-
 export default (commander: Commander): void => {
     commander.addCommand({
         commands: ['tts', 'text-to-speech'],
-        arguments: ['<text>'],
-        allowReply: false,
+        arguments: [],
+        allowReply: true,
         help: 'Muuttaa tekstin ääniviestiksi',
 
         func: async (args, message, telegram) => {
-            const question = args
-                .join(' ')
-                .replace(/[-[\]{}()*+?.,<>\\^$|#\s]/g, '\\$&')
-                .slice(0, 199)
+            let text = undefined
+            if (message.reply_to_message !== undefined && message.reply_to_message.text !== undefined) {
+                text = message.reply_to_message.text.replace(/[-[\]{}()*+?.,<>\\^$|#\s]/g, '\\$&').slice(0, 199)
+            } else {
+                text = args
+                    .join(' ')
+                    .replace(/[-[\]{}()*+?.,<>\\^$|#\s]/g, '\\$&')
+                    .slice(0, 199)
+            }
 
-            const language = await detectLanguage(question)
+            const language = await detectLanguage(text)
             const lang = validLangs.includes(language) ? language : 'fi'
 
-            const base64 = await googleTTS.getAudioBase64(question, {
+            const base64 = await googleTTS.getAudioBase64(text, {
                 lang: lang,
                 slow: false,
                 host: 'https://translate.google.com',
@@ -58,12 +63,12 @@ export default (commander: Commander): void => {
 
             const form = new FormData()
             form.append('chat_id', message.chat.id.toString())
-            form.append('caption', `*TTS* _in_ ${lang} _of:_ ${question}`)
             form.append('parse_mode', 'MarkdownV2')
             form.append('voice', stream, {
                 filename: `voice.ogg`,
             })
             form.append('disable_notification', 'true')
+            form.append('reply_to_message_id', message.message_id.toString())
 
             try {
                 const res = await axios.post<Response & { result: Message }>(`${telegram.getBotUrl()}sendVoice`, form, {
