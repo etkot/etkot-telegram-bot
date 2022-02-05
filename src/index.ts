@@ -6,8 +6,9 @@ import { connectToServer } from './mongoUtil'
 import { Telegram, TGEvent } from './telegram'
 import commands, { Commander } from './commands'
 
+/*
 if (process.env.DB_NAME === undefined) throw Error('No DB name in .env')
-connectToServer(process.env.DB_NAME)
+connectToServer(process.env.DB_NAME) */
 
 const telegram = new Telegram(process.env.TG_TOKEN || '')
 
