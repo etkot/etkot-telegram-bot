@@ -3,6 +3,7 @@ import FormData from 'form-data'
 import * as googleTTS from 'google-tts-api'
 import { Readable } from 'stream'
 import { Commander } from '.'
+import oaiUtils from '../openAIUtils'
 import detectLanguage from '../ttsUtils'
 import { Message } from '../types/telegram'
 
@@ -30,6 +31,8 @@ vi-VN, vi-VN, vi-VN, ar-XA, ar-XA, ar-XA, ar-XA, fr-FR, it-IT, ru-RU, ru-RU, ru-
 en-US, en-US, en-US, en-US, en-US, en-US, en-US, en-US, en-US, ca-ES, es-ES, es-ES, es-ES, es-ES
 `
 
+const regex = /[-[\]{}()*+?.,<>\\^$|#]/g
+
 export default (commander: Commander): void => {
     commander.addCommand({
         commands: ['tts', 'text-to-speech'],
@@ -38,18 +41,29 @@ export default (commander: Commander): void => {
         help: 'Muuttaa tekstin ääniviestiksi',
 
         func: async (args, message, telegram) => {
-            let text = undefined
-            if (message.reply_to_message !== undefined && message.reply_to_message.text !== undefined) {
-                text = message.reply_to_message.text.replace(/[-[\]{}()*+?.,<>\\^$|#\s]/g, '\\$&').slice(0, 199)
-            } else {
-                text = args
-                    .join(' ')
-                    .replace(/[-[\]{}()*+?.,<>\\^$|#\s]/g, '\\$&')
-                    .slice(0, 199)
+            const argsLanguage = args[0]
+            let argsLanguageIsValid = false
+
+            if (validLangs.includes(argsLanguage)) {
+                args.shift()
+                argsLanguageIsValid = true
             }
 
-            const language = await detectLanguage(text)
-            const lang = validLangs.includes(language) ? language : 'fi'
+            let text = ''
+            if (message.reply_to_message?.text !== undefined) {
+                text = message.reply_to_message.text
+            } else {
+                text = args.join(' ') || (await oaiUtils.mondayQuote())
+            }
+
+            text = text.replace(regex, '\\$&').slice(0, 199)
+
+            const detectedLanguage = await detectLanguage(text)
+            const lang = argsLanguageIsValid
+                ? argsLanguage
+                : validLangs.includes(detectedLanguage)
+                ? detectedLanguage
+                : 'fi'
 
             const base64 = await googleTTS.getAudioBase64(text, {
                 lang: lang,

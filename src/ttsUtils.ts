@@ -20,7 +20,6 @@ const detectLanguage = async (text: string): Promise<string> => {
         const response = JSON.parse(json)
         return response[0][2]
     } catch (error) {
-        console.log(error)
         return 'en'
     }
 }
