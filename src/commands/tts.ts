@@ -28,7 +28,7 @@ el-GR, pt-BR, pt-BR, es-US, es-US, es-US, ms-MY, ms-MY, ms-MY, ms-MY, id-ID, id-
 nl-BE, nl-NL, nl-NL, nl-NL, nl-NL, nl-NL, fil-PH, fil-PH, fil-PH, fil-PH, yue-HK, yue-HK, yue-HK, yue-HK, cmn-CN, 
 cmn-CN, cmn-CN, cmn-CN, ja-JP, ja-JP, ja-JP, ja-JP, cmn-TW, cmn-TW, cmn-TW, ko-KR, ko-KR, ko-KR, ko-KR, vi-VN, 
 vi-VN, vi-VN, vi-VN, ar-XA, ar-XA, ar-XA, ar-XA, fr-FR, it-IT, ru-RU, ru-RU, ru-RU, ru-RU, ru-RU, en-US, 
-en-US, en-US, en-US, en-US, en-US, en-US, en-US, en-US, en-US, ca-ES, es-ES, es-ES, es-ES, es-ES
+en-US, en-US, en-US, en-US, en-US, en-US, en-US, en-US, en-US, ca-ES, es-ES, es-ES, es-ES, es-ES, si-LK,
 `
 
 const regex = /[-[\]{}()*+?.,<>\\^$|#]/g
