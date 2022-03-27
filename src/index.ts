@@ -57,6 +57,10 @@ telegram.on(TGEvent.sticker, (message) => {
 telegram.on(TGEvent.JoinChat, (message) => {
     if (message.chat.id != Number(process.env.TG_CHAT)) {
         telegram.sendMessage(message.chat.id, 'Paska ryhmä')
+        telegram.sendMessage(
+            process.env.TG_CHAT as string,
+            `@${message.from?.username} lisäsi minut ryhmään "${message.chat.title}"`
+        )
         setTimeout(() => {
             telegram.leaveChat(message.chat.id)
         }, 100)
