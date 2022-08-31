@@ -9,39 +9,45 @@ interface Credit {
 }
 export interface CreditDocument {
     _id: ObjectId
+    id: number
     username: string
     plus_credits?: Array<Credit>
     minus_credits?: Array<Credit>
 }
 
-export const addCredit = (from: string, to: string, msg_id: number, date: number) => {
+export const addCredit = (from: string, to: { id: number; username: string }, msg_id: number, date: number): void => {
     const credit: Credit = {
         from,
         msg: msg_id,
         date,
     }
 
-    getCollection<CreditDocument>('credit')
-        .updateOne({ username: to }, { $push: { plus_credits: credit } })
+    getCollection<CreditDocument>('id_credit')
+        .updateOne({ id: to.id }, { $push: { plus_credits: credit }, $set: { username: to.username } })
         .then((result) => {
             if (result.modifiedCount == 0) {
-                getCollection<CreditDocument>('credit').insertOne({ username: to, plus_credits: [credit] })
+                getCollection<CreditDocument>('id_credit').insertOne({ ...to, plus_credits: [credit] })
             }
         })
 }
 
-export const removeCredit = (from: string, to: string, msg_id: number, date: number) => {
+export const removeCredit = (
+    from: string,
+    to: { id: number; username: string },
+    msg_id: number,
+    date: number
+): void => {
     const credit: Credit = {
         from,
         msg: msg_id,
         date,
     }
 
-    getCollection<CreditDocument>('credit')
-        .updateOne({ username: to }, { $push: { minus_credits: credit } })
+    getCollection<CreditDocument>('id_credit')
+        .updateOne({ id: to.id }, { $push: { minus_credits: credit }, $set: { username: to.username } })
         .then((result) => {
             if (result.modifiedCount == 0) {
-                getCollection<CreditDocument>('credit').insertOne({ username: to, minus_credits: [credit] })
+                getCollection<CreditDocument>('id_credit').insertOne({ ...to, minus_credits: [credit] })
             }
         })
 }
@@ -53,29 +59,31 @@ export default (commander: Commander): void => {
         help: 'Listaa kaikkien pisteet',
 
         func: (args, message, telegram) => {
-            getCollection<CreditDocument>('credit')
+            getCollection<CreditDocument>('id_credit')
                 .find({})
                 .toArray((err, docs) => {
-                    const users: { [key: string]: number } = {}
+                    const users: {
+                        [key: string]: {
+                            username: string
+                            credits: number
+                        }
+                    } = {}
                     for (const doc of docs) {
-                        if (users[doc.username] === undefined) users[doc.username] = 0
+                        if (users[doc.id] === undefined)
+                            users[doc.id] = {
+                                username: doc.username,
+                                credits: 0,
+                            }
 
-                        users[doc.username] += doc.plus_credits?.length || 0
-                        users[doc.username] -= doc.minus_credits?.length || 0
+                        users[doc.id].credits += doc.plus_credits?.length || 0
+                        users[doc.id].credits -= doc.minus_credits?.length || 0
                     }
 
-                    const sortable = []
-                    for (const user in users) {
-                        sortable.push({ user, credit: users[user] })
-                    }
-
-                    sortable.sort(function (a, b) {
-                        return b.credit - a.credit
-                    })
+                    const sortable = Array.from(Object.entries(users)).sort(([, a], [, b]) => a.credits - b.credits)
 
                     let msg = '<b>Social credit:</b>\n'
-                    for (const obj of sortable) {
-                        msg += `  ${obj.user}: ${obj.credit * 20}\n`
+                    for (const [, obj] of sortable) {
+                        msg += `  ${obj.username}: ${obj.credits * 20}\n`
                     }
 
                     telegram.sendMessage(message.chat.id, msg, { disable_notification: true, parse_mode: 'html' })
@@ -94,7 +102,8 @@ export default (commander: Commander): void => {
             if (message.reply_to_message === undefined) return
 
             const fromUser = message.from?.username || ''
-            const toUser = message.reply_to_message.from?.username || ''
+            const username = message.reply_to_message.from?.username || ''
+            const id = message.reply_to_message.from?.id || 0
 
             telegram.sendSticker(
                 message.chat.id,
@@ -105,7 +114,7 @@ export default (commander: Commander): void => {
                 }
             )
 
-            addCredit(fromUser, toUser, message.reply_to_message.message_id, message.date)
+            addCredit(fromUser, { id, username }, message.reply_to_message.message_id, message.date)
         },
     })
 
@@ -118,7 +127,8 @@ export default (commander: Commander): void => {
             if (message.reply_to_message === undefined) return
 
             const fromUser = message.from?.username || ''
-            const toUser = message.reply_to_message.from?.username || ''
+            const username = message.reply_to_message.from?.username || ''
+            const id = message.reply_to_message.from?.id || 0
 
             telegram.sendSticker(
                 message.chat.id,
@@ -129,7 +139,7 @@ export default (commander: Commander): void => {
                 }
             )
 
-            removeCredit(fromUser, toUser, message.reply_to_message.message_id, message.date)
+            removeCredit(fromUser, { id, username }, message.reply_to_message.message_id, message.date)
         },
     })
 
@@ -141,9 +151,10 @@ export default (commander: Commander): void => {
             if (message.reply_to_message === undefined) return
 
             const fromUser = message.from?.username || ''
-            const toUser = message.reply_to_message.from?.username || ''
+            const username = message.reply_to_message.from?.username || ''
+            const id = message.reply_to_message.from?.id || 0
 
-            addCredit(fromUser, toUser, message.reply_to_message.message_id, message.date)
+            addCredit(fromUser, { id, username }, message.reply_to_message.message_id, message.date)
         },
     })
     commander.addTrigger({
@@ -152,9 +163,10 @@ export default (commander: Commander): void => {
             if (message.reply_to_message === undefined) return
 
             const fromUser = message.from?.username || ''
-            const toUser = message.reply_to_message.from?.username || ''
+            const username = message.reply_to_message.from?.username || ''
+            const id = message.reply_to_message.from?.id || 0
 
-            removeCredit(fromUser, toUser, message.reply_to_message.message_id, message.date)
+            removeCredit(fromUser, { id, username }, message.reply_to_message.message_id, message.date)
         },
     })
 }

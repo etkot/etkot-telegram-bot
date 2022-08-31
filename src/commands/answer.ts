@@ -1,5 +1,6 @@
 import { Commander } from '.'
 import oaiUtils from '../openAIUtils'
+import { addUsage } from './ai-usage'
 
 export default (commander: Commander): void => {
     commander.addCommand({
@@ -26,12 +27,13 @@ export default (commander: Commander): void => {
 
             oaiUtils
                 .answer(question)
-                .then((generatedAnswer) =>
+                .then(([generatedAnswer, tokens]) => {
+                    addUsage(message.from?.id || 0, message.from?.username || '', tokens)
                     telegram.sendMessage(message.chat.id, `${generatedAnswer || 'Ei vastausta'}`, {
                         disable_notification: true,
                         reply_to_message_id: message.message_id,
                     })
-                )
+                })
                 .catch((res) => {
                     console.error('Could not generate answer:', res.response.status, res.response.statusText)
                 })
