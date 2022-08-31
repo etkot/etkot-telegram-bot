@@ -79,7 +79,7 @@ export default (commander: Commander): void => {
                         users[doc.id].credits -= doc.minus_credits?.length || 0
                     }
 
-                    const sortable = Array.from(Object.entries(users)).sort(([, a], [, b]) => a.credits - b.credits)
+                    const sortable = Array.from(Object.entries(users)).sort(([, b], [, a]) => a.credits - b.credits)
 
                     let msg = '<b>Social credit:</b>\n'
                     for (const [, obj] of sortable) {
