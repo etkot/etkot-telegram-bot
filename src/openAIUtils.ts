@@ -13,7 +13,7 @@ const generate = async (
   tokens += input.length / 3;
 
   const response: Completion = await openai.complete({
-    engine: "text-davinci-002",
+    engine: "text-davinci-003",
     prompt: input.slice(-3).match(/[\r\n]/) ? input : input + "\n",
     maxTokens: 128,
     temperature: 0.7, // randomness
@@ -30,7 +30,6 @@ const generate = async (
   return [response.data.choices[0].text.replace(/([.]*[\n]+)/g, ". "), tokens];
 };
 
-// Replace all question marks with '' in prompt
 const answerBasePromptGen = (prompt: string) =>
   `Q: Missä kannattaa syödä kouluruokaa?
 A: Jokainen ravintola on yhtä hyvä.
@@ -52,7 +51,7 @@ const answer = async (question: string): Promise<[string, number]> => {
   tokens += question.length / 3;
 
   const { data }: Completion = await openai.complete({
-    engine: "text-davinci-002",
+    engine: "text-davinci-003",
     prompt: answerBasePromptGen(question),
     temperature: 0.27,
     maxTokens: 100,
@@ -82,7 +81,7 @@ const topics = ["Monday", "Happiness", "Failure", "Motivation"];
 const mondayQuote = async (topic?: string): Promise<string> => {
   const randomTopic = topics[Math.floor(Math.random() * topics.length)];
   const { data }: Completion = await openai.complete({
-    engine: "text-davinci-002",
+    engine: "text-davinci-003",
     prompt: mondayQuoteBasePromptGen(topic || randomTopic),
     temperature: 0.55,
     maxTokens: 60,
