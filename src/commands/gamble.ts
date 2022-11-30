@@ -1,7 +1,6 @@
 import { Commander } from '.'
-import { addCredit, removeCredit, CreditDocument } from './credit'
 import { getCollection } from '../mongoUtil'
-
+import { addCredit, CreditDocument, removeCredit } from './credit'
 
 const slotWinValues = [1, 22, 43, 64]
 
@@ -12,12 +11,11 @@ export default (commander: Commander): void => {
         help: 'Uhkapelaa socialcreditillä',
 
         func: async (args, message, telegram) => {
-            let userSc = 0;
-            const fromUser = message.from?.username || ''
-            
-            const docs = await getCollection<CreditDocument>('credit')
-                .find({ username: fromUser })
-                .toArray()
+            let userSc = 0
+            const username = message.from?.username || ''
+            const id = message.from?.id || 0
+
+            const docs = await getCollection<CreditDocument>('id_credit').find({ id }).toArray()
 
             for (const doc of docs) {
                 userSc += doc.plus_credits?.length || 0
@@ -28,29 +26,34 @@ export default (commander: Commander): void => {
                 telegram.sendMessage(
                     message.chat.id,
                     'You can contribute to this project at https://github.com/etkot/etkot-telegram-bot',
-                    { disable_notification: true, reply_to_message_id: message.message_id, disable_web_page_preview: true, }
+                    {
+                        disable_notification: true,
+                        reply_to_message_id: message.message_id,
+                        disable_web_page_preview: true,
+                    }
                 )
                 return
             }
 
             const { dice } = await telegram.sendDice(message.chat.id, { disable_notification: true, emoji: '🎰' })
-            const slotValue = dice?.value as number;
-            let messageText: string;
+            const slotValue = dice?.value as number
+            let messageText: string
 
             if (slotWinValues.includes(slotValue)) {
-                messageText = `Voitit pelissä 200 socialcredittiä!`;
-                Array.from({ length: 10 }, () => addCredit('EtkotBot', fromUser, message.message_id, message.date));
+                messageText = `Voitit pelissä 200 socialcredittiä!`
+                Array.from({ length: 10 }, () =>
+                    addCredit('EtkotBot', { id, username }, message.message_id, message.date)
+                )
             } else {
-                messageText = `Hävisit juuri 20 socialcredittiä!`;
-                removeCredit('EtkotBot', fromUser, message.message_id, message.date)
+                messageText = `Hävisit juuri 20 socialcredittiä!`
+                removeCredit('EtkotBot', { id, username }, message.message_id, message.date)
             }
 
             setTimeout(() => {
-                telegram.sendMessage(
-                    message.chat.id,
-                    messageText,
-                    { disable_notification: true, reply_to_message_id: message.message_id }
-                )
+                telegram.sendMessage(message.chat.id, messageText, {
+                    disable_notification: true,
+                    reply_to_message_id: message.message_id,
+                })
             }, 2000)
         },
     })

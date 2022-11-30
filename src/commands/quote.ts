@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb'
 import { Commander } from '.'
 import { getCollection } from '../mongoUtil'
 import oaiUtils from '../openAIUtils'
+import { addUsage } from './ai-usage'
 
 export interface QuoteDocument {
     _id: ObjectId
@@ -194,7 +195,8 @@ export default (commander: Commander): void => {
 
                         oaiUtils
                             .generate(randomizedQuotes)
-                            .then((generatedQuote) => {
+                            .then(([generatedQuote, tokens]) => {
+                                addUsage(message.from?.id || 0, message.from?.username || '', tokens)
                                 if (generatedQuote.length) {
                                     telegram.sendMessage(message.chat.id, `"${generatedQuote}" - AI-${docs[0].name}`, {
                                         disable_notification: true,

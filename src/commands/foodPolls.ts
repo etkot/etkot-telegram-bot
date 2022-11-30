@@ -18,10 +18,10 @@ export default (commander: Commander): void => {
     }
 
     createFoodPoll(['fondue', 'foodpoll', 'fp'], 'Luo pollin ruokapaikan valitsemiselle', 'Fondue?', [
-        'Reaktori',
         'Newton',
+        'Reaktori',
         'Hertsi',
-        'Såås',
+        // 'Såås',
     ])
 
     createFoodPoll(
