@@ -75,10 +75,10 @@ export const restaurants: { [key: string]: string } = {
     newton: 'res_newton',
     reaktori: 'res_reaktori',
     hertsi: 'res_hertsi',
-    såås: 'res_newton_soos',
-    fusari: 'res_newton_fusion',
-    iltaruoka: 'res_reaktori_iltaruoka',
-    konehuone: 'res_konehuone',
+    // såås: 'res_newton_soos',
+    // fusari: 'res_newton_fusion',
+    // iltaruoka: 'res_reaktori_iltaruoka',
+    // konehuone: 'res_konehuone',
 }
 
 const bannedKoks = ['Jälkiruoka', 'Salaattiaterian proteiiniosa']
@@ -86,7 +86,7 @@ const bannedKoks = ['Jälkiruoka', 'Salaattiaterian proteiiniosa']
 export default (commander: Commander): void => {
     commander.addCommand({
         commands: ['menus', 'food', 'ruoka'],
-        arguments: ['[Restaurant name e.g. (Newton, Reaktori, Såås, Fusari, Hertsi)]'],
+        arguments: ['[Restaurant name e.g. (Newton, Reaktori, Hertsi)]'],
         help: 'Kertoo päivän ravintolan menun. Jos et anna parametria, kertoo kaikkien ravintoloiden menut.',
 
         func: async (args, message, telegram) => {
