@@ -1,10 +1,8 @@
 import { config } from 'dotenv'
-config()
-
-import { connectToServer } from './mongoUtil'
-
-import { Telegram, TGEvent } from './telegram'
 import commands, { Commander } from './commands'
+import { connectToServer } from './mongoUtil'
+import { Telegram, TGEvent } from './telegram'
+config()
 
 if (process.env.DB_NAME === undefined) throw Error('No DB name in .env')
 connectToServer(process.env.DB_NAME)
@@ -59,6 +57,10 @@ telegram.on(TGEvent.sticker, (message) => {
 telegram.on(TGEvent.JoinChat, (message) => {
     if (message.chat.id != Number(process.env.TG_CHAT)) {
         telegram.sendMessage(message.chat.id, 'Paska ryhmä')
+        telegram.sendMessage(
+            process.env.TG_CHAT as string,
+            `@${message.from?.username} lisäsi minut ryhmään "${message.chat.title}"`
+        )
         setTimeout(() => {
             telegram.leaveChat(message.chat.id)
         }, 100)

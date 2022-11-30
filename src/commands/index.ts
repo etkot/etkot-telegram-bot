@@ -83,19 +83,22 @@ export class Commander {
         }
 
         const command = this.commands[cmd]
-
         const hasReply = command.allowReply && message.reply_to_message
-
         const shouldHave = command.arguments.filter((arg) => arg.charAt(0) === '<').length
-        if (args.length < shouldHave && !hasReply) {
-            this.commands['usage'].func([cmd], message, telegram)
-            return false
-        }
 
-        const res = command.func(args, message, telegram)
-        if (res === false) {
-            this.commands['usage'].func([cmd], message, telegram)
-            return false
+        try {
+            if (args.length < shouldHave && !hasReply) {
+                this.commands['usage'].func([cmd], message, telegram)
+                return false
+            }
+
+            const res = command.func(args, message, telegram)
+            if (res === false) {
+                this.commands['usage'].func([cmd], message, telegram)
+                return false
+            }
+        } catch (error) {
+            console.error('Unhandled error:', error)
         }
 
         return true
