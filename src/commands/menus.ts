@@ -1,14 +1,14 @@
 import axios, { AxiosError } from 'axios'
 import dayjs from 'dayjs'
-import WeekOfYear from 'dayjs/plugin/weekOfYear'
+import isoWeek from 'dayjs/plugin/isoWeek'
 import { Commander } from '.'
 import { Menu } from '../types/menu'
 
 const weekDays = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la']
-dayjs.extend(WeekOfYear)
+dayjs.extend(isoWeek)
 
 const fetchVersion = async () => {
-    const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().week() - 1}/v.json`
+    const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().isoWeek()}/v.json`
     try {
         const { data } = await axios.get<{ v: number }>(url)
         return data.v
@@ -21,7 +21,7 @@ const fetchVersion = async () => {
 export const fetchMenu = async (): Promise<Menu | undefined> => {
     const date = new Date()
     const version = await fetchVersion()
-    const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().week() - 1}/${version}/${
+    const url = `https://unisafka.fi/static/json/${dayjs().year()}/${dayjs().isoWeek()}/${version}/${
         weekDays[date.getDay()]
     }.json`
 
