@@ -24,8 +24,8 @@ export default (commander: Commander): void => {
         help: 'Katso kuka polttaa ilarin rahoja :D',
 
         func: async (args, message, telegram) => {
-            // $0.0200 / 1K tokens
-            const tokenPrice = 0.02 / 1000
+            // $0.0600 / 1K tokens
+            const tokenPrice = 0.06 / 1000
 
             const usage = await getCollection<UsageDocument>('ai-usage').find({}).toArray()
 

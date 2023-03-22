@@ -1,5 +1,6 @@
 import { Commander } from '.'
 import oaiUtils from '../openAIUtils'
+import { clearCache } from '../utils/messageCache'
 import { addUsage } from './ai-usage'
 
 export default (commander: Commander): void => {
@@ -37,6 +38,20 @@ export default (commander: Commander): void => {
                 .catch((res) => {
                     console.error('Could not generate answer:', res.response.status, res.response.statusText)
                 })
+        },
+    })
+
+    commander.addCommand({
+        commands: ['clear_cache', 'cc'],
+        arguments: [],
+        allowReply: true,
+        help: 'Tyhjentää message cachen, joka syötetään AI:lle',
+
+        func: (_, message, telegram) => {
+            clearCache()
+            telegram.sendMessage(message.chat.id, 'Cache tyhjennetty', {
+                reply_to_message_id: message.message_id,
+            })
         },
     })
 }
