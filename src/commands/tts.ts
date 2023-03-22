@@ -3,7 +3,6 @@ import FormData from 'form-data'
 import * as googleTTS from 'google-tts-api'
 import { Readable } from 'stream'
 import { Commander } from '.'
-import oaiUtils from '../openAIUtils'
 import detectLanguage from '../ttsUtils'
 import { Message } from '../types/telegram'
 
@@ -53,7 +52,7 @@ export default (commander: Commander): void => {
             if (message.reply_to_message?.text !== undefined) {
                 text = message.reply_to_message.text
             } else {
-                text = args.join(' ') || (await oaiUtils.mondayQuote())
+                text = args.join(' ') || 'Nyt en ymmärrä mitä sanot'
             }
 
             text = text.replace(regex, '\\$&').slice(0, 199)

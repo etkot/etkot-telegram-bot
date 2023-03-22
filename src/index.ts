@@ -2,6 +2,7 @@ import { config } from 'dotenv'
 import commands, { Commander } from './commands'
 import { connectToServer } from './mongoUtil'
 import { Telegram, TGEvent } from './telegram'
+import { addMessage } from './utils/messageCache'
 config()
 
 if (process.env.DB_NAME === undefined) throw Error('No DB name in .env')
@@ -43,6 +44,12 @@ telegram.on(TGEvent.message, (message) => {
         const cmd = args.shift()?.split('@')[0] as string
 
         commander.onCommand(cmd, args, message, telegram)
+    } else {
+        addMessage({
+            // Add message to cache
+            content: message.text || '',
+            role: 'user',
+        })
     }
 })
 
