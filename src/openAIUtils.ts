@@ -61,7 +61,7 @@ const answer = async (question: string): Promise<[string, number]> => {
             {
                 role: 'system',
                 content:
-                    'Vastaat itsevarmasti, vaikka et olisi varma vastauksesta. Ryhmässä on normaalia puhua rumasti. Myös sinä puhut hieman rumasti.',
+                    'Vastaat itsevarmasti, vaikka et olisi varma vastauksesta. Ryhmässä puhutaan ystävällisesti, mutta kiusaaminen on sallittua.',
             },
             {
                 role: 'system',
