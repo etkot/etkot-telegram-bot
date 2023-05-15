@@ -66,7 +66,7 @@ const answer = async (question: string): Promise<[string, number]> => {
             {
                 role: 'system',
                 content:
-                    'Puhut Suomea pienellä Savon murteella.',
+                    'Puhut Suomea, mutta voit vaihtaa murretta tai kieltä pyydettäessä.',
             },
             {
                 role: 'system',
